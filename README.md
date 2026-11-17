@@ -129,23 +129,23 @@ Modos: SP singleplayer, CL cooperativo local, CO cooperativo online, ML multijug
 | 1 | Pokémon Leyendas Z-A | `leyendas-pokemon-z-a` | s2e | pokemon | SP, MO |
 | 2 | Donkey Kong Bananza | `donkey-kong-bananza` | s2 | dk | SP, CL |
 | 3 | Super Mario Bros. Wonder | `super-mario-bros-wonder` | s2e | mario | SP, CL, CO, MO |
-| 4 | Mario + Rabbids Sparks of Hope | `mario-rabbids-sparks-of-hope` | s1 | mario | SP |
-| 5 | Mario + Rabbids Kingdom Battle | `mario-rabbids-kingdom-battle` | s1 | mario | SP, CL |
-| 6 | Super Mario Party | `super-mario-party` | s1 | mario | CL, ML, MO |
+| 4 | Mario + Rabbids Kingdom Battle | `mario-rabbids-kingdom-battle` | s1 | mario | SP, CL |
+| 5 | Super Mario Party | `super-mario-party` | s1 | mario | CL, ML, MO |
+| 6 | Mario + Rabbids Sparks of Hope | `mario-rabbids-sparks-of-hope` | s1 | mario | SP |
 | 7 | Super Mario 3D World + Bowser Fury | `super-mario-3d-world-bowsers-fury` | upd | mario | SP, CL, CO, MO |
 | 8 | Super Smash Bros. Ultimate | `super-smash-bros-ultimate` | s1 | smash | SP, ML, MO |
 | 9 | Pokémon Diamante Brillante | `pokemon-diamante-brillante` | s1 | pokemon | SP, MO |
 | 10 | The Legend of Zelda: Breath of the Wild | `the-legend-of-zelda-breath-of-the-wild` | s2e | zelda | SP |
-| 11 | Pokémon Let's Go, Eevee! | `pokemon-lets-go-eevee` | s1 | pokemon | SP, CL, MO |
-| 12 | Mario & Luigi: Conexión Fraternal | `mario-luigi-conexion-fraternal` | s1 | mario | SP |
-| 13 | The Legend of Zelda: Tears of the Kingdom | `the-legend-of-zelda-tears-of-the-kingdom` | s2e | zelda | SP |
-| 14 | Mario Strikers: Battle League Football | `mario-strikers-battle-league-football` | s1 | mario | SP, CL, CO, ML, MO |
-| 15 | Mario Kart World | `mario-kart-world` | s2 | mario | SP, ML, MO |
-| 16 | Mario Kart 8 Deluxe | `mario-kart-8-deluxe` | s1 | mario | SP, ML, MO |
-| 17 | Pokémon Escarlata | `pokemon-escarlata` | s1 | pokemon | SP, CL, CO, MO |
-| 18 | Pokémon Leyendas: Arceus | `leyendas-pokemon-arceus` | s1 | pokemon | SP, MO |
-| 19 | Pokémon Espada | `pokemon-espada` | s1 | pokemon | SP, CL, CO, MO |
-| 20 | Super Mario Odyssey | `super-mario-odyssey` | upd | mario | SP, CL |
+| 11 | The Legend of Zelda: Tears of the Kingdom | `the-legend-of-zelda-tears-of-the-kingdom` | s2e | zelda | SP |
+| 12 | Pokémon Let's Go, Eevee! | `pokemon-lets-go-eevee` | s1 | pokemon | SP, CL, MO |
+| 13 | Mario & Luigi: Conexión Fraternal | `mario-luigi-conexion-fraternal` | s1 | mario | SP |
+| 14 | Super Mario Odyssey | `super-mario-odyssey` | upd | mario | SP, CL |
+| 15 | Mario Strikers: Battle League Football | `mario-strikers-battle-league-football` | s1 | mario | SP, CL, CO, ML, MO |
+| 16 | Mario Kart World | `mario-kart-world` | s2 | mario | SP, ML, MO |
+| 17 | Mario Kart 8 Deluxe | `mario-kart-8-deluxe` | s1 | mario | SP, ML, MO |
+| 18 | Pokémon Escarlata | `pokemon-escarlata` | s1 | pokemon | SP, CL, CO, MO |
+| 19 | Pokémon Leyendas: Arceus | `leyendas-pokemon-arceus` | s1 | pokemon | SP, MO |
+| 20 | Pokémon Espada | `pokemon-espada` | s1 | pokemon | SP, CL, CO, MO |
 | 21 | Super Mario Galaxy + Super Mario Galaxy 2 | `super-mario-galaxy-1-2` | s1 | mario | SP, CL |
 | 22 | Super Mario Maker 2 | `super-mario-maker-2` | s1 | mario | SP, CL, CO, ML, MO |
 | 23 | Pokkén Tournament DX | `pokken-tournament-dx` | s1 | pokemon | SP, ML, MO |
