@@ -9,6 +9,9 @@ button,select,input{font:inherit;color:inherit}
 button{cursor:pointer;border:0;background:none}
 a{color:inherit}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.top,.tools,.filters{-webkit-user-select:none;user-select:none}
+.top img{-webkit-user-drag:none;user-drag:none}
+.tools input{-webkit-user-select:text;user-select:text}
 .bg{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
 .bg canvas{position:absolute;inset:0}
 .bg::after{content:"";position:absolute;inset:0;background:radial-gradient(520px circle at var(--cx,50%) var(--cy,28%),rgba(255,255,255,.06),transparent 62%)}
