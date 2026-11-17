@@ -28,6 +28,14 @@ Reglas que Rafael ha pedido y que valen siempre:
 - Cuando Rafael dice «pon el 6 en el 9» son posiciones actuales; varios movimientos se aplican **en el orden en que los dice**, cada uno sobre la lista tal como queda tras el anterior.
 - Rafael da permiso explícito para usar su sesión de GitHub (`gh` instalado con winget en `C:\Program Files\GitHub CLI\gh.exe`, con la cuenta KingKhaax) y para ejecutar `realesrgan-ncnn-vulkan.exe` (ver «Carcasas en HD»).
 
+### El orden publicado (orden.js)
+
+El orden de la lista lo decide Rafael desde la propia web (botón **Reordenar**: se arrastran las tarjetas por el icono de puntos, o se usan las flechas ‹ ›) y se publica con **Ajustes → Publicar mi orden en GitHub**. Se guarda en `orden.js` (`window.ORDEN={"updated":"AAAA-MM-DD","order":["slug",…]}`), que carga la web, así que **cualquiera que abra la web (su novia, por ejemplo) ve el mismo orden**. GitHub Pages tarda unos 10 minutos en actualizar el archivo.
+
+- Precedencia: el orden que cada persona ha cambiado en su navegador (`localStorage`, clave `juegos-switch-orden`) manda sobre el publicado; sin cambios propios se usa `orden.js`; si falta un juego, se coloca tras el que le precede en `games.js`. El botón «Restablecer orden» borra el orden local y vuelve al publicado.
+- Para publicar hay dos vías. Con un **token personal de GitHub** (fine-grained, solo este repositorio, permiso Contents: lectura y escritura; se guarda solo en el navegador de Rafael, clave `juegos-switch-token`) la web hace el commit sola (`Actualizar el orden de la lista`, a nombre de su cuenta). Sin token, la web abre la página de edición de `orden.js` en GitHub con el texto para copiar y pegar.
+- **Regla para cualquier sesión:** `orden.js` es la fuente de verdad del orden. Al empezar a trabajar, ejecuta `node tools/sync-readme.mjs . C:\Users\Rafael\Desktop\juegos-switch.txt`: deja la tabla de «Lista actual» de este README y `juegos-switch.txt` en el orden publicado. Un juego nuevo se añade en `games.js` y se publica su sitio en el orden con Reordenar (o se coloca en `orden.js`). El orden base de `games.js` solo se usa donde `orden.js` no dice nada.
+
 ## Cómo funciona la web
 
 - Página estática sin servidor ni dependencias: `index.html` + `styles.css` + `app.js` + `bg.js` + `cursor.js` + datos en `games.js` y `details.js`.
@@ -49,6 +57,16 @@ Reglas que Rafael ha pedido y que valen siempre:
 - **Cursor magnético** (`cursor.js`, elegido entre 16 efectos de cursor): punto y anillo con inercia que sustituyen al cursor del sistema solo con ratón (`hover:hover` y `pointer:fine`; en táctil no se activa). El anillo se ajusta al cartucho o botón que se toca y el cartucho se desplaza un poco hacia el cursor. Se oculta con las fichas abiertas y sobre campos de texto y desplegables, donde vuelve el cursor normal. Solo trabaja cuando hay movimiento. Con `prefers-reduced-motion` el anillo sigue sin inercia y sin tirón.
 - La cabecera (título, resúmenes, almacenamiento), la barra de herramientas y los filtros no se pueden seleccionar ni copiar con el ratón (`user-select:none`); el buscador sí deja escribir y seleccionar. No es una protección real: el texto sigue en el código de la página.
 - Estilo elegido: **Cartuchos** (cartucho con muesca, pines dorados y franja de color). Se probaron otros 24 estilos y se descartaron.
+
+### Segunda tanda de funciones (17/11/2026)
+
+- **Mi diario** (solo en los juegos que ya tengo, dentro de la ficha): **mi nota** del 1 al 10, un **comentario** de hasta 280 caracteres, **fecha de compra** (se rellena sola al marcar «Ya lo tengo»), **horas jugadas** y **fecha en que lo terminé** (se rellena sola al poner el estado «Terminado»). Con las horas sale «Llevo X de Y h de la historia principal (Z %)» y la tarjeta muestra una barra verde fina abajo de la carátula y «Mi nota N». Todo en `localStorage`, clave `juegos-switch-mio` (`{slug:{nota,com,compra,horas,fin,fmt}}`). Al quitar un juego de «ya lo tengo» se borran sus datos del diario (menos el formato). Se puede ordenar por «Mi nota» y por «Horas jugadas».
+- **Formato digital o físico** (en el panel de tamaño de la ficha, para cualquier juego, campo `fmt` de `juegos-switch-mio`): un cartucho no ocupa en la tarjeta SD, solo su actualización (`updateMB` de `details.js`), y así se calculan los GB de las tarjetas, del resumen, de «Mi almacenamiento», de las estadísticas y del comparador. La tarjeta muestra «físico».
+- **Reordenar**: ver «El orden publicado». Solo funciona sin filtros, sin búsqueda y con «Mi orden»; en ese modo las tarjetas de «Los que quiero» llevan una barra con el icono de arrastre y las flechas, y no se abre la ficha al pulsarlas.
+- **Comparar** (hasta 3 juegos): botón con dos flechas en cada tarjeta y «Comparar» en la ficha. Aparece una barra «N juegos para comparar» con «Ver comparación» y «Vaciar». La tabla pone en verde lo mejor de cada fila (más Metascore, menos tamaño, menos precio) y usa los tamaños y precios de tu consola y formato.
+- **Estadísticas** (botón de la cabecera, `#estadisticas`): juegos, GB, dinero gastado y por gastar, horas jugadas y por jugar, Metascore y nota media, y barras por saga, por género, por estado y gasto por mes de compra.
+- **Próximos lanzamientos** (botón de la cabecera, `#proximos`): los próximos exclusivos que anuncia nswitchex.com (`upcoming.js`, generado por `tools/scrape-upcoming.mjs`, 8 juegos con fecha, carcasa y ficha completa, a fecha 17/11/2026). «Lo quiero» los añade a «Los que quiero» (clave `juegos-switch-extra`, saga «Próximos lanzamientos», modos «sin confirmar» y fecha de salida en lugar del tamaño); se pueden quitar mientras no estén marcados como que ya los tengo. Para refrescar la lista: `node tools/scrape-upcoming.mjs .`, y las carcasas nuevas pasarlas por Real-ESRGAN y hacer su miniatura (ver «Carcasas en HD y miniaturas»).
+- **Ajustes** (botón de la cabecera, `#ajustes` o la tecla `?`; clave `juegos-switch-ajustes`): **modo ligero** (apaga fondo, cursor y animaciones: clases `lite`, `no-bg`, `no-cursor` en `<html>`), fondo animado y cursor magnético por separado, tamaño del texto (clases `fs-1`, `fs-2`), lista de atajos (`/` buscar, `?` ajustes, ← → entre fichas, Esc) y la publicación del orden.
 
 ### Ficha del juego (rediseñada el 17/11/2026)
 
@@ -146,6 +164,12 @@ Notas sobre los modos (apuntados de memoria, sin verificar en fuentes): Super Ma
 
 ```
 index.html        página (cabecera, almacenamiento, herramientas, filtros, apartados, ventanas)
+orden.js          orden publicado de la lista (lo escribe la web con «Publicar mi orden»; ver «El orden publicado»)
+upcoming.js       próximos lanzamientos (generado por tools/scrape-upcoming.mjs)
+stats.js          ventana de estadísticas
+compare.js        comparador de juegos
+proximos.js       ventana de próximos lanzamientos
+ajustes.js        ajustes, atajos y publicación del orden
 styles.css        estilos (cartuchos, ficha, ventanas, responsive móvil, prefers-reduced-motion)
 app.js            lógica: render, "ya lo tengo", precio pagado, filtros, orden, almacenamiento, ficha, vídeo
 cursor.js         cursor magnético (punto y anillo)
@@ -158,7 +182,10 @@ img/t/<slug>.jpg  miniatura cuadrada 240 px para las tarjetas
 img/hd/<slug>.jpg carcasa a 1660×832 subida de resolución con IA, para la ficha
 img/corner-*.png  esquinas de Switch 2 y Switch 2 Edition
 img/switch-logo.png  logo de la cabecera
-tools/scrape.mjs  descarga datos, vídeo y carcasas de nswitchex.com
+tools/parse.mjs   lector de las fichas de nswitchex.com (lo usan los dos scrapers)
+tools/scrape.mjs  descarga datos, vídeo y carcasas de los juegos de la lista
+tools/scrape-upcoming.mjs  descarga los próximos lanzamientos
+tools/sync-readme.mjs  deja la tabla del README y el .txt en el orden de orden.js
 ```
 
 ## Cómo añadir, borrar o reordenar
@@ -173,6 +200,22 @@ tools/scrape.mjs  descarga datos, vídeo y carcasas de nswitchex.com
 - Las originales de nswitchex.com son de 415×208 px y se veían pixeladas en la ficha. Se subieron a 1660×832 con Real-ESRGAN (`realesrgan-ncnn-vulkan` v0.2.5.0 de `xinntao/Real-ESRGAN`, modelo `realesrgan-x4plus`, escala 4): `realesrgan-ncnn-vulkan.exe -i <carpeta con los jpg> -o <salida> -n realesrgan-x4plus -s 4 -f jpg`. Se recomprimieron a JPEG calidad 80 en `img/hd/` (4,7 MB las 23). Con el modelo `-anime` las líneas salían más limpias pero los logos quedaban peor. Descargar el programa a una carpeta nueva y vacía, fuera del proyecto.
 - Miniaturas de las tarjetas: recorte cuadrado centrado de la carcasa original, 240×240, JPEG calidad 72, en `img/t/` (3 veces más ligeras que cargar la original).
 - La ficha usa `img/hd/`; las tarjetas usan `img/t/`. Rafael autorizó ejecutar ese programa; hay que repetir el proceso con cada juego nuevo.
+
+## Datos que se guardan en el navegador (`localStorage`)
+
+| Clave | Contenido |
+|---|---|
+| `juegos-switch-tengo` | slugs de los juegos que ya tengo, en el orden en que se marcaron |
+| `juegos-switch-pagado` | precio pagado por slug |
+| `juegos-switch-estado` | estado por slug (playing, done, dropped; pendiente = sin clave) |
+| `juegos-switch-mio` | diario y formato por slug (nota, com, compra, horas, fin, fmt) |
+| `juegos-switch-orden` | orden propio de la lista (slugs) |
+| `juegos-switch-extra` | próximos lanzamientos añadidos a la lista |
+| `juegos-switch-consola`, `-interna`, `-sd` | consola, memoria interna y tarjeta SD |
+| `juegos-switch-ajustes` | modo ligero, fondo, cursor y tamaño del texto |
+| `juegos-switch-token` | token de GitHub para publicar el orden (opcional, solo en el navegador de Rafael) |
+
+Nada de esto se sincroniza entre dispositivos salvo el orden, que se publica en `orden.js`.
 
 ## Rendimiento (optimización del 17/11/2026)
 
@@ -191,7 +234,7 @@ tools/scrape.mjs  descarga datos, vídeo y carcasas de nswitchex.com
 - Los commits van a nombre de Rafael con el correo `noreply` de GitHub.
 - Las imágenes, textos y datos pertenecen a sus dueños (Nintendo y las demás compañías) y a nswitchex.com; se usan solo para esta lista personal.
 - Los textos de la web están en español.
-- No se ha podido sincronizar «ya lo tengo» entre dispositivos (es `localStorage`).
+- «Ya lo tengo», el diario y el resto de datos personales no se sincronizan entre dispositivos (son `localStorage`); solo el orden se publica en `orden.js`.
 
 ## Historial de decisiones
 
@@ -201,4 +244,5 @@ tools/scrape.mjs  descarga datos, vídeo y carcasas de nswitchex.com
 - Metascore con los mismos colores que la web de origen y orden por crítica en los dos sentidos.
 - De 16 efectos de cursor se eligió el **cursor magnético**; de 16 estilos de barra, la de **8 bits**.
 - Carcasas en HD con Real-ESRGAN (17/11/2026).
+- 17/11/2026: se añadieron reordenar y publicar el orden, nota y diario, formato digital/físico, estadísticas, comparador, próximos lanzamientos y ajustes (Rafael eligió estas diez ideas de mejora y descartó la copia de seguridad/exportar y otras).
 - Ideas pendientes que Rafael no ha pedido todavía: estado de cada juego (jugando, terminado…), «¿a qué juego?» al azar, aviso de Nintendo Switch Online, enlaces a la eShop, exportar o compartir la lista, instalar como app en el móvil y sincronizar «ya lo tengo» entre dispositivos.

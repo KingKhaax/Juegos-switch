@@ -1,0 +1,30 @@
+import fs from "node:fs";
+import { parseDetail, UA } from "./parse.mjs";
+const out = process.argv[2] || ".";
+fs.mkdirSync(`${out}/img/next`, { recursive: true });
+const home = await (await fetch("https://nswitchex.com/es/", { headers: UA })).text();
+const a = home.indexOf('id="coming-exclusives"');
+const rest = home.slice(a);
+const b = rest.search(/<section[^>]*id="(?!coming-exclusives)/);
+const seg = b > 0 ? rest.slice(0, b) : rest.slice(0, 40000);
+const slides = seg.split('<div class="swiper-slide">').slice(1);
+const today = new Date();
+const list = [];
+for (const s of slides) {
+  const slug = /href="\/(?:es\/)?details\/([^"/]+)/.exec(s)?.[1];
+  if (!slug) continue;
+  const title = /card-title-game">\s*([^<]+?)\s*</.exec(s)?.[1] || slug;
+  const days = +(/En (\d+) d/.exec(s)?.[1] ?? NaN);
+  if (!isFinite(days) || list.some(x => x.slug === slug)) continue;
+  const k = s.includes("NSW2e-corner") ? "s2e" : s.includes("NSW2-corner") ? "s2" : "s1";
+  const res = await fetch(`https://nswitchex.com/es/details/${slug}/`, { headers: UA });
+  const detail = res.ok ? parseDetail(slug, await res.text()) : null;
+  const img = await fetch(`https://nswitchex.com/static/img/banners/jpg/${slug}.jpg`, { headers: UA });
+  if (img.ok) fs.writeFileSync(`${out}/img/next/${slug}.jpg`, Buffer.from(await img.arrayBuffer()));
+  const when = isFinite(days) ? new Date(today.getTime() + days * 86400000).toISOString().slice(0, 10) : null;
+  list.push({ slug, title, k, days: isFinite(days) ? days : null, fecha: when, scraped: today.toISOString().slice(0, 10), detail });
+  console.log("ok", slug, k, days, detail ? detail.date : "sin ficha");
+  await new Promise(r => setTimeout(r, 300));
+}
+fs.writeFileSync(`${out}/upcoming.js`, "window.UPCOMING=" + JSON.stringify(list) + ";\n");
+console.log(list.length, "próximos");

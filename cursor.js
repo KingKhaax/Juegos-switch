@@ -7,7 +7,8 @@ dot.className="cur-dot";
 const ring=document.createElement("div");
 ring.className="cur-ring";
 document.body.append(dot,ring);
-root.classList.add("cur-on");
+const wanted=()=>!root.classList.contains("no-cursor");
+if(wanted())root.classList.add("cur-on");
 let mx=-100,my=-100,rx=-100,ry=-100,rw=36,rh=36,rr=18;
 let on=false,native=false,down=false,pick=null,pulled=null,running=false,lastDlg=null;
 const pickOf=t=>{
@@ -20,6 +21,8 @@ return c?{el:c,card:true}:null;
 const release=()=>{if(pulled){pulled.style.transform="";pulled=null}};
 const frame=()=>{
 running=false;
+if(!wanted()){root.classList.remove("cur-on");ring.style.opacity="0";dot.style.opacity="0";release();return}
+root.classList.add("cur-on");
 const dlg=document.querySelector("dialog[open]");
 if(!!dlg!==lastDlg){lastDlg=!!dlg;root.classList.toggle("cur-dlg",lastDlg)}
 const show=on&&!dlg&&!native;
@@ -69,5 +72,6 @@ kick();
 document.querySelectorAll("dialog").forEach(d=>{
 new MutationObserver(kick).observe(d,{attributes:true,attributeFilter:["open"]});
 });
+document.addEventListener("ajustes",kick);
 root.addEventListener("mouseleave",()=>{on=false;kick()});
 })();

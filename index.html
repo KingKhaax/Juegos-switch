@@ -22,6 +22,9 @@
 <nav class="apartados" aria-label="Apartados">
 <a href="#quiero">Los que quiero <b id="nq">0</b></a>
 <a href="#tengo">Los que ya tengo <b id="nt">0</b></a>
+<button type="button" id="bstats" class="ap">Estadísticas</button>
+<button type="button" id="bnext" class="ap">Próximos lanzamientos</button>
+<button type="button" id="bset" class="ap" aria-label="Ajustes">Ajustes</button>
 </nav>
 <div class="resumen" id="resumen" aria-live="polite"></div>
 <section class="storage" aria-labelledby="hs">
@@ -39,7 +42,10 @@
 <label class="search"><span class="sr">Buscar por nombre</span><input id="q" type="search" placeholder="Buscar por nombre" autocomplete="off"></label>
 <label class="sortl"><span>Ordenar por</span><select id="sort"></select></label>
 <div class="seg" role="radiogroup" aria-label="Mi consola"><span>Mi consola</span><button type="button" role="radio" data-c="1">Switch 1</button><button type="button" role="radio" data-c="2">Switch 2</button></div>
+<button type="button" id="reorder" class="tbtn" aria-pressed="false"><span>Reordenar</span></button>
+<button type="button" id="resetorder" class="tbtn" hidden>Restablecer orden</button>
 </div>
+<p class="rhint" id="reorderhint" hidden>Arrastra las tarjetas por el icono de puntos, o usa las flechas ‹ ›. Se guarda solo en tu navegador; para que lo vean otros, pulsa «Publicar mi orden» en Ajustes.</p>
 <div class="fbar" id="fbar" role="group" aria-label="Filtros">
 <button type="button" class="fb" data-cat="mode" aria-haspopup="dialog">Modo de juego <b></b></button>
 <button type="button" class="fb" data-cat="saga" aria-haspopup="dialog">Saga <b></b></button>
@@ -80,7 +86,13 @@
 </dialog>
 <script src="games.js" defer></script>
 <script src="details.js" defer></script>
+<script src="upcoming.js" defer></script>
+<script src="orden.js" defer></script>
 <script src="app.js" defer></script>
+<script src="stats.js" defer></script>
+<script src="compare.js" defer></script>
+<script src="proximos.js" defer></script>
+<script src="ajustes.js" defer></script>
 <script src="bg.js" defer></script>
 <script src="cursor.js" defer></script>
 </body>

@@ -46,7 +46,9 @@ ctx.globalAlpha=p.al;
 ctx.drawImage(p.img,-p.sz/2,-p.sz/2,p.sz,p.sz);
 ctx.restore();
 };
+const off=()=>document.documentElement.classList.contains("no-bg");
 const frame=t=>{
+if(off()){raf=0;return}
 raf=requestAnimationFrame(frame);
 if(document.querySelector("dialog[open]"))return;
 tx+=(mx-tx)*.04;ty+=(my-ty)*.04;
@@ -61,6 +63,7 @@ else{
 raf=requestAnimationFrame(frame);
 document.addEventListener("visibilitychange",()=>{cancelAnimationFrame(raf);if(!document.hidden)raf=requestAnimationFrame(frame)});
 }
+document.addEventListener("ajustes",()=>{if(!off()&&!raf&&!reduce)raf=requestAnimationFrame(frame)});
 let pend=false,mx2=0,my2=0;
 const spot=document.querySelector(".bg .spot");
 addEventListener("pointermove",e=>{
