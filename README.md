@@ -27,6 +27,7 @@ Este README recoge todo lo que está decidido y apuntado del proyecto, para que 
 - El icono de la pestaña (`favicon.ico`) es el de nswitchex.com. El logo de cabecera es el de Nintendo Switch en negro sobre transparente (`img/switch-logo.png`, de Wikimedia Commons: "Nintendo Switch Logo.svg"), mostrado en blanco con `filter:invert(1)` y brillo rojo. Sin el 2 y sin el cuadrado rojo.
 - Fondo animado con la estética Switch (`bg.js`, canvas): luces roja y azul de los Joy-Con, botones A/B/X/Y, signos +/−, círculos y mandos flotando con parallax según el ratón, y un foco de luz que sigue al cursor. Con `prefers-reduced-motion` el fondo queda quieto.
 - Efectos: logo que flota y brilla, título con destello, cartas que aparecen al hacer scroll, brillo que sigue al ratón sobre cada cartucho, pines dorados que se mueven al pasar por encima, el juego que se marca como "ya lo tengo" aterriza con animación en su sitio, contadores que rebotan al cambiar, barra de progreso de scroll arriba y, en la ficha, zoom lento en la carcasa y paneles que entran escalonados.
+- **Cursor magnético** (`cursor.js`, elegido entre 16 efectos de cursor): punto y anillo con inercia que sustituyen al cursor del sistema solo con ratón (`hover:hover` y `pointer:fine`; en táctil no se activa). El anillo se ajusta al cartucho o botón que se toca y el cartucho se desplaza un poco hacia el cursor. Se oculta con las fichas abiertas y sobre campos de texto y desplegables, donde vuelve el cursor normal. Con `prefers-reduced-motion` el anillo sigue sin inercia y sin tirón.
 - Estilo elegido: **Cartuchos** (cartucho con muesca, pines dorados y franja de color). Se probaron otros 24 estilos y se descartaron.
 
 ### Ficha del juego (rediseñada el 17/11/2026)
@@ -101,6 +102,7 @@ Notas sobre los modos (apuntados de memoria, sin verificar en fuentes): Super Ma
 index.html        página
 styles.css        estilos (cartuchos, ficha, responsive móvil, prefers-reduced-motion)
 app.js            lógica: render, "ya lo tengo", filtros, ficha, tono de color, efectos de aparición
+cursor.js         cursor magnético (punto y anillo)
 bg.js             fondo animado en canvas (sprites precalculados, se pausa con la ficha abierta)
 img/t/<slug>.jpg  miniatura cuadrada 240 px de cada carcasa, para las tarjetas
 games.js          la lista en orden: slug, título, consola (k), modos (m)
