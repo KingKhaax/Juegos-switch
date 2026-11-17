@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mi colección de Nintendo Switch</title>
+<link rel="icon" href="favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="top">
+<img class="logo" src="img/switch-logo.png" alt="Nintendo Switch">
+<h1 class="title">Mi colección de Nintendo Switch</h1>
+<p class="sub">Ordenados por mi preferencia · Switch 1 y Switch 2</p>
+<nav class="apartados" aria-label="Apartados">
+<a href="#quiero">Los que quiero <b id="nq">0</b></a>
+<a href="#tengo">Los que ya tengo <b id="nt">0</b></a>
+</nav>
+</header>
+<nav class="filters" id="filters" aria-label="Filtros por modo de juego"></nav>
+<main>
+<section id="quiero" aria-labelledby="hq">
+<h2 id="hq">Los que quiero</h2>
+<div class="grid" id="want"></div>
+<p class="empty" id="wantEmpty" hidden>Ningún juego cumple todos esos filtros a la vez.</p>
+</section>
+<section id="tengo" aria-labelledby="ht" class="have">
+<h2 id="ht">Los que ya tengo</h2>
+<div class="grid" id="have"></div>
+<p class="empty" id="haveEmpty" hidden>Todavía no he marcado ninguno. Pulsa «Ya lo tengo» en un juego y aparecerá aquí.</p>
+</section>
+</main>
+<p class="credit">Datos y carcasas de <a href="https://nswitchex.com/es/">nswitchex.com</a>. Las imágenes pertenecen a sus dueños.</p>
+<div class="sr" id="live" aria-live="polite"></div>
+<dialog id="dlg" aria-label="Ficha del juego"></dialog>
+<script src="games.js"></script>
+<script src="details.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
