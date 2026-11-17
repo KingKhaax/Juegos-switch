@@ -3,9 +3,14 @@ const T={sp:"Singleplayer",cl:"Coop local",co:"Coop online",ml:"Multi local",mo:
 const FT={sp:"Singleplayer",cl:"Cooperativo local",co:"Cooperativo online",ml:"Multijugador local",mo:"Multijugador online"};
 const L={s1:"Switch 1 · compatible con Switch 2",s2e:"Switch 1 + Switch 2 Edition",upd:"Switch 1 + actualización gratuita Switch 2",s2:"Solo Switch 2"};
 const SORTS=[["mine","Mi orden"],["meta-d","Metascore: mejor primero"],["size-a","Tamaño: menor primero"],["size-d","Tamaño: mayor primero"],["hours-a","Historia: más corta"],["hours-d","Historia: más larga"],["price-a","Precio: más barato"],["price-d","Precio: más caro"]];
-const SD=[32,64,128,256,512,1024,2048];
+const SD=[32,64,128,256,400,512,1024,2048];
+const INT=[[32,"32 GB (Switch / Lite)"],[64,"64 GB (Switch OLED)"],[256,"256 GB (Switch 2)"]];
+const IFACT=.85;
+const SFACT=.93;
 const KEY="juegos-switch-tengo";
 const CKEY="juegos-switch-consola";
+const IKEY="juegos-switch-interna";
+const SKEY="juegos-switch-sd";
 const D=window.DETAILS||{};
 const GAMES=window.GAMES;
 const bySlug=Object.fromEntries(GAMES.map(g=>[g.slug,g]));
@@ -19,7 +24,17 @@ get(k,f){try{const v=localStorage.getItem(k);return v===null?f:v}catch(e){return
 set(k,v){try{localStorage.setItem(k,v)}catch(e){}}
 };
 let own=(()=>{try{const v=JSON.parse(store.get(KEY,"[]"));return Array.isArray(v)?v.filter(s=>bySlug[s]):[]}catch(e){return[]}})();
+const PKEY="juegos-switch-pagado";
+let paid=(()=>{try{const v=JSON.parse(store.get(PKEY,"{}"));return v&&typeof v==="object"&&!Array.isArray(v)?v:{}}catch(e){return{}}})();
+const savePaid=()=>store.set(PKEY,JSON.stringify(paid));
+const isOwn=s=>own.includes(s);
 let cons=store.get(CKEY,"2")==="1"?"1":"2";
+let internal=parseInt(store.get(IKEY,""),10)||0;
+let sdcard=parseInt(store.get(SKEY,"0"),10)||0;
+let lastW=[];
+let lastH=[];
+const internalGB=()=>internal||(cons==="1"?32:256);
+const sdLabel=n=>n===0?"Sin tarjeta":n>=1024?`${n/1024} TB`:`${n} GB`;
 const nf=(n,d)=>n.toLocaleString("es-ES",{minimumFractionDigits:d,maximumFractionDigits:d});
 const gb=mb=>nf(mb/1024,1)+" GB";
 const eur=n=>nf(n,2)+" €";
@@ -35,10 +50,12 @@ const std=eds[0];
 const s2=eds.find(e=>/switch 2/i.test(e.name));
 const playable=!(cons==="1"&&g.k==="s2");
 const e=cons==="2"&&s2?s2:std;
-return{d,eds,std,s2,e,playable,mb:(e&&e.sizeMB)||0,price:e?num(e.price):null,hours:num(d.hours&&d.hours.main),meta:d.meta||null};
+const price=e?num(e.price):null;
+const cost=isOwn(g.slug)&&paid[g.slug]!=null?paid[g.slug]:price;
+return{d,eds,std,s2,e,playable,mb:(e&&e.sizeMB)||0,price,cost,hours:num(d.hours&&d.hours.main),meta:d.meta||null};
 }
 
-const KEYS={meta:i=>i.meta,size:i=>i.playable&&i.mb?i.mb:null,hours:i=>i.hours,price:i=>i.playable?i.price:null};
+const KEYS={meta:i=>i.meta,size:i=>i.playable&&i.mb?i.mb:null,hours:i=>i.hours,price:i=>i.playable?i.cost:null};
 function sorted(list){
 if(sort==="mine")return list;
 const[k,dir]=sort.split("-");
@@ -52,22 +69,51 @@ return(dir==="a"?a.v-b.v:b.v-a.v)||a.i-b.i;
 
 function totals(list){
 let mb=0,price=0;
-list.forEach(g=>{const i=info(g);if(!i.playable)return;mb+=i.mb;price+=i.price||0});
+list.forEach(g=>{const i=info(g);if(!i.playable)return;mb+=i.mb;price+=i.cost||0});
 return{mb,price};
 }
-const sdFor=mb=>SD.find(s=>s*1024>=mb*1.08)||SD[SD.length-1];
+const sdFor=g=>SD.find(s=>s*SFACT>=g)||SD[SD.length-1];
 
 function renderSummary(want,have){
+lastW=want;lastH=have;
 const a=totals(want),b=totals(have);
-const all=a.mb+b.mb;
-$("#resumen").innerHTML=`<div class="tile"><small>Los que quiero</small><b>${want.length} juegos</b><span>${gb(a.mb)}</span><span>${eur(a.price)} por comprar</span></div><div class="tile"><small>Los que ya tengo</small><b>${have.length} juegos</b><span>${gb(b.mb)}</span><span>${eur(b.price)} gastados</span></div><div class="tile sd"><small>Tarjeta SD que necesito</small><b>${sdFor(all)} GB</b><span>Con todo: ${gb(all)}</span><span>Con lo que quiero: ${gb(a.mb)}</span></div>`;
+const all=(a.mb+b.mb)/1024;
+const ig=internalGB()*IFACT;
+const need=all<=ig?0:sdFor(all-ig);
+$("#resumen").innerHTML=`<div class="tile"><small>Los que quiero</small><b>${want.length} juegos</b><span>${gb(a.mb)}</span><span>${eur(a.price)} por comprar</span></div><div class="tile"><small>Los que ya tengo</small><b>${have.length} juegos</b><span>${gb(b.mb)}</span><span>${eur(b.price)} gastados</span></div><div class="tile sd"><small>Tarjeta SD que necesito</small><b>${need?sdLabel(need):"Ninguna"}</b><span>Con todo: ${nf(all,1)} GB</span><span>Memoria interna: ${internalGB()} GB</span></div>`;
+renderStorage(a,b,all,ig,need);
 }
+
+function renderStorage(a,b,all,ig,need){
+const cap=ig+sdcard*SFACT;
+const haveG=b.mb/1024,wantG=a.mb/1024;
+const hp=Math.min(100,haveG/cap*100);
+const wp=Math.max(0,Math.min(100-hp,wantG/cap*100));
+$("#sbar").innerHTML=`<i class="have" style="--w:${hp.toFixed(2)}%"></i><i class="want" style="--w:${wp.toFixed(2)}%"></i>`;
+const free=cap-all;
+$("#leg").innerHTML=`<span><i class="k have"></i>Tengo ${nf(haveG,1)} GB</span><span><i class="k want"></i>Quiero ${nf(wantG,1)} GB</span><span><i class="k free"></i>Capacidad ${nf(cap,1)} GB</span>`;
+$("#snote").className=free<0?"snote bad":"snote ok";
+$("#snote").textContent=free<0?`Con todo instalado me faltan ${nf(-free,1)} GB. Necesito una tarjeta SD de ${sdLabel(sdFor(all-ig))} o más.`:`Con todo instalado me sobran ${nf(free,1)} GB.`;
+}
+
+function initStorage(){
+const si=$("#internal"),ss=$("#sdcard");
+si.innerHTML=INT.map(([v,l])=>`<option value="${v}">${l}</option>`).join("");
+ss.innerHTML=[0,...SD].map(v=>`<option value="${v}">${sdLabel(v)}</option>`).join("");
+const sync=()=>{si.value=String(internalGB());ss.value=String(sdcard)};
+sync();
+si.addEventListener("change",()=>{internal=parseInt(si.value,10);store.set(IKEY,String(internal));renderSummary(lastW,lastH)});
+ss.addEventListener("change",()=>{sdcard=parseInt(ss.value,10);store.set(SKEY,String(sdcard));renderSummary(lastW,lastH)});
+return sync;
+}
+let syncStorage=()=>{};
 
 function cardHtml(g,n,owned){
 const i=info(g);
 const meta=i.meta?`<span class="meta ${metaCls(i.meta)}" title="Metascore ${i.meta}">${i.meta}</span>`:"";
-const facts=i.playable?`<span class="facts"><b>${i.mb?gb(i.mb):"—"}</b>${i.price!=null?` · ${eur(i.price)}`:""}${sort.startsWith("hours")&&i.hours?` · ${nf(i.hours,1)} h`:""}</span>`:`<span class="facts bad">Solo Switch 2</span>`;
-return `<article class="card${owned?" owned":""}" data-slug="${g.slug}" data-k="${g.k}" data-tags="${g.m.join(" ")}" data-name="${norm(g.title)}"><button class="open" type="button" aria-label="Ver la ficha de ${g.title}"><span class="media"><img class="cover" src="img/t/${g.slug}.jpg" width="240" height="240" decoding="async" loading="${!owned&&n<=6?"eager":"lazy"}" alt=""><span class="num">${owned?"✓":n}</span>${meta}${cornerOf(g.k)}</span><span class="info"><span class="name">${g.title}</span>${facts}<span class="modes">${g.m.map(m=>`<i>${T[m]}</i>`).join("")}</span></span></button><button class="own" type="button" aria-pressed="${owned}">${owned?"Quitar de «ya lo tengo»":"Ya lo tengo"}</button></article>`;
+const pr=i.cost!=null?(owned&&i.price!=null&&i.cost!==i.price?`<s>${eur(i.price)}</s> ${eur(i.cost)}`:eur(i.cost)):"";
+const facts=i.playable?`<span class="facts"><b>${i.mb?gb(i.mb):"—"}</b>${pr?` · ${pr}`:""}${sort.startsWith("hours")&&i.hours?` · ${nf(i.hours,1)} h`:""}</span>`:`<span class="facts bad">Solo Switch 2</span>`;
+return `<article class="card${owned?" owned":""}" data-slug="${g.slug}" data-k="${g.k}" data-tags="${g.m.join(" ")}" data-name="${norm(g.title)}"><button class="open" type="button" aria-label="Ver la ficha de ${g.title}"><span class="media"><img class="cover" src="img/t/${g.slug}.jpg" width="240" height="240" decoding="async" loading="${!owned&&n<=6?"eager":"lazy"}" alt=""><span class="num">${owned?"✓":n}</span>${meta}${cornerOf(g.k)}</span><span class="info"><span class="name">${g.title}</span>${facts}<span class="modes">${g.m.map(m=>`<i>${T[m]}</i>`).join("")}</span></span></button>${owned?`<button class="pay" type="button">Cambiar precio</button>`:""}<button class="own" type="button" aria-pressed="${owned}">${owned?"Quitar de «ya lo tengo»":"Ya lo tengo"}</button></article>`;
 }
 
 function tone(img){
@@ -137,20 +183,73 @@ moved=null;
 }
 }
 
-function toggleOwn(slug){
+const pd=$("#paydlg");
+function finishPay(v){
+const cb=pd._cb;
+pd._cb=null;
+if(pd.open)pd.close();
+if(cb)cb(v);
+}
+function askPrice(slug,editing,cb){
+const g=bySlug[slug],i=info(g);
+$("#ptitle").textContent=g.title;
+$("#pinfo").textContent=i.price!=null?`PVPR en Switch ${cons}: ${eur(i.price)}`:"La web no tiene PVPR de este juego";
+$("#perr").textContent="";
+$("#payin").value=editing&&paid[slug]!=null?String(paid[slug]):i.price!=null?String(i.price):"";
+pd._cb=cb;
+pd.showModal();
+$("#payin").select();
+}
+$("#payform").addEventListener("submit",e=>{
+e.preventDefault();
+const t=$("#payin").value.replace(",",".").trim();
+if(t===""){finishPay(null);return}
+const n=parseFloat(t);
+if(!isFinite(n)||n<0){$("#perr").textContent="Escribe un precio válido, por ejemplo 19,99.";return}
+finishPay(Math.round(n*100)/100);
+});
+$("#payuse").addEventListener("click",()=>finishPay(null));
+$("#paycancel").addEventListener("click",()=>finishPay(undefined));
+pd.addEventListener("cancel",e=>{e.preventDefault();finishPay(undefined)});
+pd.addEventListener("click",e=>{if(e.target===pd)finishPay(undefined)});
+
+function commitOwn(slug,added){
 const g=bySlug[slug];
-const i=own.indexOf(slug);
-if(i>=0)own.splice(i,1);else own.push(slug);
 moved=slug;
 store.set(KEY,JSON.stringify(own));
+savePaid();
 render(false);
-$("#live").textContent=i>=0?`${g.title} vuelve a la lista de los que quiero`:`${g.title} marcado como ya lo tengo`;
+$("#live").textContent=added?`${g.title} marcado como ya lo tengo`:`${g.title} vuelve a la lista de los que quiero`;
 refreshDialog();
+}
+function toggleOwn(slug){
+if(isOwn(slug)){
+own.splice(own.indexOf(slug),1);
+delete paid[slug];
+commitOwn(slug,false);
+return;
+}
+askPrice(slug,false,p=>{
+if(p===undefined)return;
+own.push(slug);
+if(p!=null)paid[slug]=p;
+commitOwn(slug,true);
+});
+}
+function editPrice(slug){
+askPrice(slug,true,p=>{
+if(p===undefined)return;
+if(p===null)delete paid[slug];else paid[slug]=p;
+savePaid();
+render(false);
+refreshDialog();
+});
 }
 
 const svg={
 tv:'<svg viewBox="0 0 48 32" width="42" height="28" aria-hidden="true"><rect x="8" y="2" width="38" height="22" rx="3" fill="#0d0f14" stroke="currentColor" stroke-width="2"/><rect x="22" y="26" width="10" height="3" rx="1" fill="currentColor"/><rect x="2" y="21" width="11" height="8" rx="2" fill="#4a4f5c"/></svg>',
 hh:'<svg viewBox="0 0 48 24" width="46" height="23" aria-hidden="true"><rect x="1" y="2" width="46" height="20" rx="6" fill="#1a1c22"/><rect x="1" y="2" width="9" height="20" rx="4" fill="#00c3e3"/><rect x="38" y="2" width="9" height="20" rx="4" fill="#ff4554"/><rect x="11" y="4" width="26" height="16" rx="2" fill="#07080b"/></svg>',
+card:'<svg class="ic-card" viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path d="M5 1.5h7.6L15.5 4.4V18.5h-10.5z" fill="#fff"/><rect x="7" y="4.5" width="6.5" height="6" rx="1" fill="#e60012" opacity=".75"/><rect x="7" y="13.5" width="1.5" height="3.6" rx=".4" fill="#c9a24a"/><rect x="9.3" y="13.5" width="1.5" height="3.6" rx=".4" fill="#c9a24a"/><rect x="11.6" y="13.5" width="1.5" height="3.6" rx=".4" fill="#c9a24a"/></svg>',
 ok:'<svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
 user:'<svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><circle cx="10" cy="6.5" r="3.5" fill="currentColor"/><path d="M3 18c0-4 3-6 7-6s7 2 7 6z" fill="currentColor"/></svg>',
 globe:'<svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M2 10h16M10 2c3 3 3 13 0 16M10 2c-3 3-3 13 0 16" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>'
@@ -177,7 +276,7 @@ return `<div class="sheet">
 ${i.meta?`<div class="ring ${metaCls(i.meta)}" style="--v:${i.meta}" title="Metascore"><span data-to="${i.meta}" data-dec="0">${i.meta}</span></div>`:""}</div>
 <div class="body">
 <div class="chipline"><span class="chip k">${L[g.k]}</span>${g.m.map(m=>`<span class="chip">${FT[m]}</span>`).join("")}</div>
-<div class="actions"><button class="own big" type="button" data-slug="${g.slug}" aria-pressed="${owned}"><span class="tick">${svg.ok}</span><span class="otxt">${owned?"Lo tengo · quitar":"Ya lo tengo"}</span></button>${i.price!=null&&i.playable?`<div class="price"><small>PVPR ${e.name||""}</small><b>${eur(i.price)}</b></div>`:""}</div>
+<div class="actions"><button class="own big" type="button" data-slug="${g.slug}" aria-pressed="${owned}"><span class="tick">${svg.card}${svg.ok.replace("<svg ",'<svg class="ic-ok" ')}</span><span class="otxt">${owned?"Lo tengo · quitar":"Ya lo tengo"}</span></button>${i.cost!=null&&i.playable?(owned?`<button class="price paidtag" type="button" data-pay="1"><small>${paid[g.slug]!=null?"Pagado":"PVPR"}</small><b>${eur(i.cost)}</b>${paid[g.slug]!=null&&i.price!=null&&i.price!==i.cost?`<s>PVPR ${eur(i.price)}</s>`:""}<em>cambiar precio</em></button>`:`<div class="price"><small>PVPR ${e.name||""}</small><b>${eur(i.price)}</b></div>`):""}</div>
 ${d.summary?`<section class="panel desc"><h3>Resumen</h3><p>${d.summary}</p></section>`:""}
 <div class="grid2">
 <section class="panel size"><h3>Tamaño en Switch ${cons==="1"?"1":"2"}</h3>${i.playable?`<b class="big" data-to="${i.mb/1024}" data-dec="1" data-suf=" GB">${i.mb?gb(i.mb):"—"}</b><div class="sdbar" title="Porcentaje de una tarjeta de 128 GB"><i style="--w:${pct.toFixed(1)}%"></i></div><small class="note">Ocupa el ${nf(pct,1)} % de una tarjeta de 128 GB${e.name?` · edición ${e.name}`:""}</small>`:`<p class="warn">Este juego solo funciona en Switch 2.</p>`}
@@ -242,6 +341,7 @@ dlg.addEventListener("click",e=>{
 if(e.target===dlg){dlg.close();return}
 const b=e.target.closest(".own.big");
 if(b){toggleOwn(b.dataset.slug);return}
+if(e.target.closest("[data-pay]")){editPrice(dlg.dataset.slug);return}
 if(e.target.closest(".prev"))step(-1);
 else if(e.target.closest(".next"))step(1);
 });
@@ -277,6 +377,7 @@ document.addEventListener("click",e=>{
 const c=e.target.closest(".card");
 if(!c||!c.closest("main"))return;
 if(e.target.closest(".own"))toggleOwn(c.dataset.slug);
+else if(e.target.closest(".pay"))editPrice(c.dataset.slug);
 else if(e.target.closest(".open"))openDlg(c.dataset.slug);
 });
 
@@ -298,10 +399,12 @@ seg.forEach(b=>b.addEventListener("click",()=>{
 cons=b.dataset.c;
 store.set(CKEY,cons);
 syncSeg();
+syncStorage();
 render(false);
 refreshDialog();
 }));
 syncSeg();
+syncStorage=initStorage();
 
 render(true);
 document.addEventListener("pointermove",e=>{

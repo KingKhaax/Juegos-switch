@@ -24,6 +24,16 @@
 <a href="#tengo">Los que ya tengo <b id="nt">0</b></a>
 </nav>
 <div class="resumen" id="resumen" aria-live="polite"></div>
+<section class="storage" aria-labelledby="hs">
+<h2 id="hs">Mi almacenamiento</h2>
+<div class="sctl">
+<label>Memoria interna<select id="internal"></select></label>
+<label>Tarjeta SD<select id="sdcard"></select></label>
+</div>
+<div class="sbar" id="sbar" role="img" aria-label="Espacio ocupado y libre"></div>
+<div class="leg" id="leg"></div>
+<p class="snote" id="snote" aria-live="polite"></p>
+</section>
 </header>
 <div class="tools">
 <label class="search"><span class="sr">Buscar por nombre</span><input id="q" type="search" placeholder="Buscar por nombre" autocomplete="off"></label>
@@ -46,6 +56,20 @@
 <p class="credit">Datos y carcasas de <a href="https://nswitchex.com/es/">nswitchex.com</a>. Las imágenes pertenecen a sus dueños.</p>
 <div class="sr" id="live" aria-live="polite"></div>
 <dialog id="dlg" aria-label="Ficha del juego"></dialog>
+<dialog id="paydlg" aria-labelledby="ptitle">
+<form id="payform" class="payform">
+<h3 id="ptitle"></h3>
+<p id="pinfo"></p>
+<label for="payin">Precio que he pagado (€)</label>
+<input id="payin" type="text" inputmode="decimal" autocomplete="off" placeholder="19,99">
+<p class="perr" id="perr" role="alert"></p>
+<div class="payb">
+<button type="submit" class="pri">Guardar</button>
+<button type="button" id="payuse">Usar el PVPR</button>
+<button type="button" id="paycancel" class="ghost">Cancelar</button>
+</div>
+</form>
+</dialog>
 <script src="games.js" defer></script>
 <script src="details.js" defer></script>
 <script src="app.js" defer></script>

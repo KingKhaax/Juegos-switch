@@ -36,6 +36,25 @@ a{color:inherit}
 .tile span{font-size:.86rem;color:#d3d6e2}
 .tile.sd{border-color:rgba(0,195,227,.5);background:rgba(0,195,227,.09)}
 .tile.sd b{color:#7defff;font-size:1.6rem}
+.storage{width:min(760px,100%);margin:18px auto 0;padding:16px 20px 18px;border-radius:18px;text-align:left;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(6px)}
+.storage h2{font-size:1.1rem;margin-bottom:10px}
+.sctl{display:flex;flex-wrap:wrap;gap:12px 20px}
+.sctl label{display:flex;flex-direction:column;gap:4px;color:var(--mute);font-weight:700;font-size:.82rem}
+.sctl select{min-height:44px;min-width:200px;padding:0 14px;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:#2c2f38;color:#fff;outline:0;cursor:pointer}
+.sctl select:focus-visible{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,195,227,.25)}
+.sbar{display:flex;height:16px;margin-top:16px;border-radius:99px;overflow:hidden;background:rgba(255,255,255,.12)}
+.sbar i{display:block;height:100%;width:var(--w);transition:width .7s cubic-bezier(.2,.9,.3,1)}
+.sbar .have{background:linear-gradient(90deg,#00c3e3,#4d8dff)}
+.sbar .want{background:repeating-linear-gradient(135deg,#e60012 0 8px,#ff4a5c 8px 16px)}
+.leg{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:10px;font-size:.84rem;color:#d3d6e2}
+.leg span{display:flex;align-items:center;gap:7px}
+.k{display:inline-block;width:12px;height:12px;border-radius:4px;background:#fff}
+.k.have{background:#00c3e3}
+.k.want{background:#e60012}
+.k.free{background:rgba(255,255,255,.3)}
+.snote{margin-top:10px;font-weight:800}
+.snote.ok{color:#7ff0ae}
+.snote.bad{color:#ff8a93}
 .tools{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:12px;padding:20px 4vw 2px}
 .search input{min-height:44px;width:min(280px,82vw);padding:0 18px;border-radius:99px;border:1px solid rgba(255,255,255,.16);background:#2c2f38;outline:0}
 .search input::placeholder{color:#8a8e9c}
@@ -132,20 +151,45 @@ dialog[open]{animation:dlgin .4s cubic-bezier(.2,.9,.3,1.1)}
 .ring.r{--rc:#ff6874}
 .body{padding:6px 24px 26px;display:grid;gap:14px}
 .chipline,.chips{display:flex;flex-wrap:wrap;gap:6px}
-.chip{background:rgba(255,255,255,.1);border-radius:99px;padding:4px 12px;font-size:.78rem;font-weight:700;color:#e3e5ee}
+.chip{flex:0 0 auto;white-space:nowrap;background:rgba(255,255,255,.1);border-radius:99px;padding:4px 12px;font-size:.78rem;font-weight:700;color:#e3e5ee}
 .chip.k{background:var(--red);color:#fff}
 .chip.g{background:rgba(0,0,0,.35);border:1px solid color-mix(in srgb,var(--ac) 70%,#fff);color:#fff}
 .actions{display:flex;flex-wrap:wrap;align-items:center;gap:14px}
 .own.big{display:flex;align-items:center;gap:10px;margin:0;padding:0 24px 0 14px;min-height:52px;border-radius:99px;font-size:1rem;background:linear-gradient(135deg,var(--red),color-mix(in srgb,var(--red) 55%,#7b0010));box-shadow:0 8px 24px rgba(230,0,18,.35);transition:transform .2s,box-shadow .2s,background .3s}
 .own.big:hover{transform:translateY(-2px) scale(1.02);box-shadow:0 12px 32px rgba(230,0,18,.5)}
 .own.big:active{transform:scale(.97)}
-.own.big .tick{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.2)}
-.own.big .tick svg{opacity:0;transform:scale(.3);transition:.3s cubic-bezier(.3,1.8,.5,1)}
+.own.big .tick{position:relative;display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.2);transition:background .3s}
+.own.big .tick svg{position:absolute;transition:transform .3s cubic-bezier(.3,1.8,.5,1),opacity .25s}
+.own.big .tick .ic-ok{opacity:0;transform:scale(.3)}
+.own.big:hover .tick .ic-card{transform:translateY(-3px) rotate(-8deg)}
 .own.big[aria-pressed=true]{background:linear-gradient(135deg,#1a7f48,#0d4b2a);box-shadow:0 8px 24px rgba(0,206,122,.28)}
 .own.big[aria-pressed=true] .tick{background:#00ce7a;color:#04210f}
-.own.big[aria-pressed=true] .tick svg{opacity:1;transform:none}
+.own.big[aria-pressed=true] .tick .ic-card{opacity:0;transform:translateY(10px) scale(.4)}
+.own.big[aria-pressed=true] .tick .ic-ok{opacity:1;transform:none}
 .price{display:flex;flex-direction:column;padding:8px 18px;border-radius:14px;background:linear-gradient(135deg,#ffd96a,#e1a000);color:#241a00;transform:rotate(-2.5deg);box-shadow:0 8px 22px rgba(225,160,0,.3);transition:transform .25s}
 .price:hover{transform:rotate(0) scale(1.05)}
+button.price{text-align:left;cursor:pointer}
+.price s{font-size:.78rem;opacity:.7}
+.price em{font-style:normal;font-size:.7rem;font-weight:800;text-decoration:underline}
+.facts s{opacity:.55;color:#b9bdc9}
+.pay{margin:0 12px 6px;min-height:36px;border-radius:8px;font-size:.74rem;font-weight:700;color:#b9bdc9;background:#23252c;transition:background .2s,color .2s}
+.pay:hover{background:#31343d;color:#fff}
+.pay:focus-visible{outline:3px solid #fff;outline-offset:-3px}
+#paydlg{border:0;padding:0;background:transparent;color:#fff;width:min(420px,calc(100vw - 24px));margin:auto}
+#paydlg::backdrop{background:rgba(6,7,12,.8);backdrop-filter:blur(6px)}
+#paydlg[open]{animation:dlgin .3s cubic-bezier(.2,.9,.3,1.1)}
+.payform{display:grid;gap:10px;padding:22px;border-radius:20px;background:#1c1f26;border:1px solid rgba(255,255,255,.12);box-shadow:0 24px 70px rgba(0,0,0,.6)}
+.payform h3{font-size:1.15rem}
+.payform label{color:#b9bdc9;font-weight:700;font-size:.85rem}
+.payform input{min-height:50px;padding:0 16px;border-radius:12px;border:1px solid rgba(255,255,255,.2);background:#2c2f38;font-size:1.4rem;font-weight:800;outline:0}
+.payform input:focus{border-color:#ffc531;box-shadow:0 0 0 3px rgba(255,197,49,.25)}
+.perr{color:#ff8a93;min-height:1.2em;font-size:.85rem}
+.payb{display:flex;flex-wrap:wrap;gap:8px}
+.payb button{min-height:46px;padding:0 18px;border-radius:99px;background:#2c2f38;font-weight:800}
+.payb button:hover{background:#383c48}
+.payb .pri{background:linear-gradient(135deg,#ffd96a,#e1a000);color:#241a00}
+.payb .pri:hover{filter:brightness(1.1)}
+.payb .ghost{background:transparent;color:#b9bdc9}
 .price small{font-size:.7rem;font-weight:700;opacity:.75}
 .price b{font-size:1.45rem;line-height:1.1}
 .panel{position:relative;overflow:hidden;border-radius:16px;padding:18px 20px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);animation:rise .5s backwards}
