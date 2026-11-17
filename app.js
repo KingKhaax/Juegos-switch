@@ -281,6 +281,12 @@ const BADGE={
 "Switch 2 Edition":"Versión mejorada pensada para Switch 2. Suele ser una compra aparte (o una ampliación si ya tienes el juego) y trae mejoras técnicas y de contenido."
 };
 
+const NOTE={
+s2e:["Switch 2 Edition","Versión mejorada pensada para Switch 2, con mejoras técnicas (más resolución, más fps o menos tiempo de carga) y a veces de contenido. Suele ser una compra aparte, o una ampliación si ya tienes el juego de Switch 1."],
+upd:["Actualización gratuita","La desarrolladora ofrece un parche gratuito que mejora el juego en Switch 2, sin coste con tu copia de Switch 1."],
+s2:["Solo Switch 2","Juego hecho solo para Switch 2: no funciona en la Switch original."]
+};
+
 function playVideo(btn){
 const w=document.createElement("div");
 w.className="vwrap";
@@ -299,6 +305,9 @@ const maxH=Math.max(1,...hrs.map(([k])=>num(d.hours[k])||0));
 const pct=i.mb?Math.min(100,i.mb/1024/128*100):0;
 const col=(t,ic,pairs)=>`<div class="dev"><div class="dt">${ic}<span>${t}</span></div>${pairs.map(([a,b])=>`<div class="pr"><small>${a}</small><b>${svg.ok}${b}</b></div>`).join("")}</div>`;
 const perf=d.perf?`<section class="panel perf"><h3>Rendimiento en Nintendo Switch 2</h3>${d.perf.badge?`<div class="pbrow"><span class="pbadge">${d.perf.badge}</span>${BADGE[d.perf.badge]?`<p class="pbtxt">${BADGE[d.perf.badge]}</p>`:""}</div>`:""}<div class="devs">${col("En el televisor",svg.tv,d.perf.docked)}${col("En portátil",svg.hh,d.perf.handheld)}</div></section>`:"";
+const NT=NOTE[g.k];
+const edLine=i.eds.length>1?`<span class="cied">En este juego: ${i.eds.map(x=>`${x.name} ${x.sizeMB?gb(x.sizeMB):"—"}${x.price?" · "+x.price.replace("€"," €"):""}`).join(" · ")}.</span>`:"";
+const cinfo=NT&&!(d.perf&&d.perf.badge===NT[0])?`<div class="cinfo"><span class="pbadge">${NT[0]}</span><p class="pbtxt">${NT[1]} ${edLine}</p></div>`:"";
 const players=[["Jugadores locales",d.local,svg.user],["Jugadores online",d.online,svg.globe]].filter(x=>x[1]).map(([l,v,ic])=>`<div class="pl">${ic}<div><small>${l}</small><b>${v}</b></div></div>`).join("");
 return `<div class="sheet">
 <form method="dialog"><button class="x" aria-label="Cerrar la ficha">×</button></form>
@@ -309,6 +318,7 @@ return `<div class="sheet">
 ${i.meta?`<div class="ring ${metaCls(i.meta)}" style="--v:${i.meta}" title="Metascore"><span data-to="${i.meta}" data-dec="0">${i.meta}</span></div>`:""}</div>
 <div class="body">
 <div class="chipline"><span class="chip k">${L[g.k]}</span>${g.m.map(m=>`<span class="chip">${FT[m]}</span>`).join("")}</div>
+${cinfo}
 <div class="actions"><button class="own big" type="button" data-slug="${g.slug}" aria-pressed="${owned}"><span class="tick">${svg.card}${svg.ok.replace("<svg ",'<svg class="ic-ok" ')}</span><span class="otxt">${owned?"Lo tengo · quitar":"Ya lo tengo"}</span></button>${i.cost!=null&&i.playable?(owned?`<button class="price paidtag" type="button" data-pay="1"><small>${paid[g.slug]!=null?"Pagado":"PVPR"}</small><b>${eur(i.cost)}</b>${paid[g.slug]!=null&&i.price!=null&&i.price!==i.cost?`<s>PVPR ${eur(i.price)}</s>`:""}<em>cambiar precio</em></button>`:`<div class="price"><small>PVPR ${e.name||""}</small><b>${eur(i.price)}</b></div>`):""}</div>
 ${d.summary?`<section class="panel desc"><h3>Resumen</h3><p>${d.summary}</p></section>`:""}
 <div class="grid2">
