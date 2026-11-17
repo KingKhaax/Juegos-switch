@@ -638,7 +638,6 @@ const b=$("#reorder");
 b.disabled=!ok&&!reorder;
 b.title=ok?"":"Quita los filtros, la búsqueda y el orden alternativo para poder reordenar";
 if(reorder&&!ok)setReorder(false);
-$("#resetorder").hidden=!order.length;
 }
 function wantSlugs(){return[...document.querySelectorAll("#want .card")].map(c=>c.dataset.slug)}
 function commitWantOrder(want){
@@ -740,13 +739,6 @@ render(false);
 addEventListener("pointerup",()=>endDrag(true));
 addEventListener("pointercancel",()=>endDrag(false));
 $("#reorder").addEventListener("click",()=>setReorder(!reorder));
-$("#resetorder").addEventListener("click",()=>{
-order=[];
-store.del(OKEY);
-buildGames();
-render(false);
-document.dispatchEvent(new CustomEvent("juegos:orden"));
-});
 
 const FCAT={
 mode:{t:"Modo de juego",d:"Tienen que cumplirse todos los modos que marques.",opts:()=>Object.keys(FT).map(k=>[k,FT[k]]),n:v=>GAMES.filter(g=>g.m.includes(v)).length},
