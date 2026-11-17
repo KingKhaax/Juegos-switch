@@ -17,7 +17,7 @@ const bySlug=Object.fromEntries(GAMES.map(g=>[g.slug,g]));
 const $=s=>document.querySelector(s);
 const SAGAS=[["pokemon","Pokémon"],["zelda","Zelda"],["mario","Mario"],["dk","Donkey Kong"],["smash","Super Smash Bros."],["ac","Animal Crossing"]];
 const GENRES=[...new Set(window.GAMES.flatMap(g=>((window.DETAILS||{})[g.slug]||{}).genres||[]))].sort((a,b)=>a.localeCompare(b,"es"));
-const fsets={mode:new Set(),saga:new Set(),genre:new Set()};
+const fsets={mode:new Set(),saga:new Set(),genre:new Set(),status:new Set()};
 const active=fsets.mode;
 let q="";
 let sort="mine";
@@ -31,6 +31,12 @@ const PKEY="juegos-switch-pagado";
 let paid=(()=>{try{const v=JSON.parse(store.get(PKEY,"{}"));return v&&typeof v==="object"&&!Array.isArray(v)?v:{}}catch(e){return{}}})();
 const savePaid=()=>store.set(PKEY,JSON.stringify(paid));
 const isOwn=s=>own.includes(s);
+const STKEY="juegos-switch-estado";
+const STATES=[["todo","Pendiente"],["playing","Jugando"],["done","Terminado"],["dropped","Abandonado"]];
+let status=(()=>{try{const v=JSON.parse(store.get(STKEY,"{}"));return v&&typeof v==="object"&&!Array.isArray(v)?v:{}}catch(e){return{}}})();
+const saveSt=()=>store.set(STKEY,JSON.stringify(status));
+const stOf=slug=>isOwn(slug)?(status[slug]||"todo"):"";
+const stLabel=k=>(STATES.find(x=>x[0]===k)||STATES[0])[1];
 let cons=store.get(CKEY,"2")==="1"?"1":"2";
 let internal=parseInt(store.get(IKEY,""),10)||0;
 let sdcard=parseInt(store.get(SKEY,"0"),10)||0;
@@ -83,7 +89,7 @@ const a=totals(want),b=totals(have);
 const all=(a.mb+b.mb)/1024;
 const ig=internalGB()*IFACT;
 const need=all<=ig?0:sdFor(all-ig);
-$("#resumen").innerHTML=`<div class="tile"><small>Los que quiero</small><b>${want.length} juegos</b><span>${gb(a.mb)}</span><span>${eur(a.price)} por comprar</span></div><div class="tile"><small>Los que ya tengo</small><b>${have.length} juegos</b><span>${gb(b.mb)}</span><span>${eur(b.price)} gastados</span></div><div class="tile sd"><small>Tarjeta SD que necesito</small><b>${need?sdLabel(need):"Ninguna"}</b><span>Con todo: ${nf(all,1)} GB</span><span>Memoria interna: ${internalGB()} GB</span></div>`;
+$("#resumen").innerHTML=`<div class="tile"><small>Los que quiero</small><b>${want.length} juegos</b><span>${gb(a.mb)}</span><span>${eur(a.price)} por comprar</span></div><div class="tile"><small>Los que ya tengo</small><b>${have.length} juegos</b><span>${gb(b.mb)}</span><span>${eur(b.price)} gastados</span>${have.length?`<span class="stc">${STATES.map(([k,l])=>`${l} ${have.filter(g=>stOf(g.slug)===k).length}`).join(" · ")}</span>`:""}</div><div class="tile sd"><small>Tarjeta SD que necesito</small><b>${need?sdLabel(need):"Ninguna"}</b><span>Con todo: ${nf(all,1)} GB</span><span>Memoria interna: ${internalGB()} GB</span></div>`;
 renderStorage(a,b,all,ig,need);
 }
 
@@ -130,7 +136,7 @@ const i=info(g);
 const meta=i.meta?`<span class="meta ${metaCls(i.meta)}" title="Metascore ${i.meta}">${i.meta}</span>`:"";
 const pr=i.cost!=null?(owned&&i.price!=null&&i.cost!==i.price?`<s>${eur(i.price)}</s> ${eur(i.cost)}`:eur(i.cost)):"";
 const facts=i.playable?`<span class="facts"><b>${i.mb?gb(i.mb):"—"}</b>${pr?` · ${pr}`:""}${sort.startsWith("hours")&&i.hours?` · ${nf(i.hours,1)} h`:""}</span>`:`<span class="facts bad">Solo Switch 2</span>`;
-return `<article class="card${owned?" owned":""}" data-slug="${g.slug}" data-k="${g.k}" data-tags="${g.m.join(" ")}" data-name="${norm(g.title)}" data-saga="${g.s}" data-genres="${(i.d.genres||[]).join("|")}"><button class="open" type="button" aria-label="Ver la ficha de ${g.title}"><span class="media"><img class="cover" src="img/t/${g.slug}.jpg" width="240" height="240" decoding="async" loading="${!owned&&n<=6?"eager":"lazy"}" alt=""><span class="num">${owned?"✓":n}</span>${meta}${cornerOf(g.k)}</span><span class="info"><span class="name">${g.title}</span>${facts}<span class="modes">${g.m.map(m=>`<i>${T[m]}</i>`).join("")}</span></span></button>${owned?`<button class="pay" type="button">Cambiar precio</button>`:""}<button class="own" type="button" aria-pressed="${owned}">${owned?"Quitar de «ya lo tengo»":"Ya lo tengo"}</button></article>`;
+return `<article class="card${owned?" owned":""}" data-slug="${g.slug}" data-k="${g.k}" data-tags="${g.m.join(" ")}" data-name="${norm(g.title)}" data-saga="${g.s}" data-genres="${(i.d.genres||[]).join("|")}" data-status="${owned?stOf(g.slug):""}"><button class="open" type="button" aria-label="Ver la ficha de ${g.title}"><span class="media"><img class="cover" src="img/t/${g.slug}.jpg" width="240" height="240" decoding="async" loading="${!owned&&n<=6?"eager":"lazy"}" alt=""><span class="num">${owned?"✓":n}</span>${meta}${cornerOf(g.k)}</span><span class="info"><span class="name">${g.title}</span>${facts}<span class="modes">${g.m.map(m=>`<i>${T[m]}</i>`).join("")}</span></span></button>${owned?`<button class="st s-${stOf(g.slug)}" type="button" aria-label="Cambiar el estado de ${g.title}">${stLabel(stOf(g.slug))}</button><button class="pay" type="button">Cambiar precio</button>`:""}<button class="own" type="button" aria-pressed="${owned}">${owned?"Quitar de «ya lo tengo»":"Ya lo tengo"}</button></article>`;
 }
 
 function tone(img){
@@ -159,6 +165,7 @@ const t=c.dataset.tags.split(" ");
 c.hidden=![...fsets.mode].every(f=>t.includes(f))
 ||(fsets.saga.size>0&&!fsets.saga.has(c.dataset.saga))
 ||(fsets.genre.size>0&&!c.dataset.genres.split("|").some(x=>fsets.genre.has(x)))
+||(fsets.status.size>0&&!fsets.status.has(c.dataset.status))
 ||(nq&&!c.dataset.name.includes(nq));
 });
 let n=0;
@@ -246,6 +253,8 @@ function toggleOwn(slug){
 if(isOwn(slug)){
 own.splice(own.indexOf(slug),1);
 delete paid[slug];
+delete status[slug];
+saveSt();
 commitOwn(slug,false);
 return;
 }
@@ -264,6 +273,17 @@ savePaid();
 render(false);
 refreshDialog();
 });
+}
+
+function setStatus(slug,v){
+if(v==="todo")delete status[slug];else status[slug]=v;
+saveSt();
+render(false);
+refreshDialog();
+}
+function cycleStatus(slug){
+const ks=STATES.map(x=>x[0]);
+setStatus(slug,ks[(ks.indexOf(stOf(slug))+1)%ks.length]);
 }
 
 const svg={
@@ -305,6 +325,10 @@ const maxH=Math.max(1,...hrs.map(([k])=>num(d.hours[k])||0));
 const pct=i.mb?Math.min(100,i.mb/1024/128*100):0;
 const col=(t,ic,pairs)=>`<div class="dev"><div class="dt">${ic}<span>${t}</span></div>${pairs.map(([a,b])=>`<div class="pr"><small>${a}</small><b>${svg.ok}${b}</b></div>`).join("")}</div>`;
 const perf=d.perf?`<section class="panel perf"><h3>Rendimiento en Nintendo Switch 2</h3>${d.perf.badge?`<div class="pbrow"><span class="pbadge">${d.perf.badge}</span>${BADGE[d.perf.badge]?`<p class="pbtxt">${BADGE[d.perf.badge]}</p>`:""}</div>`:""}<div class="devs">${col("En el televisor",svg.tv,d.perf.docked)}${col("En portátil",svg.hh,d.perf.handheld)}</div></section>`:"";
+const q=encodeURIComponent(g.title);
+const links=`<a class="lnk" href="https://www.nintendo.com/es-es/Search/Search-299117.html?q=${q}" target="_blank" rel="noopener noreferrer">Ver en la eShop</a><a class="lnk" href="https://www.dekudeals.com/search?q=${q}" target="_blank" rel="noopener noreferrer">Comparar precios</a>`;
+const cs=stOf(g.slug);
+const stbar=`<div class="stbar" role="group" aria-label="Estado de juego">${STATES.map(([k,l])=>`<button type="button" class="stb s-${k}" data-setst="${k}" aria-pressed="${cs===k}">${l}</button>`).join("")}</div>`;
 const NT=NOTE[g.k];
 const edLine=i.eds.length>1?`<span class="cied">En este juego: ${i.eds.map(x=>`${x.name} ${x.sizeMB?gb(x.sizeMB):"—"}${x.price?" · "+x.price.replace("€"," €"):""}`).join(" · ")}.</span>`:"";
 const cinfo=NT&&!(d.perf&&d.perf.badge===NT[0])?`<div class="cinfo"><span class="pbadge">${NT[0]}</span><p class="pbtxt">${NT[1]} ${edLine}</p></div>`:"";
@@ -319,7 +343,7 @@ ${i.meta?`<div class="ring ${metaCls(i.meta)}" style="--v:${i.meta}" title="Meta
 <div class="body">
 <div class="chipline"><span class="chip k">${L[g.k]}</span>${g.m.map(m=>`<span class="chip">${FT[m]}</span>`).join("")}</div>
 ${cinfo}
-<div class="actions"><button class="own big" type="button" data-slug="${g.slug}" aria-pressed="${owned}"><span class="tick">${svg.card}${svg.ok.replace("<svg ",'<svg class="ic-ok" ')}</span><span class="otxt">${owned?"Lo tengo · quitar":"Ya lo tengo"}</span></button>${i.cost!=null&&i.playable?(owned?`<button class="price paidtag" type="button" data-pay="1"><small>${paid[g.slug]!=null?"Pagado":"PVPR"}</small><b>${eur(i.cost)}</b>${paid[g.slug]!=null&&i.price!=null&&i.price!==i.cost?`<s>PVPR ${eur(i.price)}</s>`:""}<em>cambiar precio</em></button>`:`<div class="price"><small>PVPR ${e.name||""}</small><b>${eur(i.price)}</b></div>`):""}</div>
+<div class="actions"><button class="own big" type="button" data-slug="${g.slug}" aria-pressed="${owned}"><span class="tick">${svg.card}${svg.ok.replace("<svg ",'<svg class="ic-ok" ')}</span><span class="otxt">${owned?"Lo tengo · quitar":"Ya lo tengo"}</span></button>${i.cost!=null&&i.playable?(owned?`<button class="price paidtag" type="button" data-pay="1"><small>${paid[g.slug]!=null?"Pagado":"PVPR"}</small><b>${eur(i.cost)}</b>${paid[g.slug]!=null&&i.price!=null&&i.price!==i.cost?`<s>PVPR ${eur(i.price)}</s>`:""}<em>cambiar precio</em></button>`:`<div class="price"><small>PVPR ${e.name||""}</small><b>${eur(i.price)}</b></div>`):""}${links}</div>${owned?stbar:""}
 ${d.summary?`<section class="panel desc"><h3>Resumen</h3><p>${d.summary}</p></section>`:""}
 <div class="grid2">
 <section class="panel size"><h3>Tamaño en Switch ${cons==="1"?"1":"2"}</h3>${i.playable?`<b class="big" data-to="${i.mb/1024}" data-dec="1" data-suf=" GB">${i.mb?gb(i.mb):"—"}</b><div class="sdbar" title="Porcentaje de una tarjeta de 128 GB"><i style="--w:${pct.toFixed(1)}%"></i></div><small class="note">Ocupa el ${nf(pct,1)} % de una tarjeta de 128 GB${e.name?` · edición ${e.name}`:""}</small>`:`<p class="warn">Este juego solo funciona en Switch 2.</p>`}
@@ -386,6 +410,8 @@ if(e.target===dlg){dlg.close();return}
 const b=e.target.closest(".own.big");
 if(b){toggleOwn(b.dataset.slug);return}
 if(e.target.closest("[data-pay]")){editPrice(dlg.dataset.slug);return}
+const sb=e.target.closest("[data-setst]");
+if(sb){setStatus(dlg.dataset.slug,sb.dataset.setst);return}
 const vb=e.target.closest("[data-video]");
 if(vb){playVideo(vb);return}
 if(e.target.closest(".prev"))step(-1);
@@ -426,6 +452,7 @@ document.addEventListener("click",e=>{
 const c=e.target.closest(".card");
 if(!c||!c.closest("main"))return;
 if(e.target.closest(".own"))toggleOwn(c.dataset.slug);
+else if(e.target.closest(".st"))cycleStatus(c.dataset.slug);
 else if(e.target.closest(".pay"))editPrice(c.dataset.slug);
 else if(e.target.closest(".open"))openDlg(c.dataset.slug);
 });
@@ -433,7 +460,8 @@ else if(e.target.closest(".open"))openDlg(c.dataset.slug);
 const FCAT={
 mode:{t:"Modo de juego",d:"Tienen que cumplirse todos los modos que marques.",opts:()=>Object.keys(FT).map(k=>[k,FT[k]]),n:v=>GAMES.filter(g=>g.m.includes(v)).length},
 saga:{t:"Saga",d:"Basta con que el juego sea de una de las sagas que marques.",opts:()=>SAGAS,n:v=>GAMES.filter(g=>g.s===v).length},
-genre:{t:"Género",d:"Basta con que el juego tenga uno de los géneros que marques.",opts:()=>GENRES.map(x=>[x,x]),n:v=>GAMES.filter(g=>((D[g.slug]||{}).genres||[]).includes(v)).length}
+genre:{t:"Género",d:"Basta con que el juego tenga uno de los géneros que marques.",opts:()=>GENRES.map(x=>[x,x]),n:v=>GAMES.filter(g=>((D[g.slug]||{}).genres||[]).includes(v)).length},
+status:{t:"Estado",d:"Solo se aplica a los juegos que ya tengo; los que todavía quiero no tienen estado.",opts:()=>STATES,n:v=>own.filter(x=>stOf(x)===v).length}
 };
 const fd=$("#fdlg");
 const labelOf=(cat,v)=>{const o=FCAT[cat].opts().find(x=>x[0]===v);return o?o[1]:v};
@@ -527,7 +555,7 @@ prog.style.transform=`scaleX(${m>0?scrollY/m:0})`;
 },{passive:true});
 const syncLock=()=>document.documentElement.classList.toggle("lock",!!document.querySelector("dialog[open]"));
 document.querySelectorAll("dialog").forEach(d=>new MutationObserver(syncLock).observe(d,{attributes:true,attributeFilter:["open"]}));
-const fromHash=()=>{const s=location.hash.slice(1);if(bySlug[s])openDlg(s);else if(/^filtros-(mode|saga|genre)$/.test(s))openF(s.slice(8))};
+const fromHash=()=>{const s=location.hash.slice(1);if(bySlug[s])openDlg(s);else if(/^filtros-(mode|saga|genre|status)$/.test(s))openF(s.slice(8))};
 addEventListener("hashchange",fromHash);
 fromHash();
 })();

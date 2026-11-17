@@ -217,6 +217,22 @@ button.price{text-align:left;cursor:pointer}
 .price s{font-size:.78rem;opacity:.7}
 .price em{font-style:normal;font-size:.7rem;font-weight:800;text-decoration:underline}
 .facts s{opacity:.55;color:#b9bdc9}
+.st{margin:0 12px 6px;min-height:36px;border-radius:8px;font-size:.78rem;font-weight:800;color:#fff;background:#2c2f38;border-left:6px solid var(--sc,#8b90a0);transition:background .2s}
+.st:hover{background:#383c48}
+.st:focus-visible{outline:3px solid #fff;outline-offset:-3px}
+.s-todo{--sc:#8b90a0}
+.s-playing{--sc:#4d8dff}
+.s-done{--sc:#3ddc84}
+.s-dropped{--sc:#ff5a6a}
+.stc{font-size:.76rem;color:#aab0c0}
+.stbar{display:flex;flex-wrap:wrap;gap:8px}
+.stb{min-height:44px;padding:0 18px;border-radius:99px;background:#262a33;font-weight:800;border:2px solid transparent;transition:background .2s,transform .2s}
+.stb:hover{transform:translateY(-2px);background:#30343f}
+.stb[aria-pressed=true]{background:color-mix(in srgb,var(--sc) 28%,#15171d);border-color:var(--sc);color:#fff}
+.lnk{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:99px;background:#262a33;font-weight:800;font-size:.9rem;text-decoration:none;color:#e3e5ee;border:1px solid rgba(255,255,255,.14);transition:background .2s,transform .2s}
+.lnk::after{content:"↗";margin-left:8px;opacity:.7}
+.lnk:hover{background:#343845;transform:translateY(-2px)}
+.lnk:focus-visible{outline:3px solid #fff;outline-offset:2px}
 .pay{margin:0 12px 6px;min-height:36px;border-radius:8px;font-size:.74rem;font-weight:700;color:#b9bdc9;background:#23252c;transition:background .2s,color .2s}
 .pay:hover{background:#31343d;color:#fff}
 .pay:focus-visible{outline:3px solid #fff;outline-offset:-3px}

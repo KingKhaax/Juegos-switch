@@ -41,7 +41,7 @@ Reglas que Rafael ha pedido y que valen siempre:
 - Cada tarjeta muestra tamaño y precio (PVPR de la edición elegida) y el Metascore.
 - **Mi almacenamiento:** memoria interna (32 GB Switch/Lite, 64 GB OLED, 256 GB Switch 2; por defecto según la consola elegida, `juegos-switch-interna`) y tarjeta SD (ninguna, 32, 64, 128, 256, 400, 512, 1 TB o 2 TB; `juegos-switch-sd`). Barra de 8 bits (elegida entre 16 estilos): 20 bloques con borde de píxel, azules lo que tengo, rojos lo que quiero y apagados lo libre, que se encienden uno a uno; el borde parpadea en rojo si no cabe todo. Debajo, leyenda y aviso de cuánto sobra o falta. Es una estimación: la interna cuenta al 85 % (la consola reserva espacio) y la SD al 93 % (los GB de la caja son decimales). La tarjeta que se recomienda arriba es la menor de 32/64/128/256/400/512/1024/2048 GB que cubre todo descontando la memoria interna ("Ninguna" si todo cabe en ella).
 - **Precio pagado:** al marcar «Ya lo tengo» se pregunta cuánto se pagó (por defecto el PVPR, o «Usar el PVPR»). El precio pagado sustituye al PVPR en esa tarjeta (con el PVPR tachado), en la ficha y en el total «gastados». Se puede cambiar con «Cambiar precio» (en la tarjeta y en la ficha). Se guarda en `localStorage`, clave `juegos-switch-pagado`; al quitar el juego de «ya lo tengo» se borra.
-- **Filtros en tres ventanas** (botones Modo de juego, Saga y Género; cada botón abre su ventana, muestra cuántos juegos hay por opción y un botón «Ver N juegos»). Los filtros activos salen como etiquetas que se quitan con un clic, y hay «Quitar filtros». Entre categorías se combinan con Y. Dentro de **Modo de juego** deben cumplirse todos los marcados (Singleplayer, Cooperativo local, Cooperativo online, Multijugador local, Multijugador online); dentro de **Saga** y **Género** basta con uno. Sagas (campo `s` de `games.js`): pokemon (7), zelda (2), mario (11, incluye Kart, Party, Rabbids, Maker, Galaxy, Strikers, Mario & Luigi), dk, smash, ac. Géneros: los de `details.js` (Acción, Aventura, Carreras, Deportes, Estrategia, Lucha, Plataformas, RPG, Simulación, Tablero; no hay de disparos). Al añadir un juego hay que poner su `s` en `games.js`.
+- **Filtros en tres ventanas** (botones Modo de juego, Saga y Género; cada botón abre su ventana, muestra cuántos juegos hay por opción y un botón «Ver N juegos»). Los filtros activos salen como etiquetas que se quitan con un clic, y hay «Quitar filtros». Entre categorías se combinan con Y. Dentro de **Modo de juego** deben cumplirse todos los marcados (Singleplayer, Cooperativo local, Cooperativo online, Multijugador local, Multijugador online); dentro de **Saga** y **Género** basta con uno. Sagas (campo `s` de `games.js`): pokemon (7), zelda (2), mario (12, incluye Kart, Party, Rabbids, Maker, Galaxy, Strikers, Mario & Luigi), dk, smash, ac. Géneros: los de `details.js` (Acción, Aventura, Carreras, Deportes, Estrategia, Lucha, Plataformas, RPG, Simulación, Tablero; no hay de disparos). Al añadir un juego hay que poner su `s` en `games.js`.
 - El color de la franja superior del cartucho sale de la carátula (canvas; si el navegador no deja leer la imagen se usa el rojo por defecto). Metascore con los colores de nswitchex.com: verde por encima de 74, amarillo de 50 a 74, rojo por debajo.
 - El icono de la pestaña (`favicon.ico`) es el de nswitchex.com. El logo de cabecera es el de Nintendo Switch en negro sobre transparente (`img/switch-logo.png`, de Wikimedia Commons: "Nintendo Switch Logo.svg"), mostrado en blanco con `filter:invert(1)` y brillo rojo. Sin el 2 y sin el cuadrado rojo.
 - Fondo animado con la estética Switch (`bg.js`, canvas): luces roja y azul de los Joy-Con, botones A/B/X/Y, signos +/−, círculos y mandos flotando con parallax según el ratón, y un foco de luz que sigue al cursor (un `div` `.spot` movido con `transform`). Con `prefers-reduced-motion` el fondo queda quieto.
@@ -68,6 +68,26 @@ Datos tomados de la ficha de nswitchex.com de cada juego (`https://nswitchex.com
 - **Vídeo de presentación** (panel al final): es el vídeo de YouTube que trae cada ficha de nswitchex.com (el identificador está en `details.js`, campo `video`). Carga bajo demanda: se ve la miniatura (`i.ytimg.com`, `maxresdefault` y si no existe `hqdefault`) con un botón de reproducir, y solo al pulsar se crea el `iframe` de `youtube-nocookie.com` con reproducción automática.
 - Etiquetas de modo de juego (apuntadas a mano) y la etiqueta de compatibilidad con Switch 2.
 
+### Estado de cada juego
+
+Solo para los juegos que ya tengo (el apartado «Los que ya tengo»). Estados: **Pendiente** (por defecto al marcar «Ya lo tengo»), **Jugando**, **Terminado** y **Abandonado**, cada uno con su color (gris, azul, verde y rojo). Se cambia pulsando el botón de estado de la tarjeta (va rotando entre los cuatro) o con los cuatro botones de la ficha. Se guarda en `localStorage`, clave `juegos-switch-estado`, y se borra al quitar el juego de «ya lo tengo». El resumen de «Los que ya tengo» muestra cuántos hay de cada estado. Hay una cuarta ventana de filtros, **Estado**, que solo se aplica a los que ya tengo (los que todavía quiero no tienen estado y desaparecen si se filtra por uno); se abre con `#filtros-status`.
+
+### Enlaces para comprobar precios
+
+En la ficha hay dos botones que abren en pestaña nueva: **Ver en la eShop** (búsqueda por título en la web oficial de Nintendo España, `https://www.nintendo.com/es-es/Search/Search-299117.html?q=<título>`; esa página carga los resultados con JavaScript y no se pudo comprobar desde una herramienta, hay que probarla en el navegador) y **Comparar precios** (búsqueda en Deku Deals, `https://www.dekudeals.com/search?q=<título>`). El precio que sale en la web es el **PVPR** de nswitchex.com, no el precio actual.
+
+### Verificación de los modos de juego (17/11/2026)
+
+Los modos de `games.js` se apuntaron de memoria. La web de origen solo da cuántos jugadores caben a la vez en la misma consola («Jugadores locales») y online, así que no vale para todo. Se contrastaron con búsquedas los dudosos:
+
+- **Mario + Rabbids Sparks of Hope: no tiene cooperativo** (Ubisoft lo descartó). Cambiado de SP, CL a solo SP. Una fuente menciona un modo versus local añadido más tarde; no se pudo confirmar y no se ha puesto.
+- Mario + Rabbids Kingdom Battle: un jugador y cooperativo local para dos (SP, CL).
+- Super Mario Bros. Wonder: local hasta 4 y online hasta 4 con Nintendo Switch Online; correcto (SP, CL, CO, MO). La web de origen no da dato online.
+- Super Mario Maker 2: local hasta 4, cooperativo y competitivo con amigos online; correcto.
+- Mario Strikers: Battle League Football: cooperativo local y online (hasta 4) y 1-8 en la misma consola; correcto.
+- Pokémon Escarlata y Espada: el cooperativo es el Círculo Unión / incursiones, local inalámbrico u online hasta 4 (cada jugador con su consola); correcto aunque la web de origen ponga 1 jugador local.
+- Pendiente de comprobar el resto contra la ficha oficial de Nintendo si se quiere más seguridad.
+
 ## Compatibilidad con Switch 2
 
 Clasificación tomada de nswitchex.com (campo `k` en `games.js`):
@@ -90,26 +110,27 @@ Modos: SP singleplayer, CL cooperativo local, CO cooperativo online, ML multijug
 | 1 | Pokémon Leyendas Z-A | `leyendas-pokemon-z-a` | s2e | pokemon | SP, MO |
 | 2 | Donkey Kong Bananza | `donkey-kong-bananza` | s2 | dk | SP, CL |
 | 3 | Super Mario Bros. Wonder | `super-mario-bros-wonder` | s2e | mario | SP, CL, CO, MO |
-| 4 | Mario + Rabbids Sparks of Hope | `mario-rabbids-sparks-of-hope` | s1 | mario | SP, CL |
-| 5 | Super Mario Party | `super-mario-party` | s1 | mario | CL, ML, MO |
-| 6 | Super Mario 3D World + Bowser Fury | `super-mario-3d-world-bowsers-fury` | upd | mario | SP, CL, CO, MO |
-| 7 | Super Smash Bros. Ultimate | `super-smash-bros-ultimate` | s1 | smash | SP, ML, MO |
-| 8 | Pokémon Diamante Brillante | `pokemon-diamante-brillante` | s1 | pokemon | SP, MO |
-| 9 | The Legend of Zelda: Breath of the Wild | `the-legend-of-zelda-breath-of-the-wild` | s2e | zelda | SP |
-| 10 | Pokémon Let's Go, Eevee! | `pokemon-lets-go-eevee` | s1 | pokemon | SP, CL, MO |
-| 11 | Mario & Luigi: Conexión Fraternal | `mario-luigi-conexion-fraternal` | s1 | mario | SP |
-| 12 | The Legend of Zelda: Tears of the Kingdom | `the-legend-of-zelda-tears-of-the-kingdom` | s2e | zelda | SP |
-| 13 | Mario Strikers: Battle League Football | `mario-strikers-battle-league-football` | s1 | mario | SP, CL, CO, ML, MO |
-| 14 | Mario Kart World | `mario-kart-world` | s2 | mario | SP, ML, MO |
-| 15 | Mario Kart 8 Deluxe | `mario-kart-8-deluxe` | s1 | mario | SP, ML, MO |
-| 16 | Pokémon Escarlata | `pokemon-escarlata` | s1 | pokemon | SP, CL, CO, MO |
-| 17 | Pokémon Leyendas: Arceus | `leyendas-pokemon-arceus` | s1 | pokemon | SP, MO |
-| 18 | Pokémon Espada | `pokemon-espada` | s1 | pokemon | SP, CL, CO, MO |
-| 19 | Super Mario Odyssey | `super-mario-odyssey` | upd | mario | SP, CL |
-| 20 | Super Mario Galaxy + Super Mario Galaxy 2 | `super-mario-galaxy-1-2` | s1 | mario | SP, CL |
-| 21 | Super Mario Maker 2 | `super-mario-maker-2` | s1 | mario | SP, CL, CO, ML, MO |
-| 22 | Pokkén Tournament DX | `pokken-tournament-dx` | s1 | pokemon | SP, ML, MO |
-| 23 | Animal Crossing: New Horizons | `animal-crossing-new-horizons` | s2e | ac | SP, CL, MO |
+| 4 | Mario + Rabbids Sparks of Hope | `mario-rabbids-sparks-of-hope` | s1 | mario | SP |
+| 5 | Mario + Rabbids Kingdom Battle | `mario-rabbids-kingdom-battle` | s1 | mario | SP, CL |
+| 6 | Super Mario Party | `super-mario-party` | s1 | mario | CL, ML, MO |
+| 7 | Super Mario 3D World + Bowser Fury | `super-mario-3d-world-bowsers-fury` | upd | mario | SP, CL, CO, MO |
+| 8 | Super Smash Bros. Ultimate | `super-smash-bros-ultimate` | s1 | smash | SP, ML, MO |
+| 9 | Pokémon Diamante Brillante | `pokemon-diamante-brillante` | s1 | pokemon | SP, MO |
+| 10 | The Legend of Zelda: Breath of the Wild | `the-legend-of-zelda-breath-of-the-wild` | s2e | zelda | SP |
+| 11 | Pokémon Let's Go, Eevee! | `pokemon-lets-go-eevee` | s1 | pokemon | SP, CL, MO |
+| 12 | Mario & Luigi: Conexión Fraternal | `mario-luigi-conexion-fraternal` | s1 | mario | SP |
+| 13 | The Legend of Zelda: Tears of the Kingdom | `the-legend-of-zelda-tears-of-the-kingdom` | s2e | zelda | SP |
+| 14 | Mario Strikers: Battle League Football | `mario-strikers-battle-league-football` | s1 | mario | SP, CL, CO, ML, MO |
+| 15 | Mario Kart World | `mario-kart-world` | s2 | mario | SP, ML, MO |
+| 16 | Mario Kart 8 Deluxe | `mario-kart-8-deluxe` | s1 | mario | SP, ML, MO |
+| 17 | Pokémon Escarlata | `pokemon-escarlata` | s1 | pokemon | SP, CL, CO, MO |
+| 18 | Pokémon Leyendas: Arceus | `leyendas-pokemon-arceus` | s1 | pokemon | SP, MO |
+| 19 | Pokémon Espada | `pokemon-espada` | s1 | pokemon | SP, CL, CO, MO |
+| 20 | Super Mario Odyssey | `super-mario-odyssey` | upd | mario | SP, CL |
+| 21 | Super Mario Galaxy + Super Mario Galaxy 2 | `super-mario-galaxy-1-2` | s1 | mario | SP, CL |
+| 22 | Super Mario Maker 2 | `super-mario-maker-2` | s1 | mario | SP, CL, CO, ML, MO |
+| 23 | Pokkén Tournament DX | `pokken-tournament-dx` | s1 | pokemon | SP, ML, MO |
+| 24 | Animal Crossing: New Horizons | `animal-crossing-new-horizons` | s2e | ac | SP, CL, MO |
 
 Notas sobre los modos (apuntados de memoria, sin verificar en fuentes): Super Mario Party solo tiene historia en solitario en modos concretos y su online es limitado; los Pokémon Leyendas Z-A, Diamante Brillante y Arceus no tienen cooperativo propiamente dicho; en Smash el "cooperativo" son combates por equipos; en Galaxy el segundo jugador solo ayuda.
 
@@ -119,6 +140,7 @@ Notas sobre los modos (apuntados de memoria, sin verificar en fuentes): Super Ma
 - **Los Pokémon van siempre por encima de los 3 últimos Mario** (Odyssey, Galaxy y Maker 2).
 - Pokkén Tournament DX se añadió el 17/11/2026 y se colocó justo antes de Animal Crossing para respetar la regla anterior.
 - Pokémon Leyendas Z-A es el 1 y Donkey Kong Bananza el 2 desde el 17/11/2026 (orden pedido a mano).
+- Mario + Rabbids Kingdom Battle se añadió el 17/11/2026 y se colocó justo después de Sparks of Hope (puesto 5), porque Rafael no dijo dónde; moverlo si lo pide.
 
 ## Estructura del proyecto
 
