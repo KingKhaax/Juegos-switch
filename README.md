@@ -49,7 +49,7 @@ El orden de la lista lo decide Rafael desde la propia web (botón **Reordenar**:
 - Cada tarjeta muestra tamaño y precio (PVPR de la edición elegida) y el Metascore.
 - **Mi almacenamiento:** memoria interna (32 GB Switch/Lite, 64 GB OLED, 256 GB Switch 2; por defecto según la consola elegida, `juegos-switch-interna`) y tarjeta SD (ninguna, 32, 64, 128, 256, 400, 512, 1 TB o 2 TB; `juegos-switch-sd`). Barra de 8 bits (elegida entre 16 estilos): 20 bloques con borde de píxel, azules lo que tengo, rojos lo que quiero y apagados lo libre, que se encienden uno a uno; el borde parpadea en rojo si no cabe todo. Debajo, leyenda y aviso de cuánto sobra o falta. Es una estimación: la interna cuenta al 85 % (la consola reserva espacio) y la SD al 93 % (los GB de la caja son decimales). La tarjeta que se recomienda arriba es la menor de 32/64/128/256/400/512/1024/2048 GB que cubre todo descontando la memoria interna ("Ninguna" si todo cabe en ella).
 - **Precio pagado:** al marcar «Ya lo tengo» se pregunta cuánto se pagó (por defecto el PVPR, o «Usar el PVPR»). El precio pagado sustituye al PVPR en esa tarjeta (con el PVPR tachado), en la ficha y en el total «gastados». Se puede cambiar con «Cambiar precio» (en la tarjeta y en la ficha). Se guarda en `localStorage`, clave `juegos-switch-pagado`; al quitar el juego de «ya lo tengo» se borra.
-- **Filtros en tres ventanas** (botones Modo de juego, Saga y Género; cada botón abre su ventana, muestra cuántos juegos hay por opción y un botón «Ver N juegos»). Los filtros activos salen como etiquetas que se quitan con un clic, y hay «Quitar filtros». Entre categorías se combinan con Y. Dentro de **Modo de juego** deben cumplirse todos los marcados (Singleplayer, Cooperativo local, Cooperativo online, Multijugador local, Multijugador online); dentro de **Saga** y **Género** basta con uno. Sagas (campo `s` de `games.js`): pokemon (7), zelda (2), mario (12, incluye Kart, Party, Rabbids, Maker, Galaxy, Strikers, Mario & Luigi), dk, smash, ac. Géneros: los de `details.js` (Acción, Aventura, Carreras, Deportes, Estrategia, Lucha, Plataformas, RPG, Simulación, Tablero; no hay de disparos). Al añadir un juego hay que poner su `s` en `games.js`.
+- **Filtros en tres ventanas** (botones Modo de juego, Saga y Género; cada botón abre su ventana, muestra cuántos juegos hay por opción y un botón «Ver N juegos»). Los filtros activos salen como etiquetas que se quitan con un clic, y hay «Quitar filtros». Entre categorías se combinan con Y. Dentro de **Modo de juego** deben cumplirse todos los marcados (Singleplayer, Cooperativo local, Cooperativo online, Multijugador local, Multijugador online); dentro de **Saga** y **Género** basta con uno. Sagas (campo `s` de `games.js`): pokemon (7), zelda (2), mario (12, incluye Kart, Party, Rabbids, Maker, Galaxy, Strikers, Mario & Luigi), dk, smash, ac, kirby (1). Géneros: los de `details.js` (Acción, Aventura, Carreras, Deportes, Estrategia, Lucha, Plataformas, RPG, Simulación, Tablero; no hay de disparos). Al añadir un juego hay que poner su `s` en `games.js`.
 - El color de la franja superior del cartucho sale de la carátula (canvas; si el navegador no deja leer la imagen se usa el rojo por defecto). Metascore con los colores de nswitchex.com: verde por encima de 74, amarillo de 50 a 74, rojo por debajo.
 - El icono de la pestaña (`favicon.ico`) es el de nswitchex.com. El logo de cabecera es el de Nintendo Switch en negro sobre transparente (`img/switch-logo.png`, de Wikimedia Commons: "Nintendo Switch Logo.svg"), mostrado en blanco con `filter:invert(1)` y brillo rojo. Sin el 2 y sin el cuadrado rojo.
 - Fondo animado con la estética Switch (`bg.js`, canvas): luces roja y azul de los Joy-Con, botones A/B/X/Y, signos +/−, círculos y mandos flotando con parallax según el ratón, y un foco de luz que sigue al cursor (un `div` `.spot` movido con `transform`). Con `prefers-reduced-motion` el fondo queda quieto.
@@ -122,7 +122,7 @@ Las esquinas de la carcasa son las de la web: "2" para solo Switch 2 y "2E" para
 
 ## Lista actual (orden de preferencia)
 
-Modos: SP singleplayer, CL cooperativo local, CO cooperativo online, ML multijugador local, MO multijugador online. Sagas: pokemon, zelda, mario, dk, smash, ac.
+Modos: SP singleplayer, CL cooperativo local, CO cooperativo online, ML multijugador local, MO multijugador online. Sagas: pokemon, zelda, mario, dk, smash, ac, kirby.
 
 | # | Juego | Slug | Consola | Saga | Modos |
 |---|---|---|---|---|---|
@@ -149,7 +149,8 @@ Modos: SP singleplayer, CL cooperativo local, CO cooperativo online, ML multijug
 | 21 | Super Mario Galaxy + Super Mario Galaxy 2 | `super-mario-galaxy-1-2` | s1 | mario | SP, CL |
 | 22 | Super Mario Maker 2 | `super-mario-maker-2` | s1 | mario | SP, CL, CO, ML, MO |
 | 23 | Pokkén Tournament DX | `pokken-tournament-dx` | s1 | pokemon | SP, ML, MO |
-| 24 | Animal Crossing: New Horizons | `animal-crossing-new-horizons` | s2e | ac | SP, CL, MO |
+| 24 | Kirby y la Tierra Olvidada | `kirby-y-la-tierra-olvidada` | s2e | kirby | SP, CL |
+| 25 | Animal Crossing: New Horizons | `animal-crossing-new-horizons` | s2e | ac | SP, CL, MO |
 
 Notas sobre los modos (apuntados de memoria, sin verificar en fuentes): Super Mario Party solo tiene historia en solitario en modos concretos y su online es limitado; los Pokémon Leyendas Z-A, Diamante Brillante y Arceus no tienen cooperativo propiamente dicho; en Smash el "cooperativo" son combates por equipos; en Galaxy el segundo jugador solo ayuda.
 
@@ -159,6 +160,7 @@ Notas sobre los modos (apuntados de memoria, sin verificar en fuentes): Super Ma
 - **Los Pokémon van siempre por encima de los 3 últimos Mario** (Odyssey, Galaxy y Maker 2).
 - Pokkén Tournament DX se añadió el 17/11/2026 y se colocó justo antes de Animal Crossing para respetar la regla anterior.
 - Pokémon Leyendas Z-A es el 1 y Donkey Kong Bananza el 2 desde el 17/11/2026 (orden pedido a mano).
+- Kirby y la Tierra Olvidada se añadió el 17/11/2026 justo antes de Animal Crossing (Switch 2 Edition, modos SP y CL, saga nueva «kirby»); moverlo con Reordenar si Rafael quiere.
 - Mario + Rabbids Kingdom Battle se añadió el 17/11/2026 y se colocó justo después de Sparks of Hope (puesto 5), porque Rafael no dijo dónde; moverlo si lo pide.
 
 ## Estructura del proyecto

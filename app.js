@@ -26,7 +26,7 @@ const BASE=window.GAMES;
 const UPC=window.UPCOMING||[];
 const D=Object.assign({},window.DETAILS||{},Object.fromEntries(UPC.filter(u=>u.detail).map(u=>[u.slug,u.detail])));
 const $=s=>document.querySelector(s);
-const SAGAS=[["pokemon","Pokémon"],["zelda","Zelda"],["mario","Mario"],["dk","Donkey Kong"],["smash","Super Smash Bros."],["ac","Animal Crossing"],["otros","Próximos lanzamientos"]];
+const SAGAS=[["pokemon","Pokémon"],["zelda","Zelda"],["mario","Mario"],["dk","Donkey Kong"],["smash","Super Smash Bros."],["ac","Animal Crossing"],["kirby","Kirby"],["otros","Próximos lanzamientos"]];
 let extra=jget(EKEY,[]).filter(s=>UPC.some(u=>u.slug===s));
 let order=jget(OKEY,[]);
 let GAMES=[];
@@ -661,46 +661,71 @@ if(b)b.focus();
 function dragPlace(){
 if(!drag)return;
 drag.ghost.style.transform=`translate(${drag.x-drag.dx}px,${drag.y-drag.dy}px) rotate(2deg) scale(1.04)`;
-const els=document.elementsFromPoint(drag.x,drag.y);
-const t=els.find(el=>el.classList&&el.classList.contains("card")&&!el.classList.contains("ghost")&&el!==drag.card&&el.parentNode===drag.card.parentNode);
+const par=drag.card.parentNode;
+const others=[...par.querySelectorAll(".card")].filter(c=>c!==drag.card&&!c.classList.contains("ghost"));
+let t=document.elementsFromPoint(drag.x,drag.y).find(el=>el.classList&&el.classList.contains("card")&&!el.classList.contains("ghost")&&el!==drag.card&&el.parentNode===par);
+if(!t){
+let best=Infinity;
+for(const c of others){
+const r=c.getBoundingClientRect();
+const dx=drag.x-(r.left+r.width/2),dy=drag.y-(r.top+r.height/2);
+const d=dx*dx+dy*dy;
+if(d<best){best=d;t=c}
+}
+}
 if(!t)return;
 const r=t.getBoundingClientRect();
-const before=drag.y<r.top+r.height/2&&drag.x<r.left+r.width*.7||drag.y<r.top;
-t.parentNode.insertBefore(drag.card,before?t:t.nextSibling);
+const sameRow=drag.y>=r.top-12&&drag.y<=r.bottom+12;
+const before=sameRow?drag.x<r.left+r.width/2:drag.y<r.top;
+const ref=before?t:t.nextSibling;
+if(ref===drag.card||ref===drag.card.nextSibling)return;
+par.insertBefore(drag.card,ref);
 renumber();
 }
 function dragLoop(){
 if(!drag)return;
 if(drag.y<90)scrollBy(0,-14);
 else if(drag.y>innerHeight-90)scrollBy(0,14);
-dragPlace();
+if(drag.moved)dragPlace();
 drag.raf=requestAnimationFrame(dragLoop);
 }
 document.addEventListener("pointerdown",e=>{
-const gr=e.target.closest&&e.target.closest("[data-grip]");
-if(!gr||!reorder)return;
-const card=gr.closest(".card");
-if(!card)return;
+if(!reorder)return;
+if(e.pointerType==="mouse"&&e.button!==0)return;
+if(e.target.closest&&e.target.closest("[data-mv]"))return;
+const card=e.target.closest&&e.target.closest("#want .card");
+if(!card||card.classList.contains("owned")||drag)return;
 e.preventDefault();
 const r=card.getBoundingClientRect();
 const ghost=card.cloneNode(true);
 ghost.classList.add("ghost");
 ghost.style.width=r.width+"px";
 ghost.style.height=r.height+"px";
+ghost.style.display="none";
 document.body.appendChild(ghost);
-card.classList.add("placeholder");
-drag={card,ghost,dx:e.clientX-r.left,dy:e.clientY-r.top,x:e.clientX,y:e.clientY,raf:0};
-dragPlace();
+drag={card,ghost,dx:e.clientX-r.left,dy:e.clientY-r.top,x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,moved:false,raf:0};
 drag.raf=requestAnimationFrame(dragLoop);
 });
-addEventListener("pointermove",e=>{if(drag){drag.x=e.clientX;drag.y=e.clientY}},{passive:true});
+addEventListener("pointermove",e=>{
+if(!drag)return;
+drag.x=e.clientX;drag.y=e.clientY;
+if(!drag.moved&&Math.hypot(drag.x-drag.sx,drag.y-drag.sy)>5){
+drag.moved=true;
+drag.ghost.style.display="";
+drag.card.classList.add("placeholder");
+document.body.classList.add("dragging");
+}
+},{passive:true});
 function endDrag(ok){
 if(!drag)return;
 cancelAnimationFrame(drag.raf);
 drag.ghost.remove();
 drag.card.classList.remove("placeholder");
+document.body.classList.remove("dragging");
+const moved=drag.moved;
 drag=null;
-if(ok){commitWantOrder(wantSlugs());}
+if(!moved)return;
+if(ok)commitWantOrder(wantSlugs());
 render(false);
 }
 addEventListener("pointerup",()=>endDrag(true));

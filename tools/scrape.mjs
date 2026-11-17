@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import { parseDetail, UA } from "./parse.mjs";
 const out = process.argv[2] || ".";
-const slugs = ["leyendas-pokemon-z-a","donkey-kong-bananza","super-mario-bros-wonder","mario-rabbids-sparks-of-hope","mario-rabbids-kingdom-battle","super-mario-party","super-mario-3d-world-bowsers-fury","super-smash-bros-ultimate","pokemon-diamante-brillante","the-legend-of-zelda-breath-of-the-wild","pokemon-lets-go-eevee","mario-luigi-conexion-fraternal","the-legend-of-zelda-tears-of-the-kingdom","mario-strikers-battle-league-football","mario-kart-world","mario-kart-8-deluxe","pokemon-escarlata","leyendas-pokemon-arceus","pokemon-espada","super-mario-odyssey","super-mario-galaxy-1-2","super-mario-maker-2","pokken-tournament-dx","animal-crossing-new-horizons"];
+const slugs = ["leyendas-pokemon-z-a","donkey-kong-bananza","super-mario-bros-wonder","mario-rabbids-sparks-of-hope","mario-rabbids-kingdom-battle","super-mario-party","super-mario-3d-world-bowsers-fury","super-smash-bros-ultimate","pokemon-diamante-brillante","the-legend-of-zelda-breath-of-the-wild","pokemon-lets-go-eevee","mario-luigi-conexion-fraternal","the-legend-of-zelda-tears-of-the-kingdom","mario-strikers-battle-league-football","mario-kart-world","mario-kart-8-deluxe","pokemon-escarlata","leyendas-pokemon-arceus","pokemon-espada","super-mario-odyssey","super-mario-galaxy-1-2","super-mario-maker-2","pokken-tournament-dx","kirby-y-la-tierra-olvidada","animal-crossing-new-horizons"];
 fs.mkdirSync(`${out}/img`, { recursive: true });
 const details = {};
 for (const slug of slugs) {

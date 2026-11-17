@@ -507,3 +507,11 @@ html.lite .card.pre{opacity:1;transform:none}
 .fmtrow .fmtb{display:flex;width:100%;justify-content:center;margin:0;padding:6px 14px;font-size:.84rem;letter-spacing:.02em}
 .card.owned .fmtrow .fmtb.digital{background:#00c3e3;color:#00222a;border-color:#8cf0ff}
 .card.owned .fmtrow .fmtb.fisico{background:#ffc531;color:#241a00;border-color:#fff1bf}
+
+body.reorder .card:not(.owned){cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none}
+body.reorder .card:hover{transform:none}
+body.dragging,body.dragging *{cursor:grabbing!important}
+.card.placeholder{opacity:1;background:rgba(0,195,227,.14);border-top-color:#00e5ff;animation:hole 1s ease-in-out infinite alternate}
+.card.placeholder>*{visibility:hidden}
+@keyframes hole{to{background:rgba(0,195,227,.26)}}
+.card.ghost{box-shadow:0 0 0 3px #00e5ff}

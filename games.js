@@ -22,5 +22,6 @@ window.GAMES=[
 {slug:"super-mario-galaxy-1-2",s:"mario",title:"Super Mario Galaxy + Super Mario Galaxy 2",k:"s1",m:["sp","cl"]},
 {slug:"super-mario-maker-2",s:"mario",title:"Super Mario Maker 2",k:"s1",m:["sp","cl","co","ml","mo"]},
 {slug:"pokken-tournament-dx",s:"pokemon",title:"Pokkén Tournament DX",k:"s1",m:["sp","ml","mo"]},
+{slug:"kirby-y-la-tierra-olvidada",s:"kirby",title:"Kirby y la Tierra Olvidada",k:"s2e",m:["sp","cl"]},
 {slug:"animal-crossing-new-horizons",s:"ac",title:"Animal Crossing: New Horizons",k:"s2e",m:["sp","cl","mo"]}
 ];
