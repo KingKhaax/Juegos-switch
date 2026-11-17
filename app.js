@@ -2,7 +2,7 @@
 const T={sp:"Singleplayer",cl:"Coop local",co:"Coop online",ml:"Multi local",mo:"Multi online"};
 const FT={sp:"Singleplayer",cl:"Cooperativo local",co:"Cooperativo online",ml:"Multijugador local",mo:"Multijugador online"};
 const L={s1:"Switch 1 · compatible con Switch 2",s2e:"Switch 1 + Switch 2 Edition",upd:"Switch 1 + actualización gratuita Switch 2",s2:"Solo Switch 2"};
-const SORTS=[["mine","Mi orden"],["meta-d","Metascore: mejor primero"],["size-a","Tamaño: menor primero"],["size-d","Tamaño: mayor primero"],["hours-a","Historia: más corta"],["hours-d","Historia: más larga"],["price-a","Precio: más barato"],["price-d","Precio: más caro"]];
+const SORTS=[["mine","Mi orden"],["meta-d","Crítica (Metascore): mejor primero"],["meta-a","Crítica (Metascore): peor primero"],["size-a","Tamaño: menor primero"],["size-d","Tamaño: mayor primero"],["hours-a","Historia: más corta"],["hours-d","Historia: más larga"],["price-a","Precio: más barato"],["price-d","Precio: más caro"]];
 const SD=[32,64,128,256,400,512,1024,2048];
 const INT=[[32,"32 GB (Switch / Lite)"],[64,"64 GB (Switch OLED)"],[256,"256 GB (Switch 2)"]];
 const IFACT=.85;
@@ -15,7 +15,10 @@ const D=window.DETAILS||{};
 const GAMES=window.GAMES;
 const bySlug=Object.fromEntries(GAMES.map(g=>[g.slug,g]));
 const $=s=>document.querySelector(s);
-const active=new Set();
+const SAGAS=[["pokemon","Pokémon"],["zelda","Zelda"],["mario","Mario"],["dk","Donkey Kong"],["smash","Super Smash Bros."],["ac","Animal Crossing"]];
+const GENRES=[...new Set(window.GAMES.flatMap(g=>((window.DETAILS||{})[g.slug]||{}).genres||[]))].sort((a,b)=>a.localeCompare(b,"es"));
+const fsets={mode:new Set(),saga:new Set(),genre:new Set()};
+const active=fsets.mode;
 let q="";
 let sort="mine";
 let moved=null;
@@ -127,7 +130,7 @@ const i=info(g);
 const meta=i.meta?`<span class="meta ${metaCls(i.meta)}" title="Metascore ${i.meta}">${i.meta}</span>`:"";
 const pr=i.cost!=null?(owned&&i.price!=null&&i.cost!==i.price?`<s>${eur(i.price)}</s> ${eur(i.cost)}`:eur(i.cost)):"";
 const facts=i.playable?`<span class="facts"><b>${i.mb?gb(i.mb):"—"}</b>${pr?` · ${pr}`:""}${sort.startsWith("hours")&&i.hours?` · ${nf(i.hours,1)} h`:""}</span>`:`<span class="facts bad">Solo Switch 2</span>`;
-return `<article class="card${owned?" owned":""}" data-slug="${g.slug}" data-k="${g.k}" data-tags="${g.m.join(" ")}" data-name="${norm(g.title)}"><button class="open" type="button" aria-label="Ver la ficha de ${g.title}"><span class="media"><img class="cover" src="img/t/${g.slug}.jpg" width="240" height="240" decoding="async" loading="${!owned&&n<=6?"eager":"lazy"}" alt=""><span class="num">${owned?"✓":n}</span>${meta}${cornerOf(g.k)}</span><span class="info"><span class="name">${g.title}</span>${facts}<span class="modes">${g.m.map(m=>`<i>${T[m]}</i>`).join("")}</span></span></button>${owned?`<button class="pay" type="button">Cambiar precio</button>`:""}<button class="own" type="button" aria-pressed="${owned}">${owned?"Quitar de «ya lo tengo»":"Ya lo tengo"}</button></article>`;
+return `<article class="card${owned?" owned":""}" data-slug="${g.slug}" data-k="${g.k}" data-tags="${g.m.join(" ")}" data-name="${norm(g.title)}" data-saga="${g.s}" data-genres="${(i.d.genres||[]).join("|")}"><button class="open" type="button" aria-label="Ver la ficha de ${g.title}"><span class="media"><img class="cover" src="img/t/${g.slug}.jpg" width="240" height="240" decoding="async" loading="${!owned&&n<=6?"eager":"lazy"}" alt=""><span class="num">${owned?"✓":n}</span>${meta}${cornerOf(g.k)}</span><span class="info"><span class="name">${g.title}</span>${facts}<span class="modes">${g.m.map(m=>`<i>${T[m]}</i>`).join("")}</span></span></button>${owned?`<button class="pay" type="button">Cambiar precio</button>`:""}<button class="own" type="button" aria-pressed="${owned}">${owned?"Quitar de «ya lo tengo»":"Ya lo tengo"}</button></article>`;
 }
 
 function tone(img){
@@ -153,7 +156,10 @@ const cards=[...document.querySelectorAll(".card")];
 const nq=norm(q.trim());
 cards.forEach(c=>{
 const t=c.dataset.tags.split(" ");
-c.hidden=![...active].every(f=>t.includes(f))||(nq&&!c.dataset.name.includes(nq));
+c.hidden=![...fsets.mode].every(f=>t.includes(f))
+||(fsets.saga.size>0&&!fsets.saga.has(c.dataset.saga))
+||(fsets.genre.size>0&&!c.dataset.genres.split("|").some(x=>fsets.genre.has(x)))
+||(nq&&!c.dataset.name.includes(nq));
 });
 let n=0;
 document.querySelectorAll("#want .card:not([hidden]) .num").forEach(e=>{e.textContent=++n});
@@ -395,15 +401,60 @@ else if(e.target.closest(".pay"))editPrice(c.dataset.slug);
 else if(e.target.closest(".open"))openDlg(c.dataset.slug);
 });
 
-const filters=$("#filters");
-filters.innerHTML=`<button type="button" class="on" data-f="all">Todos</button>`+Object.keys(FT).map(k=>`<button type="button" data-f="${k}">${FT[k]}</button>`).join("");
-filters.addEventListener("click",e=>{
-const b=e.target.closest("button");if(!b)return;
-if(b.dataset.f==="all")active.clear();else if(active.has(b.dataset.f))active.delete(b.dataset.f);else active.add(b.dataset.f);
-filters.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x.dataset.f==="all"?active.size===0:active.has(x.dataset.f)));
-applyFilters();
+const FCAT={
+mode:{t:"Modo de juego",d:"Tienen que cumplirse todos los modos que marques.",opts:()=>Object.keys(FT).map(k=>[k,FT[k]]),n:v=>GAMES.filter(g=>g.m.includes(v)).length},
+saga:{t:"Saga",d:"Basta con que el juego sea de una de las sagas que marques.",opts:()=>SAGAS,n:v=>GAMES.filter(g=>g.s===v).length},
+genre:{t:"Género",d:"Basta con que el juego tenga uno de los géneros que marques.",opts:()=>GENRES.map(x=>[x,x]),n:v=>GAMES.filter(g=>((D[g.slug]||{}).genres||[]).includes(v)).length}
+};
+const fd=$("#fdlg");
+const labelOf=(cat,v)=>{const o=FCAT[cat].opts().find(x=>x[0]===v);return o?o[1]:v};
+function refreshFbar(){
+let total=0;
+document.querySelectorAll(".fb").forEach(b=>{
+const n=fsets[b.dataset.cat].size;
+total+=n;
+const e=b.querySelector("b");
+e.textContent=n||"";
+e.hidden=!n;
+b.classList.toggle("on",n>0);
 });
-
+$("#fclear").hidden=total===0;
+$("#fchips").innerHTML=Object.keys(fsets).flatMap(cat=>[...fsets[cat]].map(v=>`<button type="button" class="fchip" data-cat="${cat}" data-v="${v}" aria-label="Quitar el filtro ${labelOf(cat,v)}">${labelOf(cat,v)}<span aria-hidden="true">×</span></button>`)).join("");
+}
+function fCount(){
+const n=document.querySelectorAll("main .card:not([hidden])").length;
+const e=$("#fcount");
+if(e)e.textContent=n===1?"Ver 1 juego":`Ver ${n} juegos`;
+}
+function renderF(cat){
+const c=FCAT[cat],set=fsets[cat];
+fd.dataset.cat=cat;
+fd.innerHTML=`<div class="fwin"><div class="fhead"><h3>${c.t}</h3><button class="x2" type="button" data-close aria-label="Cerrar la ventana">×</button></div><p class="fdesc">${c.d}</p><div class="fopts">${c.opts().map(([v,l])=>`<button type="button" class="fo${set.has(v)?" on":""}" data-v="${v}" aria-pressed="${set.has(v)}"><span>${l}</span><em>${c.n(v)}</em></button>`).join("")}</div><div class="ffoot"><button type="button" class="fclr" data-clr>Quitar de esta categoría</button><button type="button" class="fok" data-close id="fcount"></button></div></div>`;
+fCount();
+}
+function openF(cat){renderF(cat);if(!fd.open)fd.showModal()}
+document.querySelectorAll(".fb").forEach(b=>b.addEventListener("click",()=>openF(b.dataset.cat)));
+fd.addEventListener("click",e=>{
+if(e.target===fd){fd.close();return}
+if(e.target.closest("[data-close]")){fd.close();return}
+const cat=fd.dataset.cat;
+if(e.target.closest("[data-clr]")){fsets[cat].clear();renderF(cat);applyFilters();refreshFbar();fCount();return}
+const o=e.target.closest(".fo");
+if(!o)return;
+const v=o.dataset.v,set=fsets[cat];
+if(set.has(v))set.delete(v);else set.add(v);
+o.classList.toggle("on",set.has(v));
+o.setAttribute("aria-pressed",set.has(v));
+applyFilters();refreshFbar();fCount();
+});
+$("#fclear").addEventListener("click",()=>{Object.values(fsets).forEach(s=>s.clear());applyFilters();refreshFbar()});
+$("#fchips").addEventListener("click",e=>{
+const c=e.target.closest(".fchip");
+if(!c)return;
+fsets[c.dataset.cat].delete(c.dataset.v);
+applyFilters();refreshFbar();
+});
+refreshFbar();
 $("#sort").innerHTML=SORTS.map(([v,l])=>`<option value="${v}">${l}</option>`).join("");
 $("#sort").addEventListener("change",e=>{sort=e.target.value;render(false)});
 $("#q").addEventListener("input",e=>{q=e.target.value;applyFilters()});
@@ -433,7 +484,7 @@ addEventListener("scroll",()=>{
 const m=document.documentElement.scrollHeight-innerHeight;
 prog.style.transform=`scaleX(${m>0?scrollY/m:0})`;
 },{passive:true});
-const fromHash=()=>{const s=location.hash.slice(1);if(bySlug[s])openDlg(s)};
+const fromHash=()=>{const s=location.hash.slice(1);if(bySlug[s])openDlg(s);else if(/^filtros-(mode|saga|genre)$/.test(s))openF(s.slice(8))};
 addEventListener("hashchange",fromHash);
 fromHash();
 })();

@@ -40,7 +40,13 @@
 <label class="sortl"><span>Ordenar por</span><select id="sort"></select></label>
 <div class="seg" role="radiogroup" aria-label="Mi consola"><span>Mi consola</span><button type="button" role="radio" data-c="1">Switch 1</button><button type="button" role="radio" data-c="2">Switch 2</button></div>
 </div>
-<nav class="filters" id="filters" aria-label="Filtros por modo de juego"></nav>
+<div class="fbar" id="fbar" role="group" aria-label="Filtros">
+<button type="button" class="fb" data-cat="mode" aria-haspopup="dialog">Modo de juego <b></b></button>
+<button type="button" class="fb" data-cat="saga" aria-haspopup="dialog">Saga <b></b></button>
+<button type="button" class="fb" data-cat="genre" aria-haspopup="dialog">Género <b></b></button>
+<button type="button" class="fclear" id="fclear" hidden>Quitar filtros</button>
+</div>
+<div class="fchips" id="fchips" aria-live="polite"></div>
 <main>
 <section id="quiero" aria-labelledby="hq">
 <h2 id="hq">Los que quiero</h2>
@@ -56,6 +62,7 @@
 <p class="credit">Datos y carcasas de <a href="https://nswitchex.com/es/">nswitchex.com</a>. Las imágenes pertenecen a sus dueños.</p>
 <div class="sr" id="live" aria-live="polite"></div>
 <dialog id="dlg" aria-label="Ficha del juego"></dialog>
+<dialog id="fdlg" aria-label="Ventana de filtros"></dialog>
 <dialog id="paydlg" aria-labelledby="ptitle">
 <form id="payform" class="payform">
 <h3 id="ptitle"></h3>
