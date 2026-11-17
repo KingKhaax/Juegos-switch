@@ -6,27 +6,36 @@
 <title>Mi colección de Nintendo Switch</title>
 <link rel="icon" href="favicon.ico">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap"></noscript>
 <link rel="stylesheet" href="styles.css">
+<link rel="preload" as="image" href="img/switch-logo.png">
 </head>
 <body>
 <div class="bg" aria-hidden="true"><i class="orb a"></i><i class="orb b"></i><canvas id="bg"></canvas></div>
 <div id="prog" aria-hidden="true"></div>
 <header class="top">
-<img class="logo" src="img/switch-logo.png" alt="Nintendo Switch">
+<img class="logo" src="img/switch-logo.png" width="150" height="150" fetchpriority="high" alt="Nintendo Switch">
 <h1 class="title">Mi colección de Nintendo Switch</h1>
 <p class="sub">Ordenados por mi preferencia · Switch 1 y Switch 2</p>
 <nav class="apartados" aria-label="Apartados">
 <a href="#quiero">Los que quiero <b id="nq">0</b></a>
 <a href="#tengo">Los que ya tengo <b id="nt">0</b></a>
 </nav>
+<div class="resumen" id="resumen" aria-live="polite"></div>
 </header>
+<div class="tools">
+<label class="search"><span class="sr">Buscar por nombre</span><input id="q" type="search" placeholder="Buscar por nombre" autocomplete="off"></label>
+<label class="sortl"><span>Ordenar por</span><select id="sort"></select></label>
+<div class="seg" role="radiogroup" aria-label="Mi consola"><span>Mi consola</span><button type="button" role="radio" data-c="1">Switch 1</button><button type="button" role="radio" data-c="2">Switch 2</button></div>
+</div>
 <nav class="filters" id="filters" aria-label="Filtros por modo de juego"></nav>
 <main>
 <section id="quiero" aria-labelledby="hq">
 <h2 id="hq">Los que quiero</h2>
 <div class="grid" id="want"></div>
-<p class="empty" id="wantEmpty" hidden>Ningún juego cumple todos esos filtros a la vez.</p>
+<p class="empty" id="wantEmpty" hidden>Ningún juego cumple la búsqueda y los filtros a la vez.</p>
 </section>
 <section id="tengo" aria-labelledby="ht" class="have">
 <h2 id="ht">Los que ya tengo</h2>
@@ -37,9 +46,9 @@
 <p class="credit">Datos y carcasas de <a href="https://nswitchex.com/es/">nswitchex.com</a>. Las imágenes pertenecen a sus dueños.</p>
 <div class="sr" id="live" aria-live="polite"></div>
 <dialog id="dlg" aria-label="Ficha del juego"></dialog>
-<script src="games.js"></script>
-<script src="details.js"></script>
-<script src="app.js"></script>
-<script src="bg.js"></script>
+<script src="games.js" defer></script>
+<script src="details.js" defer></script>
+<script src="app.js" defer></script>
+<script src="bg.js" defer></script>
 </body>
 </html>

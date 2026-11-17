@@ -15,6 +15,10 @@ Este README recoge todo lo que está decidido y apuntado del proyecto, para que 
 - Cada cartucho tiene el botón **Ya lo tengo**. Al pulsarlo el juego pasa al final del todo (apartado "Los que ya tengo"), se oscurece, y la lista de los que quiero se renumera: si se marca el 4.º, el 5.º pasa a ser el 4.º y así con todos. Pulsando de nuevo («Quitar de ya lo tengo») vuelve a su sitio original de la lista. Los números siempre son consecutivos entre las tarjetas visibles: con un filtro activo se renumeran (1, 2, 3…) en lugar de conservar el número que tendrían sin filtro, para que no haya saltos.
 - Lo que se marca como "ya lo tengo" se guarda en el navegador (`localStorage`, clave `juegos-switch-tengo`). No se sincroniza entre dispositivos.
 - Al pulsar un cartucho se abre la ficha (`<dialog>`). También se abre con la URL `#<slug>`, por ejemplo `#super-mario-odyssey`.
+- **Mi consola** (Switch 1 / Switch 2, se guarda en `localStorage`, clave `juegos-switch-consola`, por defecto Switch 2): decide qué edición se usa para el tamaño, el precio y los totales. En Switch 1 se usa la edición Estándar; en Switch 2, la Switch 2 Edition si existe y si no la Estándar. Los juegos solo de Switch 2 (Donkey Kong Bananza, Mario Kart World) con Switch 1 elegida salen como "Solo Switch 2" y no cuentan en totales.
+- **Buscador** por nombre (sin acentos ni mayúsculas) y **orden alternativo**: Mi orden, Metascore, Tamaño (menor o mayor primero), Historia (más corta o más larga), Precio (más barato o más caro). Los sin dato quedan al final. Con otro orden distinto de "Mi orden" los números son la posición en ese orden.
+- **Resumen de arriba:** juegos, GB y euros de lo que quiero (por comprar) y de lo que tengo (gastados), y la **tarjeta SD recomendada** (la menor de 32/64/128/256/512/1024/2048 GB que cubre todo con un 8 % de margen).
+- Cada tarjeta muestra tamaño y precio (PVPR de la edición elegida).
 - Filtros de modo de juego (se pueden combinar, deben cumplirse todos): Singleplayer, Cooperativo local, Cooperativo online, Multijugador local, Multijugador online.
 - Cada tarjeta lleva el Metascore con los colores de nswitchex.com: verde por encima de 74, amarillo de 50 a 74, rojo por debajo. El color de la franja superior del cartucho sale de la carátula (canvas; si el navegador no deja leer la imagen se usa el rojo por defecto).
 - El icono de la pestaña (`favicon.ico`) es el de nswitchex.com. El logo de cabecera es el de Nintendo Switch en negro sobre transparente (`img/switch-logo.png`, de Wikimedia Commons: "Nintendo Switch Logo.svg"), mostrado en blanco con `filter:invert(1)` y brillo rojo. Sin el 2 y sin el cuadrado rojo.
@@ -22,7 +26,9 @@ Este README recoge todo lo que está decidido y apuntado del proyecto, para que 
 - Efectos: logo que flota y brilla, título con destello, cartas que aparecen al hacer scroll, brillo que sigue al ratón sobre cada cartucho, pines dorados que se mueven al pasar por encima, el juego que se marca como "ya lo tengo" aterriza con animación en su sitio, contadores que rebotan al cambiar, barra de progreso de scroll arriba y, en la ficha, zoom lento en la carcasa y paneles que entran escalonados.
 - Estilo elegido: **Cartuchos** (cartucho con muesca, pines dorados y franja de color). Se probaron otros 24 estilos y se descartaron.
 
-### Ficha del juego
+### Ficha del juego (rediseñada el 17/11/2026)
+
+La ficha toma el color de acento de la carátula (el mismo que la franja del cartucho), tiene anillo animado de Metascore, flechas para pasar al juego anterior o siguiente (también con las teclas ← → y deslizando en el móvil), botón "Ya lo tengo" con animación, etiqueta de precio, barras animadas de horas y de espacio en la tarjeta SD (128 GB), y el subtítulo "desarrollador · fecha" y el título "Resumen" con colores propios. Paneles con brillo que sigue al cursor.
 
 Datos tomados de la ficha de nswitchex.com de cada juego (`https://nswitchex.com/es/details/<slug>/`):
 
@@ -92,7 +98,8 @@ Notas sobre los modos (apuntados de memoria, sin verificar en fuentes): Super Ma
 index.html        página
 styles.css        estilos (cartuchos, ficha, responsive móvil, prefers-reduced-motion)
 app.js            lógica: render, "ya lo tengo", filtros, ficha, tono de color, efectos de aparición
-bg.js             fondo animado en canvas
+bg.js             fondo animado en canvas (sprites precalculados, se pausa con la ficha abierta)
+img/t/<slug>.jpg  miniatura cuadrada 240 px de cada carcasa, para las tarjetas
 games.js          la lista en orden: slug, título, consola (k), modos (m)
 details.js        datos de nswitchex.com por slug (generado, no editar a mano)
 favicon.ico       icono de la pestaña (de nswitchex.com)
