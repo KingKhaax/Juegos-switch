@@ -673,14 +673,17 @@ const d=dx*dx+dy*dy;
 if(d<best){best=d;t=c}
 }
 }
-if(!t)return;
+const bar=drag.bar;
+if(!t){drag.ref=undefined;bar.style.display="none";return}
 const r=t.getBoundingClientRect();
 const sameRow=drag.y>=r.top-12&&drag.y<=r.bottom+12;
 const before=sameRow?drag.x<r.left+r.width/2:drag.y<r.top;
 const ref=before?t:t.nextSibling;
-if(ref===drag.card||ref===drag.card.nextSibling)return;
-par.insertBefore(drag.card,ref);
-renumber();
+if(ref===drag.card||ref===drag.card.nextSibling){drag.ref=undefined;bar.style.display="none";return}
+drag.ref=ref;
+bar.style.display="block";
+bar.style.height=r.height+"px";
+bar.style.transform=`translate(${before?r.left-14:r.right+8}px,${r.top}px)`;
 }
 function dragLoop(){
 if(!drag)return;
@@ -703,7 +706,11 @@ ghost.style.width=r.width+"px";
 ghost.style.height=r.height+"px";
 ghost.style.display="none";
 document.body.appendChild(ghost);
-drag={card,ghost,dx:e.clientX-r.left,dy:e.clientY-r.top,x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,moved:false,raf:0};
+const bar=document.createElement("div");
+bar.className="dropbar";
+bar.style.display="none";
+document.body.appendChild(bar);
+drag={card,ghost,bar,ref:undefined,dx:e.clientX-r.left,dy:e.clientY-r.top,x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,moved:false,raf:0};
 drag.raf=requestAnimationFrame(dragLoop);
 });
 addEventListener("pointermove",e=>{
@@ -720,12 +727,14 @@ function endDrag(ok){
 if(!drag)return;
 cancelAnimationFrame(drag.raf);
 drag.ghost.remove();
+drag.bar.remove();
 drag.card.classList.remove("placeholder");
 document.body.classList.remove("dragging");
-const moved=drag.moved;
+const d=drag;
 drag=null;
-if(!moved)return;
-if(ok)commitWantOrder(wantSlugs());
+if(!d.moved||!ok||d.ref===undefined)return;
+d.card.parentNode.insertBefore(d.card,d.ref);
+commitWantOrder(wantSlugs());
 render(false);
 }
 addEventListener("pointerup",()=>endDrag(true));

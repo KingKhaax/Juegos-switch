@@ -515,3 +515,7 @@ body.dragging,body.dragging *{cursor:grabbing!important}
 .card.placeholder>*{visibility:hidden}
 @keyframes hole{to{background:rgba(0,195,227,.26)}}
 .card.ghost{box-shadow:0 0 0 3px #00e5ff}
+
+.card.placeholder{opacity:.3;background:var(--card);animation:none;border-top-color:var(--c,#e60012)}
+.card.placeholder>*{visibility:visible}
+.dropbar{position:fixed;left:0;top:0;z-index:99997;width:7px;border-radius:7px;background:#00e5ff;box-shadow:0 0 18px #00e5ff,0 0 4px #fff;pointer-events:none;transition:transform .08s linear,height .08s linear}
