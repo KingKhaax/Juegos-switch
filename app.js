@@ -188,6 +188,8 @@ ok:'<svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="
 user:'<svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><circle cx="10" cy="6.5" r="3.5" fill="currentColor"/><path d="M3 18c0-4 3-6 7-6s7 2 7 6z" fill="currentColor"/></svg>',
 globe:'<svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M2 10h16M10 2c3 3 3 13 0 16M10 2c-3 3-3 13 0 16" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>',
 cmp:'<svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M3 6h11M11 3l3 3-3 3M17 14H6M9 11l-3 3 3 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+cloud:'<svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true"><path d="M5.5 14.5a3.5 3.5 0 0 1-.4-7A4.5 4.5 0 0 1 13.8 6a3.8 3.8 0 0 1 .7 8.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M10 9v7m0 0l-2.4-2.4M10 16l2.4-2.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+cart:'<svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true"><path d="M5 1.8h7.4L15.2 4.6V18.2H5z" fill="currentColor"/><rect x="7" y="13.2" width="1.4" height="3.4" fill="#15171d"/><rect x="9.3" y="13.2" width="1.4" height="3.4" fill="#15171d"/><rect x="11.6" y="13.2" width="1.4" height="3.4" fill="#15171d"/></svg>',
 grip:'<svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><g fill="currentColor"><circle cx="7" cy="5" r="1.7"/><circle cx="13" cy="5" r="1.7"/><circle cx="7" cy="10" r="1.7"/><circle cx="13" cy="10" r="1.7"/><circle cx="7" cy="15" r="1.7"/><circle cx="13" cy="15" r="1.7"/></g></svg>'
 };
 
@@ -197,12 +199,13 @@ const m=mio[g.slug]||{};
 const meta=i.meta?`<span class="meta ${metaCls(i.meta)}" title="Metascore ${i.meta}">${i.meta}</span>`:"";
 const pr=i.cost!=null?(owned&&i.price!=null&&i.cost!==i.price?`<s>${eur(i.price)}</s> ${eur(i.cost)}`:eur(i.cost)):"";
 const fis=i.fmt==="f";
+const fb=owned?`<span class="fmtb ${fis?"fisico":"digital"}">${fis?svg.cart:svg.cloud}${fis?"Físico":"Digital"}</span>`:"";
 const nota=owned&&i.nota?` · Mi nota <b>${i.nota}</b>`:"";
-const facts=g.ex?`<span class="facts soon">Sale: ${(i.d.date||"próximamente")}</span>`:i.playable?`<span class="facts"><b>${i.mbEff?gb(i.mbEff):fis?"0,0 GB":"—"}</b>${fis?' <em class="fis">físico</em>':""}${pr?` · ${pr}`:""}${sort.startsWith("hours")&&i.hours?` · ${nf(i.hours,1)} h`:""}${nota}</span>`:`<span class="facts bad">Solo Switch 2</span>`;
+const facts=g.ex?`<span class="facts soon">Sale: ${(i.d.date||"próximamente")}</span>`:i.playable?`<span class="facts"><b>${i.mbEff?gb(i.mbEff):fis?"0,0 GB":"—"}</b>${fis&&!owned?' <em class="fis">físico</em>':""}${pr?` · ${pr}`:""}${sort.startsWith("hours")&&i.hours?` · ${nf(i.hours,1)} h`:""}${nota}</span>`:`<span class="facts bad">Solo Switch 2</span>`;
 const prog=owned&&i.horasJ&&i.hours?`<span class="prog" style="--w:${Math.min(100,i.horasJ/i.hours*100).toFixed(0)}%" title="${nf(i.horasJ,1)} de ${nf(i.hours,1)} h"></span>`:"";
 const modes=g.m.length?g.m.map(x=>`<i>${T[x]}</i>`).join(""):"<i>Modos sin confirmar</i>";
 const cm=cmp.includes(g.slug);
-return `<article class="card${owned?" owned":""}${cm?" cmp":""}" data-slug="${g.slug}" data-k="${g.k}" data-tags="${g.m.join(" ")}" data-name="${norm(g.title)}" data-saga="${g.s}" data-genres="${(i.d.genres||[]).join("|")}" data-status="${owned?stOf(g.slug):""}"><button class="open" type="button" aria-label="Ver la ficha de ${g.title}"><span class="media"><img class="cover" src="img/t/${g.slug}.jpg" width="240" height="240" decoding="async" loading="${!owned&&n<=6?"eager":"lazy"}" alt=""><span class="num">${owned?"✓":n}</span>${meta}${cornerOf(g.k)}${prog}</span><span class="info"><span class="name">${g.title}</span>${facts}<span class="modes">${modes}</span></span></button>${owned?`<button class="st s-${stOf(g.slug)}" type="button" aria-label="Cambiar el estado de ${g.title}">${stLabel(stOf(g.slug))}</button><button class="pay" type="button">Cambiar precio</button>`:""}<div class="act"><button class="own" type="button" aria-pressed="${owned}">${owned?"Quitar de «ya lo tengo»":"Ya lo tengo"}</button><button class="cmpb" type="button" aria-pressed="${cm}" aria-label="Comparar ${g.title}" title="Comparar">${svg.cmp}</button></div>${owned?"":`<div class="mvbar"><span class="grip" data-grip aria-hidden="true" title="Arrastrar">${svg.grip}</span><button type="button" data-mv="-1" aria-label="Mover ${g.title} antes">‹</button><button type="button" data-mv="1" aria-label="Mover ${g.title} después">›</button></div>`}</article>`;
+return `<article class="card${owned?" owned":""}${cm?" cmp":""}" data-slug="${g.slug}" data-k="${g.k}" data-tags="${g.m.join(" ")}" data-name="${norm(g.title)}" data-saga="${g.s}" data-genres="${(i.d.genres||[]).join("|")}" data-status="${owned?stOf(g.slug):""}"><button class="open" type="button" aria-label="Ver la ficha de ${g.title}"><span class="media"><img class="cover" src="img/t/${g.slug}.jpg" width="240" height="240" decoding="async" loading="${!owned&&n<=6?"eager":"lazy"}" alt=""><span class="num">${owned?"✓":n}</span>${meta}${cornerOf(g.k)}${prog}</span><span class="info"><span class="name">${g.title}</span>${facts}<span class="modes">${modes}</span></span></button>${owned?`<div class="fmtrow">${fb}</div><button class="st s-${stOf(g.slug)}" type="button" aria-label="Cambiar el estado de ${g.title}">${stLabel(stOf(g.slug))}</button><button class="pay" type="button">Cambiar precio</button>`:""}<div class="act"><button class="own" type="button" aria-pressed="${owned}">${owned?"Quitar de «ya lo tengo»":"Ya lo tengo"}</button><button class="cmpb" type="button" aria-pressed="${cm}" aria-label="Comparar ${g.title}" title="Comparar">${svg.cmp}</button></div>${owned?"":`<div class="mvbar"><span class="grip" data-grip aria-hidden="true" title="Arrastrar">${svg.grip}</span><button type="button" data-mv="-1" aria-label="Mover ${g.title} antes">‹</button><button type="button" data-mv="1" aria-label="Mover ${g.title} después">›</button></div>`}</article>`;
 }
 
 function tone(img){
@@ -287,8 +290,10 @@ function finishPay(v){
 const cb=pd._cb;
 pd._cb=null;
 if(pd.open)pd.close();
-if(cb)cb(v);
+if(cb)cb(v,pd._fmt);
 }
+const syncPf=()=>pd.querySelectorAll("[data-pf]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.pf===pd._fmt));
+pd.addEventListener("click",e=>{const b=e.target.closest("[data-pf]");if(b){pd._fmt=b.dataset.pf;syncPf()}});
 function askPrice(slug,editing,cb){
 const g=bySlug[slug],i=info(g);
 $("#ptitle").textContent=g.title;
@@ -296,6 +301,8 @@ $("#pinfo").textContent=i.price!=null?`PVPR en Switch ${cons}: ${eur(i.price)}`:
 $("#perr").textContent="";
 $("#payin").value=editing&&paid[slug]!=null?String(paid[slug]):i.price!=null?String(i.price):"";
 pd._cb=cb;
+pd._fmt=mi(slug).fmt==="f"?"f":"d";
+syncPf();
 pd.showModal();
 $("#payin").select();
 }
@@ -331,17 +338,19 @@ setMi(slug,{nota:"",com:"",compra:"",horas:"",fin:""});
 commitOwn(slug,false);
 return;
 }
-askPrice(slug,false,p=>{
+askPrice(slug,false,(p,fm)=>{
 if(p===undefined)return;
 own.push(slug);
 if(p!=null)paid[slug]=p;
+setMi(slug,{fmt:fm==="f"?"f":""});
 if(!mi(slug).compra)setMi(slug,{compra:today()});
 commitOwn(slug,true);
 });
 }
 function editPrice(slug){
-askPrice(slug,true,p=>{
+askPrice(slug,true,(p,fm)=>{
 if(p===undefined)return;
+setMi(slug,{fmt:fm==="f"?"f":""});
 if(p===null)delete paid[slug];else paid[slug]=p;
 savePaid();
 render(false);
@@ -444,6 +453,7 @@ const edLine=i.eds.length>1?`<span class="cied">En este juego: ${i.eds.map(x=>`$
 const cinfo=NT&&!(d.perf&&d.perf.badge===NT[0])?`<div class="cinfo"><span class="pbadge">${NT[0]}</span><p class="pbtxt">${NT[1]} ${edLine}</p></div>`:"";
 const fisLbl=i.keyCard?gb(i.mb):i.updKnown?gb(d.updateMB):"sin dato";
 const cv=d.cartVer||{};
+const fmtBadgeBig=`<button class="fmtb big ${i.fmt==="f"?"fisico":"digital"}" type="button" data-pay="1" title="Cambiar el formato o el precio">${i.fmt==="f"?svg.cart:svg.cloud}<span>${i.fmt==="f"?"Físico":"Digital"}</span><em>cambiar</em></button>`;
 const fmtInfo=i.fmt==="f"?`<ul class="fmtinfo fi-f" aria-live="polite"><li><b>Ocupa en tu consola:</b> ${i.keyCard?`${gb(i.mb)}, porque este cartucho es de los que solo traen una llave y obligan a descargar el juego entero.`:i.updKnown?`${gb(d.updateMB)}: solo se descarga la actualización${cv.upd?` (versión ${cv.upd})`:""}.`:"el juego va en el cartucho, así que casi nada; pero la web no tiene el tamaño de sus actualizaciones y se cuenta como 0 GB (puede ocupar algo más)."}</li><li><b>El cartucho:</b> ${d.cartTipo?d.cartTipo.replace(/^Cartucho con el juego$/,"el juego completo en el cartucho"):"datos del cartucho sin confirmar"}${d.cartCod?`, código ${d.cartCod.split(" Versión")[0]}`:""}${cv.cart&&cv.cart!=="-"?`, versión ${cv.cart}`:""}. Hace falta tenerlo puesto para jugar.</li><li><b>Se puede</b> prestar, regalar y revender.</li><li><b>Aparte:</b> las actualizaciones futuras y los contenidos descargables (DLC) se descargan y suman GB.</li></ul>`:`<ul class="fmtinfo fi-d" aria-live="polite"><li><b>Ocupa en tu consola:</b> ${i.mb?gb(i.mb):"—"}: el juego completo${i.e&&i.e.name?`, edición ${i.e.name}`:""}.</li><li><b>Sin cartucho:</b> se compra en la eShop y queda ligado a tu cuenta Nintendo; puedes volver a descargarlo cuando quieras.</li><li><b>No se puede</b> prestar ni revender.</li><li><b>Aparte:</b> las actualizaciones futuras y los DLC también suman GB.</li></ul>`;
 const fmtBlock=i.playable&&!g.ex?`<div class="fmt"><small>Formato</small><div class="stbar" role="group" aria-label="Formato del juego"><button type="button" class="stb" data-fmt="d" aria-pressed="${i.fmt!=="f"}">Digital · ${i.mb?gb(i.mb):"—"}</button><button type="button" class="stb" data-fmt="f" aria-pressed="${i.fmt==="f"}">Físico · ${fisLbl}</button></div>${fmtInfo}</div>`:"";
 const soon=g.ex?`<div class="cinfo soon"><span class="pbadge">Próximo lanzamiento</span><p class="pbtxt">Sale el ${d.date||"por confirmar"}. Los modos de juego aún no están confirmados.</p></div>`:"";
@@ -459,7 +469,7 @@ ${i.meta?`<div class="ring ${metaCls(i.meta)}" style="--v:${i.meta}" title="Meta
 <div class="body">
 <div class="chipline"><span class="chip k">${L[g.k]}</span>${chips}</div>
 ${soon}${cinfo}
-<div class="actions"><button class="own big" type="button" data-slug="${g.slug}" aria-pressed="${owned}"><span class="tick">${svg.card}${svg.ok.replace("<svg ",'<svg class="ic-ok" ')}</span><span class="otxt">${owned?"Lo tengo · quitar":"Ya lo tengo"}</span></button>${i.cost!=null&&i.playable?(owned?`<button class="price paidtag" type="button" data-pay="1"><small>${paid[g.slug]!=null?"Pagado":"PVPR"}</small><b>${eur(i.cost)}</b>${paid[g.slug]!=null&&i.price!=null&&i.price!==i.cost?`<s>PVPR ${eur(i.price)}</s>`:""}<em>cambiar precio</em></button>`:`<div class="price"><small>PVPR ${e.name||""}</small><b>${eur(i.price)}</b></div>`):""}${links}</div>${owned?stbar:""}
+<div class="actions"><button class="own big" type="button" data-slug="${g.slug}" aria-pressed="${owned}"><span class="tick">${svg.card}${svg.ok.replace("<svg ",'<svg class="ic-ok" ')}</span><span class="otxt">${owned?"Lo tengo · quitar":"Ya lo tengo"}</span></button>${i.cost!=null&&i.playable?(owned?`<button class="price paidtag" type="button" data-pay="1"><small>${paid[g.slug]!=null?"Pagado":"PVPR"}</small><b>${eur(i.cost)}</b>${paid[g.slug]!=null&&i.price!=null&&i.price!==i.cost?`<s>PVPR ${eur(i.price)}</s>`:""}<em>cambiar precio</em></button>`:`<div class="price"><small>PVPR ${e.name||""}</small><b>${eur(i.price)}</b></div>`):""}${owned?fmtBadgeBig:""}${links}</div>${owned?stbar:""}
 ${owned?mioHtml(g,i):""}
 ${d.summary?`<section class="panel desc"><h3>Resumen</h3><p>${d.summary}</p></section>`:""}
 <div class="grid2">
