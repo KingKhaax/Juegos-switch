@@ -47,22 +47,48 @@ $("#wantEmpty").hidden=vis("want")>0||!$("#want").children.length;
 $("#haveEmpty").hidden=$("#have").children.length>0;
 }
 
-function render(){
+let moved=null;
+const io="IntersectionObserver" in window?new IntersectionObserver(es=>es.forEach(e=>{
+if(!e.isIntersecting)return;
+const c=e.target;
+c.style.transitionDelay=(c._d||0)+"ms";
+c.classList.remove("pre");
+io.unobserve(c);
+setTimeout(()=>{c.style.transitionDelay=""},1100);
+}),{rootMargin:"0px 0px -6% 0px"}):null;
+
+const setNum=(sel,n)=>{
+const e=$(sel);
+if(e.textContent===String(n))return;
+e.textContent=n;
+e.classList.remove("bump");
+void e.offsetWidth;
+e.classList.add("bump");
+};
+
+function render(first){
 const want=GAMES.filter(g=>!own.includes(g.slug));
 const have=own.map(s=>bySlug[s]);
 $("#want").innerHTML=want.map((g,i)=>cardHtml(g,i+1,false)).join("");
 $("#have").innerHTML=have.map(g=>cardHtml(g,0,true)).join("");
-$("#nq").textContent=want.length;
-$("#nt").textContent=have.length;
+setNum("#nq",want.length);
+setNum("#nt",have.length);
 document.querySelectorAll(".card .cover").forEach(im=>{if(im.complete)tone(im);else im.addEventListener("load",()=>tone(im),{once:true})});
 applyFilters();
+if(first&&io)document.querySelectorAll(".card").forEach((c,i)=>{c.classList.add("pre");c._d=(i%6)*70;io.observe(c)});
+if(moved){
+const c=document.querySelector(`.card[data-slug="${moved}"]`);
+if(c){c.classList.add("just");c.addEventListener("animationend",()=>c.classList.remove("just"),{once:true})}
+moved=null;
+}
 }
 
 function toggleOwn(slug){
 const g=bySlug[slug];
 const i=own.indexOf(slug);
 if(i>=0){own.splice(i,1)}else{own.push(slug)}
-save();render();
+moved=slug;
+save();render(false);
 $("#live").textContent=i>=0?`${g.title} vuelve a la lista de los que quiero`:`${g.title} marcado como ya lo tengo`;
 refreshDialogButton(slug);
 }
@@ -133,7 +159,19 @@ filters.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x.dataset.
 applyFilters();
 });
 
-render();
+render(true);
+document.addEventListener("pointermove",e=>{
+const c=e.target.closest&&e.target.closest(".card");
+if(!c)return;
+const r=c.getBoundingClientRect();
+c.style.setProperty("--mx",(e.clientX-r.left)+"px");
+c.style.setProperty("--my",(e.clientY-r.top)+"px");
+},{passive:true});
+const prog=$("#prog");
+addEventListener("scroll",()=>{
+const m=document.documentElement.scrollHeight-innerHeight;
+prog.style.transform=`scaleX(${m>0?scrollY/m:0})`;
+},{passive:true});
 const fromHash=()=>{const s=location.hash.slice(1);if(bySlug[s])openDlg(s)};
 addEventListener("hashchange",fromHash);
 fromHash();

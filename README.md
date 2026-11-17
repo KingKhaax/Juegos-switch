@@ -18,6 +18,8 @@ Este README recoge todo lo que está decidido y apuntado del proyecto, para que 
 - Filtros de modo de juego (se pueden combinar, deben cumplirse todos): Singleplayer, Cooperativo local, Cooperativo online, Multijugador local, Multijugador online.
 - Cada tarjeta lleva el Metascore con los colores de nswitchex.com: verde por encima de 74, amarillo de 50 a 74, rojo por debajo. El color de la franja superior del cartucho sale de la carátula (canvas; si el navegador no deja leer la imagen se usa el rojo por defecto).
 - El icono de la pestaña (`favicon.ico`) es el de nswitchex.com. El logo de cabecera es el de Nintendo Switch (el cuadrado rojo, sin el 2).
+- Fondo animado con la estética Switch (`bg.js`, canvas): luces roja y azul de los Joy-Con, botones A/B/X/Y, signos +/−, círculos y mandos flotando con parallax según el ratón, y un foco de luz que sigue al cursor. Con `prefers-reduced-motion` el fondo queda quieto.
+- Efectos: logo que flota y brilla, título con destello, cartas que aparecen al hacer scroll, brillo que sigue al ratón sobre cada cartucho, pines dorados que se mueven al pasar por encima, el juego que se marca como "ya lo tengo" aterriza con animación en su sitio, contadores que rebotan al cambiar, barra de progreso de scroll arriba y, en la ficha, zoom lento en la carcasa y paneles que entran escalonados.
 - Estilo elegido: **Cartuchos** (cartucho con muesca, pines dorados y franja de color). Se probaron otros 24 estilos y se descartaron.
 
 ### Ficha del juego
@@ -89,7 +91,8 @@ Notas sobre los modos (apuntados de memoria, sin verificar en fuentes): Super Ma
 ```
 index.html        página
 styles.css        estilos (cartuchos, ficha, responsive móvil, prefers-reduced-motion)
-app.js            lógica: render, "ya lo tengo", filtros, ficha, tono de color
+app.js            lógica: render, "ya lo tengo", filtros, ficha, tono de color, efectos de aparición
+bg.js             fondo animado en canvas
 games.js          la lista en orden: slug, título, consola (k), modos (m)
 details.js        datos de nswitchex.com por slug (generado, no editar a mano)
 favicon.ico       icono de la pestaña (de nswitchex.com)
@@ -121,3 +124,4 @@ tools/scrape.mjs  descarga datos y carcasas de nswitchex.com
 - Las carcasas y la compatibilidad con Switch 2 salen de nswitchex.com. Los datos de la ficha (los cuatro bloques de rendimiento, horas, tamaño y género/jugadores) también.
 - Metascore: se añadió con los mismos colores que la web de origen.
 - Pendiente de decidir: si se quiere sincronizar "ya lo tengo" entre dispositivos (ahora es solo local al navegador).
+- Pendiente: las carcasas son de 415×208 px y en la ficha se ven pixeladas. Rafael pidió subirlas a HD con IA; no se ha hecho porque faltan permisos para ejecutar Real-ESRGAN en local (alternativa: servicio Pilio, que necesita `PILIO_API_KEY`). Si se hace, guardar las HD en `img/hd/<slug>.jpg`, usarlas solo en la ficha y mantener las pequeñas en las tarjetas.

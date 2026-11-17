@@ -1,20 +1,32 @@
 :root{--red:#e60012;--bg:#1c1e24;--card:#3b3e47;--ink:#fff;--mute:#a8abb8}
 *{box-sizing:border-box;margin:0;padding:0}
 [hidden]{display:none!important}
-html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--ink);font-family:"Nunito",system-ui,sans-serif;min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+html{scroll-behavior:smooth;overflow-x:clip}
+body{background:var(--bg);color:var(--ink);font-family:"Nunito",system-ui,sans-serif;min-height:100vh;overflow-x:clip;-webkit-font-smoothing:antialiased}
+.bg{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+.bg canvas{position:absolute;inset:0}
+.bg::after{content:"";position:absolute;inset:0;background:radial-gradient(520px circle at var(--cx,50%) var(--cy,28%),rgba(255,255,255,.06),transparent 62%)}
+.orb{position:absolute;border-radius:50%;filter:blur(110px);opacity:.36;animation:drift 22s ease-in-out infinite}
+.orb.a{width:560px;height:560px;background:#e60012;top:-190px;left:-170px}
+.orb.b{width:620px;height:620px;background:#00c3e3;bottom:-230px;right:-190px;opacity:.26;animation-delay:-9s}
+@keyframes drift{0%,100%{transform:translate(0,0) scale(1)}35%{transform:translate(90px,60px) scale(1.15)}70%{transform:translate(-50px,100px) scale(.92)}}
+#prog{position:fixed;top:0;left:0;right:0;height:3px;transform-origin:0 50%;transform:scaleX(0);background:linear-gradient(90deg,#e60012,#00c3e3);z-index:60}
 img{display:block;max-width:100%}
 button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 a{color:inherit}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .top{padding:5vw 5vw 1.5vw;text-align:center}
-.logo{margin:0 auto 14px;width:64px;height:64px;border-radius:12px}
-.title{font-size:clamp(1.9rem,4.4vw,3.2rem);font-weight:800;line-height:1.1}
+.logo{margin:0 auto 14px;width:64px;height:64px;border-radius:12px;animation:bob 4s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0);filter:drop-shadow(0 0 8px rgba(230,0,18,.45))}50%{transform:translateY(-7px);filter:drop-shadow(0 0 22px rgba(230,0,18,.9))}}
+.title{font-size:clamp(1.9rem,4.4vw,3.2rem);font-weight:800;line-height:1.1;background:linear-gradient(100deg,#fff 0,#fff 38%,#ff8a93 48%,#8cf0ff 56%,#fff 66%,#fff 100%);background-size:260% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 7s linear infinite}
+@keyframes shine{from{background-position:130% 0}to{background-position:-130% 0}}
 .sub{color:var(--mute);margin-top:8px}
 .apartados{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:22px}
 .apartados a{display:flex;align-items:center;gap:10px;min-height:48px;padding:0 20px;border-radius:99px;background:#2c2f38;text-decoration:none;font-weight:800;transition:background .2s,transform .2s}
 .apartados a:hover{background:var(--red);transform:translateY(-2px)}
 .apartados b{background:#fff;color:#1c1e24;border-radius:99px;padding:1px 10px;font-size:.9rem}
+.apartados b.bump{animation:bump .5s cubic-bezier(.3,1.8,.5,1)}
+@keyframes bump{40%{transform:scale(1.5);background:#00c3e3}}
 .filters{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;padding:18px 4vw 6px}
 .filters button{min-height:44px;padding:0 18px;border-radius:99px;background:#2c2f38;font-weight:700;transition:background .2s}
 .filters button:hover{background:#383c48}
@@ -22,12 +34,20 @@ a{color:inherit}
 main{padding:10px 5vw 20px}
 section{padding-top:26px;scroll-margin-top:12px}
 h2{font-size:1.6rem;font-weight:800;margin-bottom:6px}
+main h2::after{content:"";display:block;width:70px;height:4px;border-radius:4px;margin-top:8px;background:linear-gradient(90deg,#e60012,#00c3e3,#e60012);background-size:200% 100%;animation:flow 3s linear infinite}
+@keyframes flow{to{background-position:-200% 0}}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,170px),1fr));gap:38px 22px;padding:26px 0 30px}
 .empty{color:var(--mute);padding:10px 0 30px}
-.card{position:relative;display:flex;flex-direction:column;background:var(--card);border-top:6px solid var(--c,#e60012);clip-path:polygon(0 0,calc(100% - 28px) 0,100% 28px,100% 100%,0 100%);transition:transform .35s cubic-bezier(.3,1.6,.5,1);animation:in .5s backwards}
-@keyframes in{from{transform:translateY(24px) scale(.97)}}
+.card{position:relative;display:flex;flex-direction:column;background:var(--card);border-top:6px solid var(--c,#e60012);clip-path:polygon(0 0,calc(100% - 28px) 0,100% 28px,100% 100%,0 100%);transition:transform .35s cubic-bezier(.3,1.6,.5,1),opacity .6s}
+.card.pre{opacity:0;transform:translateY(36px) scale(.95)}
 .card:hover{transform:translateY(-12px)}
+.card::before{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;background:radial-gradient(220px circle at var(--mx,50%) var(--my,50%),rgba(255,255,255,.22),transparent 60%);opacity:0;transition:opacity .25s}
+.card:hover::before{opacity:1}
 .card::after{content:"";height:22px;margin:auto 8px 0;background:repeating-linear-gradient(90deg,#d6b25e 0 5px,transparent 5px 9px);border-radius:2px 2px 0 0}
+.card:hover::after{animation:pins .7s linear infinite}
+@keyframes pins{to{background-position:18px 0}}
+.card.just{animation:land .9s cubic-bezier(.2,.9,.3,1)}
+@keyframes land{0%{transform:translateY(-46px) scale(1.1);filter:brightness(1.6)}60%{transform:translateY(7px)}100%{transform:none;filter:none}}
 .open{display:block;width:100%;text-align:left;padding:12px 12px 0}
 .open:focus-visible,.own:focus-visible{outline:3px solid #fff;outline-offset:-3px}
 .media{position:relative;display:block;aspect-ratio:1/1;overflow:hidden;border-radius:3px}
@@ -58,7 +78,15 @@ dialog::backdrop{background:#000c}
 .x{position:sticky;top:10px;float:right;margin:10px 10px 0 0;width:44px;height:44px;border-radius:50%;background:#000c;font-size:1.6rem;line-height:1;z-index:5}
 .x:hover{background:var(--red)}
 .hero{position:relative;aspect-ratio:2/1;margin-top:-54px}
-.hero img{width:100%;height:100%;object-fit:cover}
+.hero{overflow:hidden}
+.hero img{width:100%;height:100%;object-fit:cover;animation:kb 18s ease-in-out infinite alternate}
+@keyframes kb{to{transform:scale(1.08)}}
+.sheet .panel{animation:pop .45s backwards}
+.sheet .desc{animation-delay:.05s}
+.sheet .genre{animation-delay:.1s}
+.sheet .size{animation-delay:.15s}
+.sheet .hours{animation-delay:.2s}
+.sheet .perf{animation-delay:.25s}
 .hero .corner{width:64px;height:64px}
 .meta.big{right:auto;left:14px;bottom:14px;min-width:54px;font-size:1.5rem;padding:6px 12px;border-radius:10px}
 .head{padding:18px 22px 6px}
