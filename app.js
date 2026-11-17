@@ -42,6 +42,8 @@ c.style.setProperty("--c",`hsl(${h} ${s}% 42%)`);
 function applyFilters(){
 const cards=[...document.querySelectorAll(".card")];
 cards.forEach(c=>{const t=c.dataset.tags.split(" ");c.hidden=![...active].every(f=>t.includes(f))});
+let n=0;
+document.querySelectorAll("#want .card:not([hidden]) .num").forEach(e=>{e.textContent=++n});
 const vis=id=>document.querySelectorAll(`#${id} .card:not([hidden])`).length;
 $("#wantEmpty").hidden=vis("want")>0||!$("#want").children.length;
 $("#haveEmpty").hidden=$("#have").children.length>0;

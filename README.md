@@ -12,7 +12,7 @@ Este README recoge todo lo que está decidido y apuntado del proyecto, para que 
 
 - Página estática sin servidor ni dependencias: `index.html` + `styles.css` + `app.js` + datos en `games.js` y `details.js`.
 - Título "Mi colección de Nintendo Switch" con dos apartados en la misma página: **Los que quiero** (arriba, numerados por preferencia) y **Los que ya tengo** (al final, atenuados).
-- Cada cartucho tiene el botón **Ya lo tengo**. Al pulsarlo el juego pasa al final del todo (apartado "Los que ya tengo"), se oscurece, y la lista de los que quiero se renumera: si se marca el 4.º, el 5.º pasa a ser el 4.º y así con todos. Pulsando de nuevo («Quitar de ya lo tengo») vuelve a su sitio original de la lista.
+- Cada cartucho tiene el botón **Ya lo tengo**. Al pulsarlo el juego pasa al final del todo (apartado "Los que ya tengo"), se oscurece, y la lista de los que quiero se renumera: si se marca el 4.º, el 5.º pasa a ser el 4.º y así con todos. Pulsando de nuevo («Quitar de ya lo tengo») vuelve a su sitio original de la lista. Los números siempre son consecutivos entre las tarjetas visibles: con un filtro activo se renumeran (1, 2, 3…) en lugar de conservar el número que tendrían sin filtro, para que no haya saltos.
 - Lo que se marca como "ya lo tengo" se guarda en el navegador (`localStorage`, clave `juegos-switch-tengo`). No se sincroniza entre dispositivos.
 - Al pulsar un cartucho se abre la ficha (`<dialog>`). También se abre con la URL `#<slug>`, por ejemplo `#super-mario-odyssey`.
 - Filtros de modo de juego (se pueden combinar, deben cumplirse todos): Singleplayer, Cooperativo local, Cooperativo online, Multijugador local, Multijugador online.
