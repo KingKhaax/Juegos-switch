@@ -16,8 +16,8 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 a{color:inherit}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .top{padding:5vw 5vw 1.5vw;text-align:center}
-.logo{margin:0 auto 14px;width:64px;height:64px;border-radius:12px;animation:bob 4s ease-in-out infinite}
-@keyframes bob{0%,100%{transform:translateY(0);filter:drop-shadow(0 0 8px rgba(230,0,18,.45))}50%{transform:translateY(-7px);filter:drop-shadow(0 0 22px rgba(230,0,18,.9))}}
+.logo{margin:0 auto 4px;width:150px;height:150px;animation:bob 4s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0);filter:invert(1) drop-shadow(0 0 8px rgba(230,0,18,.55))}50%{transform:translateY(-7px);filter:invert(1) drop-shadow(0 0 22px rgba(230,0,18,.95))}}
 .title{font-size:clamp(1.9rem,4.4vw,3.2rem);font-weight:800;line-height:1.1;background:linear-gradient(100deg,#fff 0,#fff 38%,#ff8a93 48%,#8cf0ff 56%,#fff 66%,#fff 100%);background-size:260% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 7s linear infinite}
 @keyframes shine{from{background-position:130% 0}to{background-position:-130% 0}}
 .sub{color:var(--mute);margin-top:8px}
