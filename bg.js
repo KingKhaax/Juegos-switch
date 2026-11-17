@@ -61,11 +61,13 @@ else{
 raf=requestAnimationFrame(frame);
 document.addEventListener("visibilitychange",()=>{cancelAnimationFrame(raf);if(!document.hidden)raf=requestAnimationFrame(frame)});
 }
-let pend=false;
+let pend=false,mx2=0,my2=0;
+const spot=document.querySelector(".bg .spot");
 addEventListener("pointermove",e=>{
 mx=(e.clientX/w-.5)*2;my=(e.clientY/h-.5)*2;
+mx2=e.clientX;my2=e.clientY;
 if(pend)return;
 pend=true;
-requestAnimationFrame(()=>{pend=false;document.documentElement.style.setProperty("--cx",e.clientX+"px");document.documentElement.style.setProperty("--cy",e.clientY+"px")});
+requestAnimationFrame(()=>{pend=false;if(spot)spot.style.transform=`translate3d(${mx2}px,${my2}px,0)`});
 },{passive:true});
 })();

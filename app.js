@@ -275,6 +275,19 @@ user:'<svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><circle
 globe:'<svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M2 10h16M10 2c3 3 3 13 0 16M10 2c-3 3-3 13 0 16" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>'
 };
 
+const BADGE={
+"Sin parchear":"El juego funciona en Switch 2 tal cual salió en Switch 1, sin ninguna actualización específica para Switch 2 (sin el parche). Los datos de abajo son los de esa versión original.",
+"Actualización gratuita":"La desarrolladora ofrece un parche gratuito que mejora el juego en Switch 2 (más fps, más resolución o menos tiempo de carga). Se descarga sin coste con tu copia de Switch 1.",
+"Switch 2 Edition":"Versión mejorada pensada para Switch 2. Suele ser una compra aparte (o una ampliación si ya tienes el juego) y trae mejoras técnicas y de contenido."
+};
+
+function playVideo(btn){
+const w=document.createElement("div");
+w.className="vwrap";
+w.innerHTML=`<iframe src="https://www.youtube-nocookie.com/embed/${btn.dataset.video}?autoplay=1&rel=0&modestbranding=1&playsinline=1" title="Vídeo de presentación" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+btn.replaceWith(w);
+}
+
 function fichaHtml(g){
 const i=info(g),d=i.d;
 const owned=own.includes(g.slug);
@@ -285,7 +298,7 @@ const hrs=[["main","Historia principal"],["plus","Principal + Secundarias"],["co
 const maxH=Math.max(1,...hrs.map(([k])=>num(d.hours[k])||0));
 const pct=i.mb?Math.min(100,i.mb/1024/128*100):0;
 const col=(t,ic,pairs)=>`<div class="dev"><div class="dt">${ic}<span>${t}</span></div>${pairs.map(([a,b])=>`<div class="pr"><small>${a}</small><b>${svg.ok}${b}</b></div>`).join("")}</div>`;
-const perf=d.perf?`<section class="panel perf"><h3>Rendimiento en Nintendo Switch 2</h3>${d.perf.badge?`<span class="pbadge">${d.perf.badge}</span>`:""}<div class="devs">${col("En el televisor",svg.tv,d.perf.docked)}${col("En portátil",svg.hh,d.perf.handheld)}</div></section>`:"";
+const perf=d.perf?`<section class="panel perf"><h3>Rendimiento en Nintendo Switch 2</h3>${d.perf.badge?`<div class="pbrow"><span class="pbadge">${d.perf.badge}</span>${BADGE[d.perf.badge]?`<p class="pbtxt">${BADGE[d.perf.badge]}</p>`:""}</div>`:""}<div class="devs">${col("En el televisor",svg.tv,d.perf.docked)}${col("En portátil",svg.hh,d.perf.handheld)}</div></section>`:"";
 const players=[["Jugadores locales",d.local,svg.user],["Jugadores online",d.online,svg.globe]].filter(x=>x[1]).map(([l,v,ic])=>`<div class="pl">${ic}<div><small>${l}</small><b>${v}</b></div></div>`).join("");
 return `<div class="sheet">
 <form method="dialog"><button class="x" aria-label="Cerrar la ficha">×</button></form>
@@ -306,7 +319,8 @@ ${d.updateMB?`<div class="alt"><span>Actualización</span><b>${gb(d.updateMB)}</
 </div>
 <section class="panel genre"><h3>Género y jugadores</h3><div class="chips">${(d.genres||[]).map(x=>`<span class="chip g">${x}</span>`).join("")}</div><div class="pls">${players}</div><div class="who"><div><small>Desarrollador</small><b>${d.dev||"—"}</b></div><div><small>Distribuidor</small><b>${d.dist||"—"}</b></div></div></section>
 ${perf}
-<p class="src">Datos de nswitchex.com</p>
+${d.video?`<section class="panel vid"><h3>Vídeo de presentación</h3><button type="button" class="vbox" data-video="${d.video}" aria-label="Reproducir el vídeo de presentación de ${g.title}"><img src="https://i.ytimg.com/vi/${d.video}/maxresdefault.jpg" onerror="this.onerror=null;this.src='https://i.ytimg.com/vi/${d.video}/hqdefault.jpg'" alt="" width="1280" height="720" loading="lazy" decoding="async"><span class="play"><svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></span></button></section>`:""}
+<p class="src">Datos y vídeo de nswitchex.com</p>
 </div></div></div>`;
 }
 
@@ -362,10 +376,15 @@ if(e.target===dlg){dlg.close();return}
 const b=e.target.closest(".own.big");
 if(b){toggleOwn(b.dataset.slug);return}
 if(e.target.closest("[data-pay]")){editPrice(dlg.dataset.slug);return}
+const vb=e.target.closest("[data-video]");
+if(vb){playVideo(vb);return}
 if(e.target.closest(".prev"))step(-1);
 else if(e.target.closest(".next"))step(1);
 });
-dlg.addEventListener("close",()=>{if(bySlug[location.hash.slice(1)])history.replaceState(null,"",location.pathname+location.search)});
+dlg.addEventListener("close",()=>{
+dlg.innerHTML="";
+if(bySlug[location.hash.slice(1)])history.replaceState(null,"",location.pathname+location.search);
+});
 dlg.addEventListener("pointermove",e=>{
 const p=e.target.closest&&e.target.closest(".panel");
 if(!p)return;
@@ -472,18 +491,32 @@ syncSeg();
 syncStorage=initStorage();
 
 render(true);
+let gp=null,gx=0,gy=0,gc=null;
 document.addEventListener("pointermove",e=>{
 const c=e.target.closest&&e.target.closest(".card");
 if(!c)return;
-const r=c.getBoundingClientRect();
-c.style.setProperty("--mx",(e.clientX-r.left)+"px");
-c.style.setProperty("--my",(e.clientY-r.top)+"px");
+gc=c;gx=e.clientX;gy=e.clientY;
+if(gp)return;
+gp=requestAnimationFrame(()=>{
+gp=null;
+const r=gc.getBoundingClientRect();
+gc.style.setProperty("--mx",(gx-r.left)+"px");
+gc.style.setProperty("--my",(gy-r.top)+"px");
+});
 },{passive:true});
 const prog=$("#prog");
+let sp=false;
 addEventListener("scroll",()=>{
+if(sp)return;
+sp=true;
+requestAnimationFrame(()=>{
+sp=false;
 const m=document.documentElement.scrollHeight-innerHeight;
 prog.style.transform=`scaleX(${m>0?scrollY/m:0})`;
+});
 },{passive:true});
+const syncLock=()=>document.documentElement.classList.toggle("lock",!!document.querySelector("dialog[open]"));
+document.querySelectorAll("dialog").forEach(d=>new MutationObserver(syncLock).observe(d,{attributes:true,attributeFilter:["open"]}));
 const fromHash=()=>{const s=location.hash.slice(1);if(bySlug[s])openDlg(s);else if(/^filtros-(mode|saga|genre)$/.test(s))openF(s.slice(8))};
 addEventListener("hashchange",fromHash);
 fromHash();

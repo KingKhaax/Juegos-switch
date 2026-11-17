@@ -9,10 +9,12 @@ const details = {};
 for (const slug of slugs) {
   const res = await fetch(`https://nswitchex.com/es/details/${slug}/`, { headers: H });
   if (!res.ok) { console.log("ERR", slug, res.status); continue; }
-  const t = toks(await res.text());
+  const html = await res.text();
+  const t = toks(html);
+  const vm = /youtube(?:-nocookie)?\.com\/embed\/([\w-]{11})/.exec(html);
   const iR = t.indexOf("Resumen");
   const iD = t.findIndex((s, i) => i < iR && / · /.test(s));
-  const d = { slug, nswTitle: t[iD - 1], meta: /^\d{1,3}$/.test(t[iD + 1] || "") ? +t[iD + 1] : null, date: t[iD].split(" · ").slice(1).join(" · "), summary: t[iR + 1], genres: [], editions: [], hours: {}, others: [], perf: null };
+  const d = { slug, nswTitle: t[iD - 1], meta: /^\d{1,3}$/.test(t[iD + 1] || "") ? +t[iD + 1] : null, date: t[iD].split(" · ").slice(1).join(" · "), summary: t[iR + 1], genres: [], editions: [], hours: {}, others: [], perf: null, video: vm ? vm[1] : null };
   const end = t.indexOf("Explora juegos del mismo género");
   let i = iR + 2;
   const vals = () => { const v = []; while (i < end && !LABELS.has(t[i])) v.push(t[i++]); return v; };
