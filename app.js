@@ -87,9 +87,23 @@ renderStorage(a,b,all,ig,need);
 function renderStorage(a,b,all,ig,need){
 const cap=ig+sdcard*SFACT;
 const haveG=b.mb/1024,wantG=a.mb/1024;
-const hp=Math.min(100,haveG/cap*100);
-const wp=Math.max(0,Math.min(100-hp,wantG/cap*100));
-$("#sbar").innerHTML=`<i class="have" style="--w:${hp.toFixed(2)}%"></i><i class="want" style="--w:${wp.toFixed(2)}%"></i>`;
+const N=20;
+const hf=cap>0?haveG/cap:0,wf=cap>0?wantG/cap:0;
+let hb=hf>0?Math.max(1,Math.round(hf*N)):0;
+hb=Math.min(N,hb);
+let wb=wf>0?Math.max(1,Math.round((hf+wf)*N)-Math.round(hf*N)):0;
+wb=Math.min(N-hb,wb);
+const bar=$("#sbar");
+if(!bar.children.length){
+bar.innerHTML="<i></i>".repeat(N);
+[...bar.children].forEach((c,i)=>c.style.setProperty("--d",i*45));
+}
+[...bar.children].forEach((c,i)=>{
+const s=i<hb?1:i<hb+wb?2:0;
+if(c._s!==s){c._s=s;c.className=s===1?"c1":s===2?"c2":""}
+});
+bar.classList.toggle("over",hf+wf>1.0001);
+bar.setAttribute("aria-label",`Ocupado ${nf((hf+wf)*100,0)} % de la capacidad`);
 const free=cap-all;
 $("#leg").innerHTML=`<span><i class="k have"></i>Tengo ${nf(haveG,1)} GB</span><span><i class="k want"></i>Quiero ${nf(wantG,1)} GB</span><span><i class="k free"></i>Capacidad ${nf(cap,1)} GB</span>`;
 $("#snote").className=free<0?"snote bad":"snote ok";
