@@ -48,10 +48,10 @@ a{color:inherit}
 .sbar .want{background:repeating-linear-gradient(135deg,#e60012 0 8px,#ff4a5c 8px 16px)}
 .leg{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:10px;font-size:.84rem;color:#d3d6e2}
 .leg span{display:flex;align-items:center;gap:7px}
-.k{display:inline-block;width:12px;height:12px;border-radius:4px;background:#fff}
-.k.have{background:#00c3e3}
-.k.want{background:#e60012}
-.k.free{background:rgba(255,255,255,.3)}
+.leg .k{display:inline-block;width:12px;height:12px;border-radius:4px;background:#fff}
+.leg .k.have{background:#00c3e3}
+.leg .k.want{background:#e60012}
+.leg .k.free{background:rgba(255,255,255,.3)}
 .snote{margin-top:10px;font-weight:800}
 .snote.ok{color:#7ff0ae}
 .snote.bad{color:#ff8a93}

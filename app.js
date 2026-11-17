@@ -271,7 +271,7 @@ return `<div class="sheet">
 <form method="dialog"><button class="x" aria-label="Cerrar la ficha">×</button></form>
 <button class="nav prev" type="button" aria-label="Juego anterior">‹</button><button class="nav next" type="button" aria-label="Juego siguiente">›</button>
 <div class="scroll">
-<div class="hero"><img src="img/${g.slug}.jpg" width="415" height="208" decoding="async" alt="Carcasa de ${g.title}"><i class="sheen"></i>${cornerOf(g.k)}
+<div class="hero"><img src="img/hd/${g.slug}.jpg" width="1660" height="832" decoding="async" alt="Carcasa de ${g.title}"><i class="sheen"></i>${cornerOf(g.k)}
 <div class="htitle"><h2>${g.title}</h2><p>${[d.dev,d.date].filter(Boolean).join(" · ")}</p></div>
 ${i.meta?`<div class="ring ${metaCls(i.meta)}" style="--v:${i.meta}" title="Metascore"><span data-to="${i.meta}" data-dec="0">${i.meta}</span></div>`:""}</div>
 <div class="body">
@@ -370,7 +370,7 @@ document.addEventListener("pointerover",e=>{
 const c=e.target.closest&&e.target.closest(".card");
 if(!c||warmed.has(c.dataset.slug))return;
 warmed.add(c.dataset.slug);
-new Image().src=`img/${c.dataset.slug}.jpg`;
+new Image().src=`img/hd/${c.dataset.slug}.jpg`;
 },{passive:true});
 
 document.addEventListener("click",e=>{

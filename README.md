@@ -105,6 +105,7 @@ app.js            lógica: render, "ya lo tengo", filtros, ficha, tono de color,
 cursor.js         cursor magnético (punto y anillo)
 bg.js             fondo animado en canvas (sprites precalculados, se pausa con la ficha abierta)
 img/t/<slug>.jpg  miniatura cuadrada 240 px de cada carcasa, para las tarjetas
+img/hd/<slug>.jpg carcasa a 1660×832 px subida de resolución con IA (Real-ESRGAN x4plus), para la ficha
 games.js          la lista en orden: slug, título, consola (k), modos (m)
 details.js        datos de nswitchex.com por slug (generado, no editar a mano)
 favicon.ico       icono de la pestaña (de nswitchex.com)
@@ -136,4 +137,4 @@ tools/scrape.mjs  descarga datos y carcasas de nswitchex.com
 - Las carcasas y la compatibilidad con Switch 2 salen de nswitchex.com. Los datos de la ficha (los cuatro bloques de rendimiento, horas, tamaño y género/jugadores) también.
 - Metascore: se añadió con los mismos colores que la web de origen.
 - Pendiente de decidir: si se quiere sincronizar "ya lo tengo" entre dispositivos (ahora es solo local al navegador).
-- Pendiente: las carcasas son de 415×208 px y en la ficha se ven pixeladas. Rafael pidió subirlas a HD con IA; no se ha hecho porque faltan permisos para ejecutar Real-ESRGAN en local (alternativa: servicio Pilio, que necesita `PILIO_API_KEY`). Si se hace, guardar las HD en `img/hd/<slug>.jpg`, usarlas solo en la ficha y mantener las pequeñas en las tarjetas.
+- Carcasas en HD (17/11/2026): las originales de nswitchex.com son de 415×208 px y se veían pixeladas en la ficha. Se subieron a 1660×832 con Real-ESRGAN (`realesrgan-ncnn-vulkan`, modelo `realesrgan-x4plus`, escala 4) y se recomprimieron a JPEG calidad 80 en `img/hd/`. La ficha usa las HD y las tarjetas las miniaturas `img/t/`. Al añadir un juego nuevo hay que repetir ese paso (Rafael autorizó ejecutar ese programa).
