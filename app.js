@@ -261,7 +261,7 @@ const owned=own.includes(g.slug);
 const e=i.e||i.std||{};
 const other=cons==="2"?i.std:i.s2;
 const otherLbl=cons==="2"?"Switch 1":"Switch 2 Edition";
-const hrs=[["main","Historia principal"],["plus","Principal + Secundarias"],["comp","Completista"],["all","Todos los estilos"]].filter(([k])=>d.hours&&d.hours[k]);
+const hrs=[["main","Historia principal"],["plus","Principal + Secundarias"],["comp","Completista"],["all","Duración de jugador promedio"]].filter(([k])=>d.hours&&d.hours[k]);
 const maxH=Math.max(1,...hrs.map(([k])=>num(d.hours[k])||0));
 const pct=i.mb?Math.min(100,i.mb/1024/128*100):0;
 const col=(t,ic,pairs)=>`<div class="dev"><div class="dt">${ic}<span>${t}</span></div>${pairs.map(([a,b])=>`<div class="pr"><small>${a}</small><b>${svg.ok}${b}</b></div>`).join("")}</div>`;
@@ -282,7 +282,7 @@ ${d.summary?`<section class="panel desc"><h3>Resumen</h3><p>${d.summary}</p></se
 <section class="panel size"><h3>Tamaño en Switch ${cons==="1"?"1":"2"}</h3>${i.playable?`<b class="big" data-to="${i.mb/1024}" data-dec="1" data-suf=" GB">${i.mb?gb(i.mb):"—"}</b><div class="sdbar" title="Porcentaje de una tarjeta de 128 GB"><i style="--w:${pct.toFixed(1)}%"></i></div><small class="note">Ocupa el ${nf(pct,1)} % de una tarjeta de 128 GB${e.name?` · edición ${e.name}`:""}</small>`:`<p class="warn">Este juego solo funciona en Switch 2.</p>`}
 ${other&&other.sizeMB?`<div class="alt"><span>${otherLbl}</span><b>${gb(other.sizeMB)}</b>${other.price?`<em>${other.price.replace("€"," €")}</em>`:""}</div>`:""}
 ${d.updateMB?`<div class="alt"><span>Actualización</span><b>${gb(d.updateMB)}</b></div>`:""}</section>
-<section class="panel hours"><h3>Horas para completarlo</h3>${hrs.map(([k,l],n)=>`<div class="hr h-${k}"><div><small>${l}</small><b>${d.hours[k].replace("Horas","h")}</b></div><div class="bar"><i style="--w:${((num(d.hours[k])||0)/maxH*100).toFixed(1)}%;--d:${n*.12}s"></i></div></div>`).join("")}<p class="hnote"><b>Todos los estilos</b> es la media de los tiempos de todos los jugadores, sin separar por forma de jugar.</p></section>
+<section class="panel hours"><h3>Horas para completarlo</h3>${hrs.map(([k,l],n)=>`<div class="hr h-${k}"><div><small>${l}</small><b>${d.hours[k].replace("Horas","h")}</b></div><div class="bar"><i style="--w:${((num(d.hours[k])||0)/maxH*100).toFixed(1)}%;--d:${n*.12}s"></i></div></div>`).join("")}<p class="hnote"><b>Duración de jugador promedio</b> es la media de los tiempos de todos los jugadores, sin separar por forma de jugar.</p></section>
 </div>
 <section class="panel genre"><h3>Género y jugadores</h3><div class="chips">${(d.genres||[]).map(x=>`<span class="chip g">${x}</span>`).join("")}</div><div class="pls">${players}</div><div class="who"><div><small>Desarrollador</small><b>${d.dev||"—"}</b></div><div><small>Distribuidor</small><b>${d.dist||"—"}</b></div></div></section>
 ${perf}

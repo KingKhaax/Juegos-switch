@@ -39,7 +39,7 @@ Datos tomados de la ficha de nswitchex.com de cada juego (`https://nswitchex.com
 - Carcasa grande, Metascore, desarrollador, fecha, resumen (el texto de la web).
 - **Género** y **jugadores locales / online** (panel oscuro con etiquetas rojas).
 - **Tamaño** (panel dorado). **Siempre en GB, nunca en MB** (MB / 1024, un decimal). Si hay varias ediciones (por ejemplo Estándar y Switch 2 Edition) se muestra una por edición, con el PVPR. Se añade el tamaño de la actualización.
-- **Horas para completarlo** (panel azul): Historia principal, Principal + Secundarias, Completista, Todos los estilos.
+- **Horas para completarlo** (panel azul): Historia principal, Principal + Secundarias, Completista, Duración de jugador promedio (en la web de origen se llama "Todos los estilos"; es la media de todos los jugadores). Se llama siempre "Duración de jugador promedio" en la ficha, por petición de Rafael.
 - **Rendimiento en Nintendo Switch 2** (panel verde), solo si la web lo tiene: etiqueta (Actualización gratuita / Switch 2 Edition), y para televisor y portátil: tasa de frames, resolución y tiempo de carga.
 - Etiquetas de modo de juego (apuntadas a mano) y la etiqueta de compatibilidad con Switch 2.
 
