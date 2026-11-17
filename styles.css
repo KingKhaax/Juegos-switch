@@ -480,3 +480,10 @@ html.lite .card.pre{opacity:1;transform:none}
 #cmpbar{bottom:10px;padding-left:14px}
 .ct th,.ct td{padding:8px 10px}
 }
+
+.fmtinfo{list-style:none;display:grid;gap:7px;margin-top:4px;padding:12px 14px;border-radius:12px;font-size:.84rem;line-height:1.45;color:#dfe2ee;border-left:4px solid var(--fc,#00c3e3);background:rgba(255,255,255,.05);animation:rise .35s}
+.fmtinfo b{color:#fff}
+.fi-d{--fc:#00c3e3}
+.fi-f{--fc:#ffc531}
+.stb[data-fmt][aria-pressed=true][data-fmt=f]{border-color:#ffc531;background:color-mix(in srgb,#ffc531 24%,#15171d)}
+.stb[data-fmt][aria-pressed=true][data-fmt=d]{border-color:#00c3e3;background:color-mix(in srgb,#00c3e3 24%,#15171d)}

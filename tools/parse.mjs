@@ -31,6 +31,9 @@ export function parseDetail(slug, html) {
     else if (l === "Todos los estilos") d.hours.all = vals().join(" ");
     else if (l === "Tamaño de la actualización") { const m = /([\d.,]+)\s*MB/.exec(vals().join(" ")); d.updateMB = m ? parseFloat(m[1].replace(",", ".")) : null; }
     else if (l === "Otros") d.others = vals();
+    else if (l === "Tipo de cartucho") d.cartTipo = vals().join(" ");
+    else if (l === "Código del cartucho") d.cartCod = vals().join(" ");
+    else if (l === "Versión cartucho") { const v = vals().filter(x => x !== "actualización"); d.cartVer = { cart: v[0] || "", upd: v[1] || "" }; }
     else if (l === "Rendimiento en Nintendo Switch 2") {
       const raw = vals();
       const k = raw.indexOf("Tasa de frames");

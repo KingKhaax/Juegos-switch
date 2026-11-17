@@ -107,8 +107,10 @@ const cost=isOwn(g.slug)&&paid[g.slug]!=null?paid[g.slug]:price;
 const m=mio[g.slug]||{};
 const fmt=m.fmt==="f"?"f":"d";
 const mb=(e&&e.sizeMB)||0;
-const mbEff=fmt==="f"?(d.updateMB||0):mb;
-return{d,eds,std,s2,e,playable,mb,mbEff,fmt,price,cost,hours:num(d.hours&&d.hours.main),meta:d.meta||null,nota:m.nota||null,horasJ:m.horas||null};
+const keyCard=/key|llave/i.test(d.cartTipo||"");
+const updKnown=d.updateMB!=null;
+const mbEff=fmt==="f"?(keyCard?mb:(d.updateMB||0)):mb;
+return{d,eds,std,s2,e,playable,mb,mbEff,fmt,keyCard,updKnown,price,cost,hours:num(d.hours&&d.hours.main),meta:d.meta||null,nota:m.nota||null,horasJ:m.horas||null};
 }
 
 const KEYS={meta:i=>i.meta,nota:i=>i.nota,played:i=>i.horasJ,size:i=>i.playable?i.mbEff:null,hours:i=>i.hours,price:i=>i.playable?i.cost:null};
@@ -440,7 +442,10 @@ const stbar=`<div class="stbar" role="group" aria-label="Estado de juego">${STAT
 const NT=NOTE[g.k];
 const edLine=i.eds.length>1?`<span class="cied">En este juego: ${i.eds.map(x=>`${x.name} ${x.sizeMB?gb(x.sizeMB):"—"}${x.price?" · "+x.price.replace("€"," €"):""}`).join(" · ")}.</span>`:"";
 const cinfo=NT&&!(d.perf&&d.perf.badge===NT[0])?`<div class="cinfo"><span class="pbadge">${NT[0]}</span><p class="pbtxt">${NT[1]} ${edLine}</p></div>`:"";
-const fmtBlock=i.playable&&!g.ex?`<div class="fmt"><small>Formato</small><div class="stbar" role="group" aria-label="Formato del juego"><button type="button" class="stb" data-fmt="d" aria-pressed="${i.fmt!=="f"}">Digital · ${i.mb?gb(i.mb):"—"}</button><button type="button" class="stb" data-fmt="f" aria-pressed="${i.fmt==="f"}">Físico · ${gb(d.updateMB||0)}</button></div><small class="note">Un cartucho no ocupa en la tarjeta SD: solo la actualización.</small></div>`:"";
+const fisLbl=i.keyCard?gb(i.mb):i.updKnown?gb(d.updateMB):"sin dato";
+const cv=d.cartVer||{};
+const fmtInfo=i.fmt==="f"?`<ul class="fmtinfo fi-f" aria-live="polite"><li><b>Ocupa en tu consola:</b> ${i.keyCard?`${gb(i.mb)}, porque este cartucho es de los que solo traen una llave y obligan a descargar el juego entero.`:i.updKnown?`${gb(d.updateMB)}: solo se descarga la actualización${cv.upd?` (versión ${cv.upd})`:""}.`:"el juego va en el cartucho, así que casi nada; pero la web no tiene el tamaño de sus actualizaciones y se cuenta como 0 GB (puede ocupar algo más)."}</li><li><b>El cartucho:</b> ${d.cartTipo?d.cartTipo.replace(/^Cartucho con el juego$/,"el juego completo en el cartucho"):"datos del cartucho sin confirmar"}${d.cartCod?`, código ${d.cartCod.split(" Versión")[0]}`:""}${cv.cart&&cv.cart!=="-"?`, versión ${cv.cart}`:""}. Hace falta tenerlo puesto para jugar.</li><li><b>Se puede</b> prestar, regalar y revender.</li><li><b>Aparte:</b> las actualizaciones futuras y los contenidos descargables (DLC) se descargan y suman GB.</li></ul>`:`<ul class="fmtinfo fi-d" aria-live="polite"><li><b>Ocupa en tu consola:</b> ${i.mb?gb(i.mb):"—"}: el juego completo${i.e&&i.e.name?`, edición ${i.e.name}`:""}.</li><li><b>Sin cartucho:</b> se compra en la eShop y queda ligado a tu cuenta Nintendo; puedes volver a descargarlo cuando quieras.</li><li><b>No se puede</b> prestar ni revender.</li><li><b>Aparte:</b> las actualizaciones futuras y los DLC también suman GB.</li></ul>`;
+const fmtBlock=i.playable&&!g.ex?`<div class="fmt"><small>Formato</small><div class="stbar" role="group" aria-label="Formato del juego"><button type="button" class="stb" data-fmt="d" aria-pressed="${i.fmt!=="f"}">Digital · ${i.mb?gb(i.mb):"—"}</button><button type="button" class="stb" data-fmt="f" aria-pressed="${i.fmt==="f"}">Físico · ${fisLbl}</button></div>${fmtInfo}</div>`:"";
 const soon=g.ex?`<div class="cinfo soon"><span class="pbadge">Próximo lanzamiento</span><p class="pbtxt">Sale el ${d.date||"por confirmar"}. Los modos de juego aún no están confirmados.</p></div>`:"";
 const players=[["Jugadores locales",d.local,svg.user],["Jugadores online",d.online,svg.globe]].filter(x=>x[1]).map(([l,v,ic])=>`<div class="pl">${ic}<div><small>${l}</small><b>${v}</b></div></div>`).join("");
 const chips=g.m.length?g.m.map(x=>`<span class="chip">${FT[x]}</span>`).join(""):"";
@@ -540,7 +545,7 @@ if(sb){setStatus(slug,sb.dataset.setst);return}
 const nb=e.target.closest("[data-nota]");
 if(nb){const n=+nb.dataset.nota;setMi(slug,{nota:mi(slug).nota===n?"":n});updateMioUi(slug);render(false);return}
 const fb=e.target.closest("[data-fmt]");
-if(fb){setMi(slug,{fmt:fb.dataset.fmt==="f"?"f":""});render(false);refreshDialog();return}
+if(fb){setMi(slug,{fmt:fb.dataset.fmt==="f"?"f":""});render(false);refreshDialog();dlg.querySelectorAll(".size [data-to]").forEach(countUp);return}
 if(e.target.closest("[data-cmpbig]")){toggleCmp(slug);return}
 const vb=e.target.closest("[data-video]");
 if(vb){playVideo(vb);return}
