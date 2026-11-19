@@ -16,6 +16,7 @@ if(A.font)root.classList.add("fs-"+A.font);
 document.dispatchEvent(new Event("ajustes"));
 };
 apply();
+{const m=location.hash.match(/^#tok=(github_pat_\w{20,})$/);if(m){try{localStorage.setItem(TKEY,m[1])}catch(e){}history.replaceState(null,"",location.pathname+location.search)}}
 let dlg=null;
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 function ensure(){

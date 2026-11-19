@@ -6,7 +6,7 @@ Mi lista de juegos de Nintendo Switch: los que quiero y los que ya tengo. Cada j
 
 Este README recoge todo lo que está decidido y apuntado del proyecto, para que cualquiera que lo edite (añadir juegos, borrar, reordenar, cambiar el diseño) lo tenga en cuenta. **Se actualiza en cada cambio**, junto con `juegos-switch.txt` del escritorio de Rafael (copia en texto de la lista).
 
-Última actualización: 17/11/2026.
+Última actualización: 19/11/2026.
 
 ## Guía rápida para otra sesión
 
@@ -33,7 +33,7 @@ Reglas que Rafael ha pedido y que valen siempre:
 El orden de la lista lo decide Rafael desde la propia web (botón **Reordenar**: se arrastran las tarjetas por el icono de puntos, o se usan las flechas ‹ ›) y se publica con **Ajustes → Publicar mi orden en GitHub**. Se guarda en `orden.js` (`window.ORDEN={"updated":"AAAA-MM-DD","order":["slug",…]}`), que carga la web, así que **cualquiera que abra la web (su novia, por ejemplo) ve el mismo orden**. GitHub Pages tarda unos 10 minutos en actualizar el archivo.
 
 - Precedencia: el orden que cada persona ha cambiado en su navegador (`localStorage`, clave `juegos-switch-orden`) manda sobre el publicado; sin cambios propios se usa `orden.js`; si falta un juego, se coloca tras el que le precede en `games.js`.
-- Para publicar hay dos vías. Con un **token personal de GitHub** (fine-grained, solo este repositorio, permiso Contents: lectura y escritura; se guarda solo en el navegador de Rafael, clave `juegos-switch-token`) la web hace el commit sola (`Actualizar el orden de la lista`, a nombre de su cuenta). Sin token, la web abre la página de edición de `orden.js` en GitHub con el texto para copiar y pegar.
+- Para publicar hay dos vías. Con un **token personal de GitHub** (fine-grained, solo este repositorio, permiso Contents: lectura y escritura; se guarda solo en el navegador de Rafael, clave `juegos-switch-token`) la web hace el commit sola (`Actualizar el orden de la lista`, a nombre de su cuenta). Sin token, la web abre la página de edición de `orden.js` en GitHub con el texto para copiar y pegar. Para guardar el token en un navegador sin escribirlo, se abre una vez `https://kingkhaax.github.io/Juegos-switch/#tok=<token>`: `ajustes.js` lo guarda en `localStorage` y borra el `#tok=` de la dirección. El token **no** va nunca en el código de la web (es pública y cualquiera podría cambiar el repositorio); está guardado solo en los PC de Rafael, en `Claves-locales-WipeTime-NinjaLoot\juegos-switch-token.txt`.
 - **Regla para cualquier sesión:** `orden.js` es la fuente de verdad del orden. Al empezar a trabajar, ejecuta `node tools/sync-readme.mjs . C:\Users\Rafael\Desktop\juegos-switch.txt`: deja la tabla de «Lista actual» de este README y `juegos-switch.txt` en el orden publicado. Un juego nuevo se añade en `games.js` y se publica su sitio en el orden con Reordenar (o se coloca en `orden.js`). El orden base de `games.js` solo se usa donde `orden.js` no dice nada.
 
 ## Cómo funciona la web
