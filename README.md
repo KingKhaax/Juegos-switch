@@ -38,6 +38,7 @@ El orden de la lista lo decide Rafael desde la propia web (botón **Reordenar**:
 
 ## Cómo funciona la web
 
+- Los `.js` (menos `orden.js`) y `styles.css` se enlazan en `index.html` con `?v=AAAAMMDD`: **al cambiar cualquiera de ellos, sube esa fecha** para que los navegadores no sigan usando la versión vieja guardada (GitHub Pages deja guardar los archivos 10 minutos y algunos navegadores más).
 - Página estática sin servidor ni dependencias: `index.html` + `styles.css` + `app.js` + `bg.js` + `cursor.js` + datos en `games.js` y `details.js`.
 - Título "Mi colección de Nintendo Switch" con dos apartados en la misma página: **Los que quiero** (arriba, numerados por preferencia) y **Los que ya tengo** (al final, atenuados).
 - Cada cartucho tiene el botón **Ya lo tengo**. Al pulsarlo el juego pasa al final del todo (apartado "Los que ya tengo"), se oscurece, y la lista de los que quiero se renumera: si se marca el 4.º, el 5.º pasa a ser el 4.º y así con todos. Pulsando de nuevo («Quitar de ya lo tengo») vuelve a su sitio original de la lista. Los números siempre son consecutivos entre las tarjetas visibles: con un filtro activo se renumeran (1, 2, 3…) en lugar de conservar el número que tendrían sin filtro, para que no haya saltos.
