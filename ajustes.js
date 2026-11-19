@@ -90,7 +90,6 @@ ${sw("lite","Modo ligero","Apaga el fondo animado, el cursor y las animaciones. 
 ${A.lite?"":`${sw("bg","Fondo animado","Luces y botones flotando.")}${sw("cursor","Cursor magnético","Punto y anillo que sustituyen al cursor.")}`}
 </div>
 <div class="agroup"><h4>Tamaño del texto</h4><div class="stbar" role="group" aria-label="Tamaño del texto">${[["Normal",0],["Grande",1],["Muy grande",2]].map(([l,v])=>`<button type="button" class="stb" data-font="${v}" aria-pressed="${A.font===v}">${l}</button>`).join("")}</div></div>
-<div class="agroup"><h4>Atajos de teclado</h4><ul class="keys"><li><kbd>/</kbd> Buscar por nombre</li><li><kbd>?</kbd> Abrir estos ajustes</li><li><kbd>←</kbd> <kbd>→</kbd> Pasar de un juego a otro con la ficha abierta</li><li><kbd>Esc</kbd> Cerrar una ventana</li></ul></div>
 <div class="agroup"><h4>Publicar mi orden</h4>
 <p class="adesc">El orden que pones con «Reordenar» solo lo ves tú. Si lo publicas, se guarda en GitHub (archivo <code>orden.js</code>) y cualquiera que abra la web, como tu novia, lo verá igual.</p>
 <button type="button" class="pri big2" data-pub>Publicar mi orden en GitHub</button>
