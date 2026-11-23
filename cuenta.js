@@ -89,9 +89,18 @@ if(!/^[a-z0-9._-]{3,24}$/.test(user))return [null,"El usuario tiene que tener de
 if(pass.length<6)return [null,"La contraseña tiene que tener 6 caracteres o más."];
 return [[user,pass],""];
 }
-let gate=null,gmode="entrar",gmsg="",gk="";
+let gate=null,gmode="entrar",gmsg="",gk="",gstep="login";
+const chosen=()=>{try{return sessionStorage.getItem("js-elegida")==="1"}catch(e){return false}};
+const setChosen=()=>{try{sessionStorage.setItem("js-elegida","1")}catch(e){}};
 function renderGate(){
+gate.classList.toggle("g-lista",gstep==="lista");
+if(gstep==="lista"){gate.innerHTML=`<div class="gate-pick" role="dialog" aria-modal="true" aria-labelledby="gateT">
+<h2 id="gateT">¿Qué lista quieres ver?</h2>
+<div class="gate-opts"><button type="button" class="gopt gopt-r" data-lista="rafa"><span class="gopt-ico" aria-hidden="true"><img src="img/switch-logo.png" width="150" height="150" alt=""></span><b>Jueguitos Switch de Rafita</b><small>Rojo y azul, como los Joy-Con</small></button>
+<button type="button" class="gopt gopt-n" data-lista="novia"><span class="gopt-ico" aria-hidden="true"><img src="img/kitty.png?v=20261123e" width="256" height="256" alt=""></span><b>Jueguitos Switch de Nicky</b><small>Rosa, con Hello Kitty</small></button></div>
+</div>`;return}
 gate.innerHTML=`<div class="gate-card" role="dialog" aria-modal="true" aria-labelledby="gateT">
+<button type="button" class="gate-back" data-back>‹ Elegir otra lista</button>
 <div class="gate-ico" aria-hidden="true">${NV?'<img src="img/kitty.png?v=20261123d" width="256" height="256" alt="">':'<img src="img/switch-logo.png" width="150" height="150" alt="">'}</div>
 <h2 id="gateT">${NAME}</h2>
 <p class="gate-sub">Entra con tu cuenta para guardar tu lista en la nube, o sigue como invitado.</p>
@@ -102,16 +111,24 @@ ${formHTML(gmode,"gate")}
 <p class="gate-note">Como invitado, lo que cambies se queda solo en este navegador.</p>
 </div>`;
 }
-function openGate(){
+function openGate(step){
+gstep=step||"login";
 root.classList.add("gate");
 gate=document.createElement("div");
 gate.id="gate";
 document.body.appendChild(gate);
 renderGate();
-setTimeout(()=>gate.querySelector("input")?.focus(),50);
+setTimeout(()=>(gate.querySelector("input")||gate.querySelector("button"))?.focus(),50);
 gate.addEventListener("click",e=>{
 const m=e.target.closest("[data-mode]");if(m){gmode=m.dataset.mode;gmsg="";renderGate();gate.querySelector("input")?.focus();return}
 if(e.target.closest("[data-guest]")){setGuest(true);closeGate();label()}
+if(e.target.closest("[data-back]")){gstep="lista";gmsg="";renderGate();return}
+const l=e.target.closest("[data-lista]");
+if(l){setChosen();const p=l.dataset.lista;
+if(p!==PROF){try{localStorage.setItem("juegos-switch-perfil",p);sessionStorage.setItem("js-cambio",p)}catch(x){}gate.classList.add("bye");setTimeout(()=>location.reload(),250);return}
+if(ses()){closeGate();sync();return}
+if(guest()){closeGate();label();return}
+gstep="login";gmsg="";renderGate();gate.querySelector("input")?.focus();return}
 });
 gate.addEventListener("submit",async e=>{
 e.preventDefault();
@@ -162,7 +179,8 @@ dlg.querySelector("input")?.focus();
 }
 btn.addEventListener("click",open);
 label();
-if(ses())sync();
-else if(!guest())openGate();
+if(!chosen())openGate("lista");
+else if(ses())sync();
+else if(!guest())openGate("login");
 else root.classList.remove("gate");
 })();

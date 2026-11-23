@@ -17,7 +17,7 @@ document.body.appendChild(b);
 const go=()=>{
 if(b.disabled)return;
 b.disabled=true;
-try{localStorage.setItem("juegos-switch-perfil",next);sessionStorage.setItem("js-cambio",next)}catch(e){}
+try{localStorage.setItem("juegos-switch-perfil",next);sessionStorage.setItem("js-cambio",next);sessionStorage.setItem("js-elegida","1")}catch(e){}
 if(reduce){location.reload();return}
 const r=b.getBoundingClientRect();
 const ov=document.createElement("div");

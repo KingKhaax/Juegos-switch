@@ -621,3 +621,28 @@ html.novia .gate-card{background:linear-gradient(180deg,#3a2236,#2a1626);border-
 html.novia .gate-ico img{filter:drop-shadow(0 8px 18px rgba(255,79,154,.55));animation:kitty 2.4s ease-in-out infinite}
 html.novia .gate-card h2{color:#ffe3f1}
 @media(prefers-reduced-motion:reduce){#gate,.gate-card,.gate-ico img{animation:none}}
+html #gate.g-lista{background:linear-gradient(115deg,#3a0a12 0%,#0b2a36 46%,#3a1530 54%,#2a1626 100%)}
+.gate-pick{width:min(760px,100%);display:grid;gap:22px;text-align:center;animation:gatecard .6s cubic-bezier(.2,.9,.3,1.25) .1s both}
+.gate-pick h2{font-size:clamp(1.6rem,5vw,2.5rem);font-weight:800;color:#fff;text-shadow:0 4px 24px rgba(0,0,0,.4)}
+.gate-opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr));gap:18px}
+.gopt{position:relative;overflow:hidden;display:grid;justify-items:center;gap:10px;padding:28px 20px 24px;border-radius:26px;color:#fff;border:2px solid rgba(255,255,255,.14);box-shadow:0 20px 50px rgba(0,0,0,.5);transition:transform .35s cubic-bezier(.2,.9,.3,1.3),box-shadow .3s,border-color .3s}
+.gopt::after{content:"";position:absolute;top:0;bottom:0;left:-60%;width:40%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.25),transparent);transform:skewX(-20deg)}
+.gopt-r{background:radial-gradient(circle at 20% 0%,rgba(231,1,19,.75),transparent 60%),radial-gradient(circle at 100% 100%,rgba(1,196,228,.6),transparent 60%),#1c1e25}
+.gopt-n{background:radial-gradient(circle at 20% 0%,rgba(255,79,154,.8),transparent 60%),radial-gradient(circle at 100% 100%,rgba(185,140,255,.6),transparent 60%),#2a1626}
+.gopt-ico{width:110px;height:110px;border-radius:50%;display:grid;place-items:center;background:rgba(0,0,0,.28);box-shadow:inset 0 2px 0 rgba(255,255,255,.15)}
+.gopt-r .gopt-ico img{width:78px;height:78px;filter:invert(1) drop-shadow(0 0 12px rgba(231,1,19,.9))}
+.gopt-n .gopt-ico{background:radial-gradient(circle at 35% 28%,#fff6fa,#ffd0e6 55%,#ff8cc0)}
+.gopt-n .gopt-ico img{width:88px;height:88px;object-fit:contain;filter:drop-shadow(0 3px 6px rgba(140,20,80,.4))}
+.gopt b{font-size:1.25rem;font-weight:800}
+.gopt small{color:rgba(255,255,255,.75);font-weight:700}
+.gopt:hover,.gopt:focus-visible{transform:translateY(-6px) scale(1.03);outline:0}
+.gopt-r:hover,.gopt-r:focus-visible{border-color:#ff4a5d;box-shadow:0 26px 60px rgba(0,0,0,.55),0 0 30px rgba(231,1,19,.45)}
+.gopt-n:hover,.gopt-n:focus-visible{border-color:#ff8cc0;box-shadow:0 26px 60px rgba(0,0,0,.55),0 0 30px rgba(255,79,154,.5)}
+.gopt:hover::after,.gopt:focus-visible::after{animation:goptsweep .8s ease}
+.gopt-n:hover .gopt-ico img{animation:kitty .9s ease-in-out infinite}
+.gopt-r:hover .gopt-ico img{animation:bob 1.2s ease-in-out infinite}
+@keyframes goptsweep{to{left:130%}}
+.gate-back{justify-self:start;margin:-8px 0 -4px -6px;padding:6px 10px;border-radius:10px;font-weight:800;font-size:.85rem;color:var(--mute);transition:color .2s,background .2s}
+.gate-back:hover,.gate-back:focus-visible{color:#fff;background:rgba(255,255,255,.08)}
+@media(prefers-reduced-motion:reduce){.gate-pick,.gopt,.gopt:hover .gopt-ico img{animation:none;transition:none}}
+body:has(#gate.g-lista) .perfil-btn{display:none}

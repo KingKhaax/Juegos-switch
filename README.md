@@ -63,7 +63,9 @@ La web tiene dos perfiles. Se cambia con el **botón redondo de arriba a la dere
 
 ## Cuentas: entrada obligatoria y una sesión por lista (23/11/2026)
 
-**Al abrir la web siempre hay que elegir:** entrar con usuario y contraseña (pestañas **Entrar** y **Crear cuenta**) o **Entrar como invitado**. Es una pantalla completa (`#gate`, en `cuenta.js`) que tapa la web; no se puede cerrar sin elegir. El botón de cambio de lista sigue visible encima, para poder cambiar de lista antes de entrar. Un script en línea del `<head>` pone la clase `gate` en `<html>` antes de pintar nada, así la lista no se ve ni un instante.
+**Primero, qué lista quieres ver:** cada vez que se abre la web (una vez por pestaña, `sessionStorage` `js-elegida`) sale «¿Qué lista quieres ver?» con dos tarjetas grandes, Jueguitos Switch de Rafita (rojo y azul, logo de Switch) y Jueguitos Switch de Nicky (rosa, Hello Kitty). Si eliges la otra lista, la web cambia a ella; si ya tienes sesión en la elegida, entra directamente. Desde la pantalla de usuario, «‹ Elegir otra lista» vuelve a las tarjetas.
+
+**Después, siempre hay que elegir:** entrar con usuario y contraseña (pestañas **Entrar** y **Crear cuenta**) o **Entrar como invitado**. Es una pantalla completa (`#gate`, en `cuenta.js`) que tapa la web; no se puede cerrar sin elegir. El botón de cambio de lista sigue visible encima, para poder cambiar de lista antes de entrar. Un script en línea del `<head>` pone la clase `gate` en `<html>` antes de pintar nada, así la lista no se ve ni un instante.
 
 - **Una sesión por lista:** la lista de Rafita y la de Nicky tienen cada una su sesión. Entrar en una no te deja dentro de la otra: al cambiar de lista hay que volver a entrar (o entrar como invitado).
   - Sesión de Rafita: `juegos-switch-cuenta`.
