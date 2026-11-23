@@ -59,12 +59,12 @@ const s=ses();
 const st={sync:"Guardando…",ok:"Todo guardado en tu cuenta",err:"No se ha podido guardar. Se reintentará con el siguiente cambio.","":""}[state]||"";
 dlg.innerHTML=`<div class="awin cu-win"><div class="fhead"><h3>${s?"Mi cuenta":"Iniciar sesión"}</h3><button class="x2" type="button" data-close aria-label="Cerrar">×</button></div>
 ${s?`<div class="cu-me"><span class="cu-av" aria-hidden="true">${esc(s.user.slice(0,1).toUpperCase())}</span><div><b>${esc(s.user)}</b><small class="cu-st ${state}">${st}</small></div></div>
-<p class="adesc">Todo lo que cambias (lo que tienes, precios, estados, notas, orden y tu almacenamiento) se guarda solo en esta cuenta, de tu lista y de Jueguitos Switch. Entra con el mismo usuario en otro móvil u ordenador y lo verás igual.</p>
+<p class="adesc">Todo lo que cambias (lo que tienes, precios, estados, notas, orden y tu almacenamiento) se guarda solo en esta cuenta, de las listas de Rafita y de Nicky. Entra con el mismo usuario en otro móvil u ordenador y lo verás igual.</p>
 <div class="cu-acts"><button type="button" class="pri" data-sync>Guardar ahora</button><button type="button" class="nb2" data-out>Cerrar sesión</button></div>`:
 `<div class="cu-tabs" role="tablist"><button type="button" role="tab" aria-selected="${mode==="entrar"}" data-mode="entrar">Entrar</button><button type="button" role="tab" aria-selected="${mode==="registro"}" data-mode="registro">Crear cuenta</button></div>
 <form class="cu-form" novalidate><label>Usuario<input name="user" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="24" required></label><label>Contraseña<input name="pass" type="password" autocomplete="${mode==="entrar"?"current-password":"new-password"}" minlength="6" maxlength="100" required></label>
 <button type="submit" class="pri big2">${mode==="entrar"?"Entrar":"Crear cuenta"}</button></form>
-<p class="adesc">${mode==="entrar"?"Entra para guardar tu lista y la de Jueguitos Switch en tu cuenta y verlas igual en todos tus dispositivos.":"Usuario de 3 a 24 letras o números (sin espacios) y contraseña de 6 caracteres o más. Lo que ya tienes en este navegador se guardará en la cuenta nueva."}</p>`}
+<p class="adesc">${mode==="entrar"?"Entra para guardar las listas de Rafita y de Nicky en tu cuenta y verlas igual en todos tus dispositivos.":"Usuario de 3 a 24 letras o números (sin espacios) y contraseña de 6 caracteres o más. Lo que ya tienes en este navegador se guardará en la cuenta nueva."}</p>`}
 <p class="amsg ${msgk}" role="status">${esc(msg)}</p></div>`;
 }
 function open(){

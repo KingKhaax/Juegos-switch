@@ -210,7 +210,7 @@ const facts=g.ex?`<span class="facts soon">Sale: ${(i.d.date||"próximamente")}<
 const prog=owned&&i.horasJ&&i.hours?`<span class="prog" style="--w:${Math.min(100,i.horasJ/i.hours*100).toFixed(0)}%" title="${nf(i.horasJ,1)} de ${nf(i.hours,1)} h"></span>`:"";
 const modes=g.m.length?g.m.map(x=>`<i>${T[x]}</i>`).join(""):"<i>Modos sin confirmar</i>";
 const cm=cmp.includes(g.slug);
-return `<article class="card${owned?" owned":""}${cm?" cmp":""}" data-slug="${g.slug}" data-k="${g.k}" data-tags="${g.m.join(" ")}" data-name="${norm(g.title)}" data-saga="${g.s}" data-genres="${(i.d.genres||[]).join("|")}" data-status="${owned?stOf(g.slug):""}"><button class="open" type="button" aria-label="Ver la ficha de ${g.title}"><span class="media"><img class="cover" src="img/t/${g.slug}.jpg" width="240" height="240" decoding="async" loading="${!owned&&n<=6?"eager":"lazy"}" alt=""><span class="num">${owned?"✓":n}</span>${meta}${cornerOf(g.k)}${prog}</span><span class="info"><span class="name">${g.title}</span>${facts}<span class="modes">${modes}</span></span></button>${owned?`<div class="fmtrow">${fb}</div><button class="st s-${stOf(g.slug)}" type="button" aria-label="Cambiar el estado de ${g.title}">${stLabel(stOf(g.slug))}</button><button class="pay" type="button">Cambiar precio</button>`:""}<div class="act"><button class="own" type="button" aria-pressed="${owned}">${owned?"Quitar de «ya lo tengo»":"Ya lo tengo"}</button><button class="cmpb" type="button" aria-pressed="${cm}" aria-label="Comparar ${g.title}" title="Comparar">${svg.cmp}</button></div>${owned?"":`<div class="mvbar"><span class="grip" data-grip aria-hidden="true" title="Arrastrar">${svg.grip}</span><button type="button" data-mv="-1" aria-label="Mover ${g.title} antes">‹</button><button type="button" data-mv="1" aria-label="Mover ${g.title} después">›</button></div>`}</article>`;
+return `<article class="card${owned?" owned":""}${cm?" cmp":""}" data-slug="${g.slug}" data-k="${g.k}" data-tags="${g.m.join(" ")}" data-name="${norm(g.title)}" data-saga="${g.s}" data-genres="${(i.d.genres||[]).join("|")}" data-status="${owned?stOf(g.slug):""}"><button class="open" type="button" aria-label="Ver la ficha de ${g.title}"><span class="media"><img class="cover" src="img/t/${g.slug}.jpg" width="240" height="240" decoding="async" loading="${!owned&&n<=6?"eager":"lazy"}" alt=""><span class="num">${owned?"✓":n}</span>${meta}${cornerOf(g.k)}${prog}</span><span class="info"><span class="name">${g.title}</span>${facts}<span class="modes">${modes}</span></span></button>${owned?`<div class="fmtrow">${fb}</div><button class="st s-${stOf(g.slug)}" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Estado de ${g.title}: ${stLabel(stOf(g.slug))}. Cambiar"><span class="stdot" aria-hidden="true"></span>${stLabel(stOf(g.slug))}<span class="stchev" aria-hidden="true"></span></button><button class="pay" type="button">Cambiar precio</button>`:""}<div class="act"><button class="own" type="button" aria-pressed="${owned}">${owned?"Quitar de «ya lo tengo»":"Ya lo tengo"}</button><button class="cmpb" type="button" aria-pressed="${cm}" aria-label="Comparar ${g.title}" title="Comparar">${svg.cmp}</button></div>${owned?"":`<div class="mvbar"><span class="grip" data-grip aria-hidden="true" title="Arrastrar">${svg.grip}</span><button type="button" data-mv="-1" aria-label="Mover ${g.title} antes">‹</button><button type="button" data-mv="1" aria-label="Mover ${g.title} después">›</button></div>`}</article>`;
 }
 
 function tone(img){
@@ -370,6 +370,42 @@ saveSt();
 render(false);
 refreshDialog();
 }
+let stm=null;
+function closeStMenu(){if(!stm)return;const b=stm._btn;stm.remove();stm=null;if(b&&b.isConnected)b.setAttribute("aria-expanded","false")}
+function openStMenu(slug,btn){
+const was=stm&&stm.dataset.slug===slug;
+closeStMenu();
+if(was)return;
+const cur=stOf(slug);
+stm=document.createElement("div");
+stm.className="stmenu";
+stm.setAttribute("role","menu");
+stm.dataset.slug=slug;
+stm._btn=btn;
+stm.innerHTML=STATES.map(([k,l])=>`<button type="button" role="menuitemradio" aria-checked="${cur===k}" class="stopt s-${k}" data-stopt="${k}"><i aria-hidden="true"></i><span>${l}</span>${cur===k?svg.ok:""}</button>`).join("");
+document.body.appendChild(stm);
+const r=btn.getBoundingClientRect(),h=stm.offsetHeight,w=Math.max(r.width,170);
+const up=r.bottom+h+8>innerHeight&&r.top-h-8>0;
+stm.style.left=Math.min(innerWidth-w-8,Math.max(8,r.left))+"px";
+stm.style.top=(up?r.top-h-6:r.bottom+6)+"px";
+stm.style.width=w+"px";
+stm.classList.toggle("up",up);
+btn.setAttribute("aria-expanded","true");
+(stm.querySelector('[aria-checked="true"]')||stm.querySelector("button")).focus({preventScroll:true});
+}
+document.addEventListener("click",e=>{
+if(!stm)return;
+const o=e.target.closest("[data-stopt]");
+if(o){const slug=stm.dataset.slug,b=stm._btn;closeStMenu();setStatus(slug,o.dataset.stopt);const nb=document.querySelector(`.card[data-slug="${slug}"] .st`);if(nb)nb.focus();return}
+if(!e.target.closest(".stmenu")&&!e.target.closest(".st"))closeStMenu();
+},true);
+document.addEventListener("keydown",e=>{
+if(!stm)return;
+if(e.key==="Escape"){const b=stm._btn;closeStMenu();if(b)b.focus();e.preventDefault();return}
+if(e.key==="ArrowDown"||e.key==="ArrowUp"){const bs=[...stm.querySelectorAll("button")];const i=bs.indexOf(document.activeElement);bs[(i+(e.key==="ArrowDown"?1:bs.length-1))%bs.length].focus();e.preventDefault()}
+});
+addEventListener("scroll",closeStMenu,{passive:true});
+
 function cycleStatus(slug){
 const ks=STATES.map(x=>x[0]);
 setStatus(slug,ks[(ks.indexOf(stOf(slug))+1)%ks.length]);
@@ -621,7 +657,7 @@ const slug=c.dataset.slug;
 if(e.target.closest("[data-mv]")){moveCard(slug,+e.target.closest("[data-mv]").dataset.mv);return}
 if(e.target.closest(".own"))toggleOwn(slug);
 else if(e.target.closest(".cmpb"))toggleCmp(slug);
-else if(e.target.closest(".st"))cycleStatus(slug);
+else if(e.target.closest(".st"))openStMenu(slug,e.target.closest(".st"));
 else if(e.target.closest(".pay"))editPrice(slug);
 else if(e.target.closest(".open"))openDlg(slug);
 });

@@ -38,6 +38,8 @@ El orden de la lista lo decide Rafael desde la propia web (botón **Reordenar**:
 
 ## Dos listas: la de Rafael y Jueguitos Switch (23/11/2026)
 
+Títulos: la de Rafael se llama **«Jueguitos Switch de Rafita»** y la de su novia **«Jueguitos Switch de Nicky»** (título de la página, pestaña del navegador, tooltip del botón y texto de la animación al cambiar).
+
 La web tiene dos perfiles. Se cambia con el **botón redondo de arriba a la derecha** (`perfil.js`): tiene un anillo de colores girando, un brillo que late, chispas y un tooltip. Al pulsarlo, un círculo de color sale del botón y cubre la pantalla con una explosión de símbolos (corazones y estrellas hacia Jueguitos Switch; A, B, X, Y y + hacia la de Rafael). La página se recarga con el otro perfil y se destapa con las tarjetas apareciendo una a una. Con `prefers-reduced-motion` solo cambia, sin animación.
 
 - **Perfil `rafa`**: «Mi colección de Nintendo Switch», con el tema rojo y azul de siempre. Usa la lista `window.LISTS.rafa` de `games.js` en el orden de `orden.js`.
@@ -295,3 +297,7 @@ Sin sesión, nada de esto se sincroniza entre dispositivos salvo el orden de Raf
 - Carcasas en HD con Real-ESRGAN (17/11/2026).
 - 17/11/2026: se añadieron reordenar y publicar el orden, nota y diario, formato digital/físico, estadísticas, comparador, próximos lanzamientos y ajustes (Rafael eligió estas diez ideas de mejora y descartó la copia de seguridad/exportar y otras).
 - Ideas pendientes que Rafael no ha pedido todavía: estado de cada juego (jugando, terminado…), «¿a qué juego?» al azar, aviso de Nintendo Switch Online, enlaces a la eShop, exportar o compartir la lista, instalar como app en el móvil y sincronizar «ya lo tengo» entre dispositivos.
+
+## Estado de cada juego (desplegable, 23/11/2026)
+
+En los juegos que ya tengo, el botón de estado abre un **desplegable** con Pendiente, Jugando, Terminado y Abandonado (cada uno con su color y una marca en el actual), en vez de ir pasando de uno a otro con cada clic. Se maneja también con el teclado (flechas, Intro y Esc) y se cierra al pulsar fuera o al hacer scroll. El menú se pinta fuera de la tarjeta (`.stmenu`, posición fija) porque la tarjeta recorta su contenido.
