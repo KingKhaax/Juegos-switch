@@ -4,6 +4,9 @@ const PROF=window.PERFIL==="novia"?"novia":"rafa";
 const NV=PROF==="novia";
 const NAME=NV?"Jueguitos Switch de Nicky":"Jueguitos Switch de Rafita";
 const CK=NV?"juegos-switch-cuenta-novia":"juegos-switch-cuenta";
+const FK="juegos-switch-amigo"+(NV?"-novia":"");
+const fmtFc=v=>{const d=String(v).toUpperCase().replace(/^SW/,"").replace(/[^0-9]/g,"").slice(0,12);return d?"SW-"+d.match(/.{1,4}/g).join("-"):""};
+const getFc=()=>{try{return localStorage.getItem(FK)||""}catch(e){return""}};
 const GK="js-invitado-"+PROF;
 const SKIP=/^juegos-switch-(cuenta|cuenta-novia|token|perfil|ajustes|mig1)$/;
 const root=document.documentElement;
@@ -23,7 +26,7 @@ const r=await fetch(API+"?a="+a,opt);
 let j={};try{j=await r.json()}catch(e){}
 return {ok:r.ok,status:r.status,j};
 }
-const ERR={existe:"Ese usuario ya existe. Elige otro o entra con él.",credenciales:"Usuario o contraseña incorrectos.",usuario:"Usuario no válido.",clave:"Contraseña no válida."};
+const ERR={nombre:"El nombre solo puede cambiar las mayúsculas y minúsculas del usuario.",existe:"Ese usuario ya existe. Elige otro o entra con él.",credenciales:"Usuario o contraseña incorrectos.",usuario:"Usuario no válido.",clave:"Contraseña no válida."};
 const btn=document.createElement("button");
 btn.type="button";
 btn.id="bcuenta";
@@ -31,7 +34,7 @@ btn.className="ap";
 const nav=document.querySelector(".apartados");
 if(nav)nav.insertBefore(btn,document.getElementById("bset"));
 let state="";
-const label=()=>{const s=ses();btn.innerHTML=s?`<span class="cu-dot ${state}" aria-hidden="true"></span>${esc(s.user)}`:`<span class="cu-dot" aria-hidden="true"></span>Invitado`;btn.setAttribute("aria-label",s?`Mi cuenta: ${s.user}`:"Estás como invitado. Iniciar sesión")};
+const label=()=>{const s=ses();btn.innerHTML=s?`<span class="cu-dot ${state}" aria-hidden="true"></span>${esc(s.nombre||s.user)}`:`<span class="cu-dot" aria-hidden="true"></span>Invitado`;btn.setAttribute("aria-label",s?`Mi cuenta: ${s.user}`:"Estás como invitado. Iniciar sesión")};
 const mark=s=>{state=s;label();const d=document.getElementById("cuentaDlg");if(d&&d.open)render()};
 let timer=0,busy=false,again=false;
 const putBody=()=>JSON.stringify({perfil:PROF,data:collect()});
@@ -72,7 +75,7 @@ if(mode==="registro"){body.perfil=PROF;body.data=collect()}
 const r=await call(mode,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
 if(!r.ok)return ERR[r.j.error]||"No se ha podido conectar. Inténtalo de nuevo.";
 setGuest(false);
-setSes({user:r.j.user,token:r.j.token,synced:r.j.updated,dirty:0});
+setSes({user:r.j.user,nombre:r.j.nombre||r.j.user,token:r.j.token,synced:r.j.updated,dirty:0});
 if(mode==="entrar"){
 const d=slot(r.j.data);
 if(!Object.keys(d).length){if(Object.keys(collect()).length)await push()}
@@ -84,8 +87,8 @@ const formHTML=(mode,id)=>`<div class="cu-tabs" role="tablist"><button type="but
 <form class="cu-form" novalidate data-form="${id}"><label>Usuario<input name="user" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="24" required></label><label>Contraseña<input name="pass" type="password" autocomplete="${mode==="entrar"?"current-password":"new-password"}" minlength="6" maxlength="100" required></label>
 <button type="submit" class="pri big2">${mode==="entrar"?"Entrar":"Crear cuenta"}</button></form>`;
 function check(f){
-const user=f.user.value.trim().toLowerCase(),pass=f.pass.value;
-if(!/^[a-z0-9._-]{3,24}$/.test(user))return [null,"El usuario tiene que tener de 3 a 24 letras o números, sin espacios ni tildes."];
+const user=f.user.value.trim(),pass=f.pass.value;
+if(!/^[a-z0-9._-]{3,24}$/i.test(user))return [null,"El usuario tiene que tener de 3 a 24 letras o números, sin espacios ni tildes."];
 if(pass.length<6)return [null,"La contraseña tiene que tener 6 caracteres o más."];
 return [[user,pass],""];
 }
@@ -150,8 +153,10 @@ function render(){
 const s=ses();
 const st={sync:"Guardando…",ok:"Todo guardado en tu cuenta",err:"No se ha podido guardar. Se reintentará con el siguiente cambio.","":""}[state]||"";
 dlg.innerHTML=`<div class="awin cu-win"><div class="fhead"><h3>${s?"Mi cuenta":"Iniciar sesión"}</h3><button class="x2" type="button" data-close aria-label="Cerrar">×</button></div>
-${s?`<div class="cu-me"><span class="cu-av" aria-hidden="true">${esc(s.user.slice(0,1).toUpperCase())}</span><div><b>${esc(s.user)}</b><small class="cu-st ${state}">${st}</small></div></div>
+${s?`<div class="cu-me"><span class="cu-av" aria-hidden="true">${esc((s.nombre||s.user).slice(0,1).toUpperCase())}</span><div><b>${esc(s.nombre||s.user)}</b><small class="cu-st ${state}">${st}</small></div></div>
 <p class="adesc">Sesión de <b>${NAME}</b>. Todo lo que cambias aquí (lo que tienes, precios, estados, notas, orden y almacenamiento) se guarda solo en esta cuenta. La otra lista tiene su propia sesión.</p>
+<form class="cu-ed" data-ed novalidate><label>Nombre de usuario<input name="nombre" maxlength="24" autocapitalize="none" spellcheck="false" value="${esc(s.nombre||s.user)}"></label><label>Contraseña actual<input name="actual" type="password" autocomplete="current-password"></label><label>Contraseña nueva<input name="nueva" type="password" autocomplete="new-password" placeholder="Déjala vacía para no cambiarla"></label><button type="submit" class="nb2">Guardar cambios</button></form>
+<div class="cu-fc"><label for="fcIn"><b>Código de amigo de Switch</b></label><div class="cu-fcrow"><input id="fcIn" type="text" inputmode="numeric" autocomplete="off" maxlength="17" placeholder="SW-0000-0000-0000" value="${esc(getFc())}"><button type="button" class="nb2" data-fccopy ${getFc().length===17?"":"disabled"}>Copiar</button></div><small>Se guarda en tu cuenta. Con Copiar lo tienes listo para pegar en un mensaje.</small></div>
 <div class="cu-acts"><button type="button" class="pri" data-sync>Guardar ahora</button><button type="button" class="nb2" data-out>Cerrar sesión</button></div>`:
 `<p class="adesc">Estás como invitado en <b>${NAME}</b>. Entra para guardar esta lista en tu cuenta.</p>${formHTML(mode,"dlg")}`}
 <p class="amsg ${msgk}" role="status">${esc(msg)}</p></div>`;
@@ -161,9 +166,11 @@ if(!dlg){dlg=document.createElement("dialog");dlg.id="cuentaDlg";dlg.setAttribut
 dlg.addEventListener("click",async e=>{
 if(e.target===dlg||e.target.closest("[data-close]")){dlg.close();return}
 const m=e.target.closest("[data-mode]");if(m){mode=m.dataset.mode;msg="";render();dlg.querySelector("input")?.focus();return}
+if(e.target.closest("[data-fccopy]")){const c=getFc();try{await navigator.clipboard.writeText("Mi código de amigo de Nintendo Switch: "+c)}catch(x){const t=dlg.querySelector("#fcIn");t.select();document.execCommand("copy")}msg="Código copiado: "+c;msgk="ok";render();return}
 if(e.target.closest("[data-out]")){await push();setSes(null);setGuest(false);location.reload();return}
 if(e.target.closest("[data-sync]")){await push();msg=state==="ok"?"Guardado.":"No se ha podido guardar.";msgk=state==="ok"?"ok":"bad";render()}
 });
+dlg.addEventListener("input",e=>{if(e.target.id!=="fcIn")return;const v=fmtFc(e.target.value);e.target.value=v;try{v?localStorage.setItem(FK,v):localStorage.removeItem(FK)}catch(x){}document.dispatchEvent(new Event("js-guardado"));const b=dlg.querySelector("[data-fccopy]");if(b)b.disabled=v.length!==17});
 dlg.addEventListener("submit",async e=>{
 e.preventDefault();
 const [v,err]=check(e.target);

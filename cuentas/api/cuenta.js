@@ -69,7 +69,8 @@ export default async function handler(req, res) {
   try {
     if (req.method === 'POST' && (a === 'registro' || a === 'entrar')) {
       const b = await body(req);
-      const user = String(b.user || '').trim().toLowerCase();
+      const raw = String(b.user || '').trim();
+      const user = raw.toLowerCase();
       const pass = b.pass;
       if (!okUser(user)) return res.status(400).json({ error: 'usuario' });
       if (!okPass(pass)) return res.status(400).json({ error: 'clave' });
@@ -79,21 +80,42 @@ export default async function handler(req, res) {
         const salt = crypto.randomBytes(16).toString('hex');
         const data = {};
         if (okPerfil(b.perfil) && okData(b.data)) data[b.perfil] = b.data;
-        const nrec = { salt, hash: await hashPass(pass, salt), data, updated: Date.now(), created: Date.now() };
+        const nrec = { display: raw, salt, hash: await hashPass(pass, salt), data, updated: Date.now(), created: Date.now() };
         await save(user, nrec);
-        return res.status(200).json({ token: makeToken(user), user, data: nrec.data, updated: nrec.updated });
+        return res.status(200).json({ token: makeToken(user), user, nombre: raw, data: nrec.data, updated: nrec.updated });
       }
       if (!rec) { await sleep(400); return res.status(401).json({ error: 'credenciales' }); }
       const h = await hashPass(pass, rec.salt);
       if (!crypto.timingSafeEqual(Buffer.from(h, 'hex'), Buffer.from(rec.hash, 'hex'))) { await sleep(400); return res.status(401).json({ error: 'credenciales' }); }
-      return res.status(200).json({ token: makeToken(user), user, data: slots(rec.data), updated: rec.updated || 0 });
+      return res.status(200).json({ token: makeToken(user), user, nombre: rec.display || user, data: slots(rec.data), updated: rec.updated || 0 });
+    }
+    if (req.method === 'POST' && a === 'perfil') {
+      const user = readToken(String(req.headers.authorization || '').replace(/^Bearers+/i, ''));
+      if (!user) return res.status(401).json({ error: 'sesion' });
+      const rec = await load(user);
+      if (!rec) return res.status(401).json({ error: 'sesion' });
+      const b = await body(req);
+      if (b.nombre !== undefined) {
+        const n = String(b.nombre).trim();
+        if (n.toLowerCase() !== user) return res.status(400).json({ error: 'nombre' });
+        rec.display = n;
+      }
+      if (b.nueva) {
+        if (!okPass(b.nueva)) return res.status(400).json({ error: 'clave' });
+        const h = await hashPass(String(b.actual || ''), rec.salt);
+        if (!crypto.timingSafeEqual(Buffer.from(h, 'hex'), Buffer.from(rec.hash, 'hex'))) { await sleep(400); return res.status(401).json({ error: 'credenciales' }); }
+        rec.salt = crypto.randomBytes(16).toString('hex');
+        rec.hash = await hashPass(b.nueva, rec.salt);
+      }
+      await save(user, rec);
+      return res.status(200).json({ nombre: rec.display || user });
     }
     if (a === 'datos') {
       const user = readToken(String(req.headers.authorization || '').replace(/^Bearer\s+/i, ''));
       if (!user) return res.status(401).json({ error: 'sesion' });
       const rec = await load(user);
       if (!rec) return res.status(401).json({ error: 'sesion' });
-      if (req.method === 'GET') return res.status(200).json({ user, data: slots(rec.data), updated: rec.updated || 0 });
+      if (req.method === 'GET') return res.status(200).json({ user, nombre: rec.display || user, data: slots(rec.data), updated: rec.updated || 0 });
       if (req.method === 'PUT') {
         const b = await body(req);
         if (!okPerfil(b.perfil) || !okData(b.data)) return res.status(400).json({ error: 'datos' });

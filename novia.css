@@ -653,3 +653,5 @@ body{background:radial-gradient(1200px 700px at 15% -10%,rgba(255,79,154,.18),tr
 .card{box-shadow:0 10px 26px rgba(40,0,30,.45)}
 .card:hover{box-shadow:0 14px 34px rgba(255,79,154,.28),0 0 0 1px rgba(255,176,210,.25)}
 ::selection{background:#ff4f9a;color:#fff}
+
+.cu-ed,.cu-fc{display:grid;gap:10px;margin:14px 0}.cu-ed label{display:grid;gap:4px;font-weight:700}.cu-fcrow{display:flex;gap:10px}.cu-fcrow input{flex:1}.cu-fc small{opacity:.7}

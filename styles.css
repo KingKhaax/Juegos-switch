@@ -646,3 +646,5 @@ html #gate.g-lista{background:linear-gradient(115deg,#3a0a12 0%,#0b2a36 46%,#3a1
 .gate-back:hover,.gate-back:focus-visible{color:#fff;background:rgba(255,255,255,.08)}
 @media(prefers-reduced-motion:reduce){.gate-pick,.gopt,.gopt:hover .gopt-ico img{animation:none;transition:none}}
 body:has(#gate.g-lista) .perfil-btn{display:none}
+
+.cu-ed,.cu-fc{display:grid;gap:10px;margin:14px 0}.cu-ed label{display:grid;gap:4px;font-weight:700}.cu-fcrow{display:flex;gap:10px}.cu-fcrow input{flex:1}.cu-fc small{opacity:.7}
