@@ -57,7 +57,7 @@ La web tiene dos perfiles. Se cambia con el **botón redondo de arriba a la dere
 - **Cada perfil guarda lo suyo:** en el perfil `novia` todas las claves llevan el sufijo `-novia` (`juegos-switch-tengo-novia`…). Las claves `ajustes`, `token`, `perfil` y `cuenta` son comunes.
 - **`novia.css` no se edita a mano.** Lo genera `node tools/tema-novia.mjs .` a partir de `styles.css`: cambia cada color rojo, azul o gris por su versión rosa, lila o ciruela, y le añade `tools/tema-novia-extra.css`. **Después de cambiar `styles.css` hay que volver a ejecutarlo.**
 - **`games.js`** tiene todos los juegos de las dos listas (`window.GAMES`) y qué juegos van en cada una (`window.LISTS`). Un juego nuevo para una lista se añade a `GAMES` y a esa lista.
-- **Pendiente:** Rafael va a pasar una imagen para el botón de cambio de perfil. Va dentro de `.pb-face`; el estilo ya admite `<img>`.
+- **Imagen del botón:** en Jueguitos Switch el botón lleva la cara de Hello Kitty (`img/kitty.png`, recortada sin el texto y con fondo transparente a partir de la imagen que pasó Rafael), que se balancea al pasar el ratón. También sale grande en la animación al cambiar a Jueguitos Switch. En la lista de Rafael el botón lleva un Joy-Con.
 
 ## Cuentas: iniciar sesión y guardar todo en la nube (23/11/2026)
 
