@@ -97,7 +97,7 @@ gate.classList.toggle("g-lista",gstep==="lista");
 if(gstep==="lista"){gate.innerHTML=`<div class="gate-pick" role="dialog" aria-modal="true" aria-labelledby="gateT">
 <h2 id="gateT">¿Qué lista quieres ver?</h2>
 <div class="gate-opts"><button type="button" class="gopt gopt-r" data-lista="rafa"><span class="gopt-ico" aria-hidden="true"><img src="img/switch-logo.png" width="150" height="150" alt=""></span><b>Jueguitos Switch de Rafita</b><small>Rojo y azul, como los Joy-Con</small></button>
-<button type="button" class="gopt gopt-n" data-lista="novia"><span class="gopt-ico" aria-hidden="true"><img src="img/kitty.png?v=20261123e" width="256" height="256" alt=""></span><b>Jueguitos Switch de Nicky</b><small>Rosa, con Hello Kitty</small></button></div>
+<button type="button" class="gopt gopt-n" data-lista="novia"><span class="gopt-ico" aria-hidden="true"><img src="img/kitty.png?v=20261123f" width="256" height="256" alt=""></span><b>Jueguitos Switch de Nicky</b><small>Rosa, con Hello Kitty</small></button></div>
 </div>`;return}
 gate.innerHTML=`<div class="gate-card" role="dialog" aria-modal="true" aria-labelledby="gateT">
 <button type="button" class="gate-back" data-back>‹ Elegir otra lista</button>

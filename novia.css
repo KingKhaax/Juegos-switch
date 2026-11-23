@@ -598,7 +598,7 @@ html.lite .perfil-btn .pb-ring,html.lite .perfil-btn .pb-glow,html.lite .perfil-
 .stopt[aria-checked="true"]{background:color-mix(in srgb,var(--sc) 14%,transparent)}
 @media(prefers-reduced-motion:reduce){.stmenu{animation:none}}
 html.gate{overflow:hidden}
-html.gate body>*:not(#gate):not(.perfil-ov):not(.perfil-btn){visibility:hidden}
+html.gate body>*:not(#gate):not(.perfil-ov):not(.perfil-btn):not(.cur-dot):not(.cur-ring){visibility:hidden}
 html.gate .perfil-btn{z-index:160}
 #gate{position:fixed;inset:0;z-index:150;display:grid;place-items:center;padding:20px;overflow:auto;background:radial-gradient(900px 600px at 20% 10%,rgba(255,79,154,.35),transparent 60%),radial-gradient(900px 600px at 85% 90%,rgba(185,140,255,.28),transparent 60%),#1d0f1b;animation:gatein .5s ease both}
 #gate.bye{animation:gateout .45s ease forwards}
