@@ -61,24 +61,32 @@ La web tiene dos perfiles. Se cambia con el **botón redondo de arriba a la dere
 - **`games.js`** tiene todos los juegos de las dos listas (`window.GAMES`) y qué juegos van en cada una (`window.LISTS`). Un juego nuevo para una lista se añade a `GAMES` y a esa lista.
 - **Imagen del botón:** en Jueguitos Switch el botón lleva la cara de Hello Kitty (`img/kitty.png`, recortada sin el texto y con fondo transparente a partir de la imagen que pasó Rafael), que se balancea al pasar el ratón. También sale grande en la animación al cambiar a Jueguitos Switch. En la lista de Rafael el botón lleva un Joy-Con.
 
-## Cuentas: iniciar sesión y guardar todo en la nube (23/11/2026)
+## Cuentas: entrada obligatoria y una sesión por lista (23/11/2026)
 
-El botón **Iniciar sesión** de la cabecera (`cuenta.js`) abre una ventana con **Entrar** y **Crear cuenta**. El usuario lleva de 3 a 24 caracteres (letras, números, `.`, `_` o `-`) y la contraseña, 6 caracteres o más. Una sola cuenta guarda las dos listas, la de Rafael y Jueguitos Switch.
+**Al abrir la web siempre hay que elegir:** entrar con usuario y contraseña (pestañas **Entrar** y **Crear cuenta**) o **Entrar como invitado**. Es una pantalla completa (`#gate`, en `cuenta.js`) que tapa la web; no se puede cerrar sin elegir. El botón de cambio de lista sigue visible encima, para poder cambiar de lista antes de entrar. Un script en línea del `<head>` pone la clase `gate` en `<html>` antes de pintar nada, así la lista no se ve ni un instante.
 
-- **Qué se guarda:** todas las claves `juegos-switch-*` del navegador, de los dos perfiles, salvo `cuenta`, `token`, `perfil`, `ajustes` y `mig1`. Cada cambio se sube solo al segundo, y al cerrar la página si quedaba algo pendiente.
-- **Indicador:** el botón muestra el usuario con un punto de color: verde si está guardado, amarillo mientras guarda y rojo si hay un error.
-- **Al crear la cuenta** se sube lo que ya había en ese navegador.
-- **Al entrar**, lo de la cuenta sustituye a lo del navegador. Si la cuenta está vacía, se sube lo del navegador.
-- **Al abrir la web con sesión iniciada**, si la cuenta tiene algo distinto (cambiado en otro dispositivo), se carga y la página se recarga una vez.
-- **Servidor:** proyecto de Vercel `juegos-switch-cuentas` (cuenta KingKhaax), en `https://juegos-switch-cuentas.vercel.app/api/cuenta`, con el código en `cuentas/` de este repositorio. Solo acepta peticiones desde `https://kingkhaax.github.io`. Acciones:
-  - `POST ?a=registro` y `POST ?a=entrar`: devuelven un token firmado válido 180 días.
-  - `GET` y `PUT ?a=datos`, con `Authorization: Bearer <token>`.
-- **Dónde están los datos:** en un **Vercel Blob privado** (`juegos-switch-cuentas`, región París), un archivo por usuario: `cuentas/<usuario>.json`. Guarda la contraseña cifrada con scrypt y sal (nunca en claro), los datos y la fecha.
+- **Una sesión por lista:** la lista de Rafita y la de Nicky tienen cada una su sesión. Entrar en una no te deja dentro de la otra: al cambiar de lista hay que volver a entrar (o entrar como invitado).
+  - Sesión de Rafita: `juegos-switch-cuenta`.
+  - Sesión de Nicky: `juegos-switch-cuenta-novia`.
+  - Invitado: `sessionStorage` `js-invitado-rafa` / `js-invitado-novia`. Dura hasta cerrar la pestaña, así que la pantalla vuelve a salir en la siguiente visita.
+- **Con cuenta, la sesión se mantiene** (180 días) y cada cambio que haces se guarda solo en esa cuenta, al segundo (y al cerrar la página si quedaba algo pendiente). En la cabecera, el botón muestra el usuario con un punto verde si está guardado, amarillo mientras guarda y rojo si falla. Como invitado pone «Invitado»; al pulsarlo se puede iniciar sesión.
+- **Qué se guarda:** solo las claves de esa lista. En la de Rafita, las `juegos-switch-*` sin `-novia`; en la de Nicky, las que acaban en `-novia`. No se guardan `ajustes`, `token`, `perfil`, las sesiones ni `mig1`. La misma cuenta puede guardar una lista en cada perfil.
+- **Al crear la cuenta** se sube lo que había en ese navegador para esa lista.
+- **Al entrar**, lo de la cuenta sustituye a lo del navegador. Si la cuenta no tiene nada de esa lista, se sube lo del navegador.
+- **Al abrir con sesión**, si la cuenta tiene algo distinto (cambiado en otro dispositivo), se carga y la página se recarga una vez.
+- **Cerrar sesión** (en Mi cuenta) guarda lo pendiente y vuelve a la pantalla de entrada.
+- **Servidor:** proyecto de Vercel `juegos-switch-cuentas` (cuenta KingKhaax), en `https://juegos-switch-cuentas.vercel.app/api/cuenta`, con el código en `cuentas/`. Solo acepta peticiones desde `https://kingkhaax.github.io`. Acciones:
+  - `POST ?a=registro` y `POST ?a=entrar`: devuelven un token firmado válido 180 días. En el registro se puede mandar `perfil` y `data`.
+  - `GET ?a=datos`: devuelve `{rafa:{…}, novia:{…}}`.
+  - `PUT ?a=datos` con `{perfil, data}`: guarda solo esa lista.
+
+  Todas las de `datos` van con `Authorization: Bearer <token>`. Las cuentas antiguas con todas las claves juntas se separan solas por el sufijo `-novia`.
+- **Datos:** Vercel Blob privado `juegos-switch-cuentas` (región París), un archivo por usuario `cuentas/<usuario>.json`, con la contraseña cifrada con scrypt y sal (nunca en claro).
 - **Variables de entorno en Vercel:**
   - `BLOB_READ_WRITE_TOKEN`: la pone Vercel al conectar el Blob.
   - `CUENTAS_SECRET`: firma los tokens. Si se cambia, se cierran todas las sesiones.
-- **Publicar cambios del servidor:** `cd cuentas && npm install && npx vercel deploy --prod --yes`. La carpeta `cuentas/.vercel` y `.env.local` no se suben a git; se recrean con `npx vercel link --yes --project juegos-switch-cuentas`.
-- **No hay recuperación de contraseña.** Si se olvida, se borra el archivo del usuario en el Blob (`npx vercel blob delete cuentas/<usuario>.json --rw-token <BLOB_READ_WRITE_TOKEN>`) y se crea la cuenta de nuevo.
+- **Publicar el servidor:** `cd cuentas && npm install && npx vercel deploy --prod --yes`. `cuentas/.vercel` y `.env.local` no van a git; se recrean con `npx vercel link --yes --project juegos-switch-cuentas`.
+- **No hay recuperación de contraseña.** Si se olvida, se borra el archivo del usuario (`npx vercel blob delete cuentas/<usuario>.json --rw-token <BLOB_READ_WRITE_TOKEN>`) y se crea la cuenta de nuevo.
 
 ## Cómo funciona la web
 
@@ -263,7 +271,7 @@ tools/sync-readme.mjs  deja la tabla del README y el .txt en el orden de orden.j
 | `juegos-switch-ajustes` | modo ligero, fondo, cursor y tamaño del texto |
 | `juegos-switch-token` | token de GitHub para publicar el orden (opcional, solo en el navegador de Rafael) |
 | `juegos-switch-perfil` | perfil elegido: `rafa` o `novia` (Jueguitos Switch) |
-| `juegos-switch-cuenta` | sesión iniciada: usuario, token y si hay cambios sin subir |
+| `juegos-switch-cuenta`, `juegos-switch-cuenta-novia` | sesión de la lista de Rafita / de Nicky: usuario, token y si hay cambios sin subir |
 | `juegos-switch-*-novia` | las mismas claves de arriba, pero del perfil Jueguitos Switch |
 
 Sin sesión, nada de esto se sincroniza entre dispositivos salvo el orden de Rafael, que se publica en `orden.js`. Con sesión iniciada, todo (menos ajustes, token, perfil y la propia sesión) se guarda en la cuenta (ver «Cuentas»).
