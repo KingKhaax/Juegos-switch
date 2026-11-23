@@ -143,7 +143,7 @@ const a=totals(want),b=totals(have);
 const all=(a.mb+b.mb)/1024;
 const ig=internalGB()*IFACT;
 const need=all<=ig?0:sdFor(all-ig);
-$("#resumen").innerHTML=`<div class="tile"><small>Los que quiero</small><b>${want.length} juegos</b><span>${gb(a.mb)}</span><span>${eur(a.price)} por comprar</span></div><div class="tile"><small>Los que ya tengo</small><b>${have.length} juegos</b><span>${gb(b.mb)}</span><span>${eur(b.price)} gastados</span>${have.length?`<span class="stc">${STATES.map(([k,l])=>`${l} ${have.filter(g=>stOf(g.slug)===k).length}`).join(" · ")}</span>`:""}</div><div class="tile sd"><small>Tarjeta SD que necesito</small><b>${need?sdLabel(need):"Ninguna"}</b><span>Con todo: ${nf(all,1)} GB</span><span>Memoria interna: ${internalGB()} GB</span></div>`;
+$("#resumen").innerHTML=`<div class="tile"><small>Los que quiero</small><b>${want.length} juegos</b><span>${gb(a.mb)}</span><span>${eur(a.price)} por comprar</span></div><div class="tile"><small>Los que ya tengo</small><b>${have.length} juegos</b><span>${gb(b.mb)}</span><span>${eur(b.price)} gastados</span>${have.length?`<span class="stc">${STATES.map(([k,l])=>`${l} ${have.filter(g=>stOf(g.slug)===k).length}`).join(" · ")}</span>`:""}</div>`;
 renderStorage(a,b,all,ig,need);
 }
 
