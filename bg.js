@@ -3,8 +3,9 @@ const cv=document.getElementById("bg");
 if(!cv)return;
 const ctx=cv.getContext("2d");
 const reduce=matchMedia("(prefers-reduced-motion:reduce)").matches;
-const COL=["230,0,18","0,195,227","255,255,255"];
-const GL=["A","B","X","Y","+","−"];
+const NV=document.documentElement.classList.contains("novia");
+const COL=NV?["255,95,170","199,155,255","255,214,232"]:["230,0,18","0,195,227","255,255,255"];
+const GL=NV?["♥","✦","★","♡","✿"]:["A","B","X","Y","+","−"];
 let w=0,h=0,dpr=1,mx=0,my=0,tx=0,ty=0,raf=0,P=[];
 const sprite=p=>{
 const sz=Math.ceil(p.s*1.7)+12;
@@ -18,6 +19,7 @@ x.lineWidth=2;
 if(p.t===0){x.beginPath();x.arc(0,0,p.s/2,0,6.283);x.stroke()}
 else if(p.t===1){x.beginPath();x.arc(0,0,p.s/3,0,6.283);x.fill()}
 else if(p.t===2){x.font=`800 ${p.s}px Nunito,sans-serif`;x.textAlign="center";x.textBaseline="middle";x.fillText(p.g,0,0)}
+else if(NV){const k=p.s/32;x.beginPath();x.moveTo(0,10*k);x.bezierCurveTo(-18*k,-2*k,-10*k,-18*k,0,-8*k);x.bezierCurveTo(10*k,-18*k,18*k,-2*k,0,10*k);x.stroke()}
 else{x.beginPath();(x.roundRect||x.rect).call(x,-p.s*.3,-p.s*.8,p.s*.6,p.s*1.6,p.s*.3);x.stroke()}
 p.sz=sz;
 return c;

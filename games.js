@@ -4,11 +4,13 @@ window.GAMES=[
 {slug:"super-mario-bros-wonder",s:"mario",title:"Super Mario Bros. Wonder",k:"s2e",m:["sp","cl","co","mo"]},
 {slug:"mario-rabbids-sparks-of-hope",s:"mario",title:"Mario + Rabbids Sparks of Hope",k:"s1",m:["sp"]},
 {slug:"mario-rabbids-kingdom-battle",s:"mario",title:"Mario + Rabbids Kingdom Battle",k:"s1",m:["sp","cl"]},
+{slug:"super-mario-party-jamboree",s:"mario",title:"Super Mario Party Jamboree",k:"s2e",m:["sp","cl","ml","mo"]},
 {slug:"super-mario-party",s:"mario",title:"Super Mario Party",k:"s1",m:["cl","ml","mo"]},
 {slug:"super-mario-3d-world-bowsers-fury",s:"mario",title:"Super Mario 3D World + Bowser Fury",k:"upd",m:["sp","cl","co","mo"]},
 {slug:"super-smash-bros-ultimate",s:"smash",title:"Super Smash Bros. Ultimate",k:"s1",m:["sp","ml","mo"]},
 {slug:"pokemon-diamante-brillante",s:"pokemon",title:"Pokémon Diamante Brillante",k:"s1",m:["sp","mo"]},
 {slug:"the-legend-of-zelda-breath-of-the-wild",s:"zelda",title:"The Legend of Zelda: Breath of the Wild",k:"s2e",m:["sp"]},
+{slug:"pokemon-lets-go-pikachu",s:"pokemon",title:"Pokémon Let's Go, Pikachu!",k:"s1",m:["sp","cl","mo"]},
 {slug:"pokemon-lets-go-eevee",s:"pokemon",title:"Pokémon Let's Go, Eevee!",k:"s1",m:["sp","cl","mo"]},
 {slug:"mario-luigi-conexion-fraternal",s:"mario",title:"Mario & Luigi: Conexión Fraternal",k:"s1",m:["sp"]},
 {slug:"the-legend-of-zelda-tears-of-the-kingdom",s:"zelda",title:"The Legend of Zelda: Tears of the Kingdom",k:"s2e",m:["sp"]},
@@ -25,3 +27,4 @@ window.GAMES=[
 {slug:"kirby-y-la-tierra-olvidada",s:"kirby",title:"Kirby y la Tierra Olvidada",k:"s2e",m:["sp","cl"]},
 {slug:"animal-crossing-new-horizons",s:"ac",title:"Animal Crossing: New Horizons",k:"s2e",m:["sp","cl","mo"]}
 ];
+window.LISTS={rafa:["leyendas-pokemon-z-a","donkey-kong-bananza","super-mario-bros-wonder","mario-rabbids-sparks-of-hope","mario-rabbids-kingdom-battle","super-mario-party-jamboree","super-mario-3d-world-bowsers-fury","super-smash-bros-ultimate","pokemon-diamante-brillante","the-legend-of-zelda-breath-of-the-wild","pokemon-lets-go-pikachu","mario-luigi-conexion-fraternal","the-legend-of-zelda-tears-of-the-kingdom","mario-strikers-battle-league-football","mario-kart-world","mario-kart-8-deluxe","pokemon-escarlata","leyendas-pokemon-arceus","pokemon-espada","super-mario-odyssey","super-mario-galaxy-1-2","super-mario-maker-2","pokken-tournament-dx","kirby-y-la-tierra-olvidada","animal-crossing-new-horizons"],novia:["mario-luigi-conexion-fraternal","leyendas-pokemon-arceus","pokemon-espada","super-mario-odyssey","donkey-kong-bananza","kirby-y-la-tierra-olvidada","super-mario-3d-world-bowsers-fury","pokemon-lets-go-eevee","super-mario-galaxy-1-2"]};

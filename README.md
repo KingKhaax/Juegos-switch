@@ -6,14 +6,14 @@ Mi lista de juegos de Nintendo Switch: los que quiero y los que ya tengo. Cada j
 
 Este README recoge todo lo que está decidido y apuntado del proyecto, para que cualquiera que lo edite (añadir juegos, borrar, reordenar, cambiar el diseño) lo tenga en cuenta. **Se actualiza en cada cambio**, junto con `juegos-switch.txt` del escritorio de Rafael (copia en texto de la lista).
 
-Última actualización: 19/11/2026.
+Última actualización: 23/11/2026.
 
 ## Guía rápida para otra sesión
 
 Antes de tocar nada, léelo entero. Después, en cada cambio:
 
 1. Aplica el cambio en el código (`games.js`, `app.js`, `styles.css`…).
-2. Si cambia la lista (orden, juegos, modos, sagas), actualiza también la tabla de este README y `C:\Users\Rafael\Desktop\juegos-switch.txt`.
+2. Si cambia la lista (orden, juegos, modos, sagas), actualiza también la tabla de este README y `C:\Users\Rafael\Desktop\juegos-switch.txt`. Si cambias `styles.css`, regenera el tema rosa con `node tools/tema-novia.mjs .`.
 3. Comprueba que no hay errores: `node --check app.js cursor.js bg.js` y mira la página con una captura (Edge sin ventana: `msedge --headless=new --screenshot=salida.png --window-size=1100,900 --virtual-time-budget=6000 file:///C:/Users/Rafael/Desktop/Juegos-switch/index.html#<slug>`). Las fichas se abren con `index.html#<slug>` y las ventanas de filtros con `#filtros-mode`, `#filtros-saga`, `#filtros-genre`.
 4. Actualiza este README (y la fecha de arriba).
 5. `git add -A`, commit y `git push` a `main`. GitHub Pages publica solo (tarda unos 40 s).
@@ -35,6 +35,48 @@ El orden de la lista lo decide Rafael desde la propia web (botón **Reordenar**:
 - Precedencia: el orden que cada persona ha cambiado en su navegador (`localStorage`, clave `juegos-switch-orden`) manda sobre el publicado; sin cambios propios se usa `orden.js`; si falta un juego, se coloca tras el que le precede en `games.js`.
 - Para publicar hay dos vías. Con un **token personal de GitHub** (fine-grained, solo este repositorio, permiso Contents: lectura y escritura; se guarda solo en el navegador de Rafael, clave `juegos-switch-token`) la web hace el commit sola (`Actualizar el orden de la lista`, a nombre de su cuenta). Sin token, la web abre la página de edición de `orden.js` en GitHub con el texto para copiar y pegar. Para guardar el token en un navegador sin escribirlo, se abre una vez `https://kingkhaax.github.io/Juegos-switch/#tok=<token>`: `ajustes.js` lo guarda en `localStorage` y borra el `#tok=` de la dirección. El token **no** va nunca en el código de la web (es pública y cualquiera podría cambiar el repositorio); está guardado solo en los PC de Rafael, en `Claves-locales-WipeTime-NinjaLoot\juegos-switch-token.txt`.
 - **Regla para cualquier sesión:** `orden.js` es la fuente de verdad del orden. Al empezar a trabajar, ejecuta `node tools/sync-readme.mjs . C:\Users\Rafael\Desktop\juegos-switch.txt`: deja la tabla de «Lista actual» de este README y `juegos-switch.txt` en el orden publicado. Un juego nuevo se añade en `games.js` y se publica su sitio en el orden con Reordenar (o se coloca en `orden.js`). El orden base de `games.js` solo se usa donde `orden.js` no dice nada.
+
+## Dos listas: la de Rafael y Jueguitos Switch (23/11/2026)
+
+La web tiene dos perfiles. Se cambia con el **botón redondo de arriba a la derecha** (`perfil.js`): tiene un anillo de colores girando, un brillo que late, chispas y un tooltip. Al pulsarlo, un círculo de color sale del botón y cubre la pantalla con una explosión de símbolos (corazones y estrellas hacia Jueguitos Switch; A, B, X, Y y + hacia la de Rafael). La página se recarga con el otro perfil y se destapa con las tarjetas apareciendo una a una. Con `prefers-reduced-motion` solo cambia, sin animación.
+
+- **Perfil `rafa`**: «Mi colección de Nintendo Switch», con el tema rojo y azul de siempre. Usa la lista `window.LISTS.rafa` de `games.js` en el orden de `orden.js`.
+- **Perfil `novia`**: **«Jueguitos Switch»**, la lista de la novia de Rafael, con tema rosa (`novia.css`) y fondo animado con corazones, estrellas y flores (`bg.js`). Su orden de base es `window.LISTS.novia`:
+  1. Mario & Luigi: Conexión Fraternal
+  2. Leyendas Pokémon: Arceus
+  3. Pokémon Espada
+  4. Super Mario Odyssey
+  5. Donkey Kong Bananza
+  6. Kirby y la Tierra Olvidada
+  7. Super Mario 3D World + Bowser's Fury
+  8. Pokémon Let's Go, Eevee!
+  9. Super Mario Galaxy: es la ficha «Super Mario Galaxy + Super Mario Galaxy 2», la única edición en Switch.
+
+  `orden.js` no le afecta, y en sus Ajustes no sale «Publicar mi orden».
+- **Dónde se guarda el perfil:** en `localStorage` (`juegos-switch-perfil`). Lo lee un script en línea del `<head>` de `index.html`, que pone la clase `novia` en `<html>`, cambia el título de la pestaña y carga `novia.css` en vez de `styles.css`, sin parpadeo.
+- **Cada perfil guarda lo suyo:** en el perfil `novia` todas las claves llevan el sufijo `-novia` (`juegos-switch-tengo-novia`…). Las claves `ajustes`, `token`, `perfil` y `cuenta` son comunes.
+- **`novia.css` no se edita a mano.** Lo genera `node tools/tema-novia.mjs .` a partir de `styles.css`: cambia cada color rojo, azul o gris por su versión rosa, lila o ciruela, y le añade `tools/tema-novia-extra.css`. **Después de cambiar `styles.css` hay que volver a ejecutarlo.**
+- **`games.js`** tiene todos los juegos de las dos listas (`window.GAMES`) y qué juegos van en cada una (`window.LISTS`). Un juego nuevo para una lista se añade a `GAMES` y a esa lista.
+- **Pendiente:** Rafael va a pasar una imagen para el botón de cambio de perfil. Va dentro de `.pb-face`; el estilo ya admite `<img>`.
+
+## Cuentas: iniciar sesión y guardar todo en la nube (23/11/2026)
+
+El botón **Iniciar sesión** de la cabecera (`cuenta.js`) abre una ventana con **Entrar** y **Crear cuenta**. El usuario lleva de 3 a 24 caracteres (letras, números, `.`, `_` o `-`) y la contraseña, 6 caracteres o más. Una sola cuenta guarda las dos listas, la de Rafael y Jueguitos Switch.
+
+- **Qué se guarda:** todas las claves `juegos-switch-*` del navegador, de los dos perfiles, salvo `cuenta`, `token`, `perfil`, `ajustes` y `mig1`. Cada cambio se sube solo al segundo, y al cerrar la página si quedaba algo pendiente.
+- **Indicador:** el botón muestra el usuario con un punto de color: verde si está guardado, amarillo mientras guarda y rojo si hay un error.
+- **Al crear la cuenta** se sube lo que ya había en ese navegador.
+- **Al entrar**, lo de la cuenta sustituye a lo del navegador. Si la cuenta está vacía, se sube lo del navegador.
+- **Al abrir la web con sesión iniciada**, si la cuenta tiene algo distinto (cambiado en otro dispositivo), se carga y la página se recarga una vez.
+- **Servidor:** proyecto de Vercel `juegos-switch-cuentas` (cuenta KingKhaax), en `https://juegos-switch-cuentas.vercel.app/api/cuenta`, con el código en `cuentas/` de este repositorio. Solo acepta peticiones desde `https://kingkhaax.github.io`. Acciones:
+  - `POST ?a=registro` y `POST ?a=entrar`: devuelven un token firmado válido 180 días.
+  - `GET` y `PUT ?a=datos`, con `Authorization: Bearer <token>`.
+- **Dónde están los datos:** en un **Vercel Blob privado** (`juegos-switch-cuentas`, región París), un archivo por usuario: `cuentas/<usuario>.json`. Guarda la contraseña cifrada con scrypt y sal (nunca en claro), los datos y la fecha.
+- **Variables de entorno en Vercel:**
+  - `BLOB_READ_WRITE_TOKEN`: la pone Vercel al conectar el Blob.
+  - `CUENTAS_SECRET`: firma los tokens. Si se cambia, se cierran todas las sesiones.
+- **Publicar cambios del servidor:** `cd cuentas && npm install && npx vercel deploy --prod --yes`. La carpeta `cuentas/.vercel` y `.env.local` no se suben a git; se recrean con `npx vercel link --yes --project juegos-switch-cuentas`.
+- **No hay recuperación de contraseña.** Si se olvida, se borra el archivo del usuario en el Blob (`npx vercel blob delete cuentas/<usuario>.json --rw-token <BLOB_READ_WRITE_TOKEN>`) y se crea la cuenta de nuevo.
 
 ## Cómo funciona la web
 
@@ -129,29 +171,29 @@ Modos: SP singleplayer, CL cooperativo local, CO cooperativo online, ML multijug
 |---|---|---|---|---|---|
 | 1 | Pokémon Leyendas Z-A | `leyendas-pokemon-z-a` | s2e | pokemon | SP, MO |
 | 2 | Donkey Kong Bananza | `donkey-kong-bananza` | s2 | dk | SP, CL |
-| 3 | Super Mario Bros. Wonder | `super-mario-bros-wonder` | s2e | mario | SP, CL, CO, MO |
+| 3 | Super Mario 3D World + Bowser Fury | `super-mario-3d-world-bowsers-fury` | upd | mario | SP, CL, CO, MO |
 | 4 | Mario + Rabbids Kingdom Battle | `mario-rabbids-kingdom-battle` | s1 | mario | SP, CL |
-| 5 | Super Mario Party | `super-mario-party` | s1 | mario | CL, ML, MO |
-| 6 | Mario + Rabbids Sparks of Hope | `mario-rabbids-sparks-of-hope` | s1 | mario | SP |
-| 7 | Super Mario 3D World + Bowser Fury | `super-mario-3d-world-bowsers-fury` | upd | mario | SP, CL, CO, MO |
-| 8 | Super Smash Bros. Ultimate | `super-smash-bros-ultimate` | s1 | smash | SP, ML, MO |
-| 9 | Pokémon Diamante Brillante | `pokemon-diamante-brillante` | s1 | pokemon | SP, MO |
-| 10 | The Legend of Zelda: Breath of the Wild | `the-legend-of-zelda-breath-of-the-wild` | s2e | zelda | SP |
-| 11 | The Legend of Zelda: Tears of the Kingdom | `the-legend-of-zelda-tears-of-the-kingdom` | s2e | zelda | SP |
-| 12 | Pokémon Let's Go, Eevee! | `pokemon-lets-go-eevee` | s1 | pokemon | SP, CL, MO |
-| 13 | Mario & Luigi: Conexión Fraternal | `mario-luigi-conexion-fraternal` | s1 | mario | SP |
-| 14 | Super Mario Odyssey | `super-mario-odyssey` | upd | mario | SP, CL |
-| 15 | Mario Strikers: Battle League Football | `mario-strikers-battle-league-football` | s1 | mario | SP, CL, CO, ML, MO |
-| 16 | Mario Kart World | `mario-kart-world` | s2 | mario | SP, ML, MO |
-| 17 | Mario Kart 8 Deluxe | `mario-kart-8-deluxe` | s1 | mario | SP, ML, MO |
-| 18 | Pokémon Escarlata | `pokemon-escarlata` | s1 | pokemon | SP, CL, CO, MO |
-| 19 | Pokémon Leyendas: Arceus | `leyendas-pokemon-arceus` | s1 | pokemon | SP, MO |
+| 5 | Mario + Rabbids Sparks of Hope | `mario-rabbids-sparks-of-hope` | s1 | mario | SP |
+| 6 | Super Mario Party Jamboree | `super-mario-party-jamboree` | s2e | mario | SP, CL, ML, MO |
+| 7 | Pokémon Let's Go, Pikachu! | `pokemon-lets-go-pikachu` | s1 | pokemon | SP, CL, MO |
+| 8 | Super Mario Bros. Wonder | `super-mario-bros-wonder` | s2e | mario | SP, CL, CO, MO |
+| 9 | Super Mario Odyssey | `super-mario-odyssey` | upd | mario | SP, CL |
+| 10 | Mario & Luigi: Conexión Fraternal | `mario-luigi-conexion-fraternal` | s1 | mario | SP |
+| 11 | The Legend of Zelda: Breath of the Wild | `the-legend-of-zelda-breath-of-the-wild` | s2e | zelda | SP |
+| 12 | Pokémon Diamante Brillante | `pokemon-diamante-brillante` | s1 | pokemon | SP, MO |
+| 13 | The Legend of Zelda: Tears of the Kingdom | `the-legend-of-zelda-tears-of-the-kingdom` | s2e | zelda | SP |
+| 14 | Pokémon Leyendas: Arceus | `leyendas-pokemon-arceus` | s1 | pokemon | SP, MO |
+| 15 | Pokémon Escarlata | `pokemon-escarlata` | s1 | pokemon | SP, CL, CO, MO |
+| 16 | Super Smash Bros. Ultimate | `super-smash-bros-ultimate` | s1 | smash | SP, ML, MO |
+| 17 | Mario Kart World | `mario-kart-world` | s2 | mario | SP, ML, MO |
+| 18 | Mario Kart 8 Deluxe | `mario-kart-8-deluxe` | s1 | mario | SP, ML, MO |
+| 19 | Mario Strikers: Battle League Football | `mario-strikers-battle-league-football` | s1 | mario | SP, CL, CO, ML, MO |
 | 20 | Pokémon Espada | `pokemon-espada` | s1 | pokemon | SP, CL, CO, MO |
 | 21 | Super Mario Galaxy + Super Mario Galaxy 2 | `super-mario-galaxy-1-2` | s1 | mario | SP, CL |
-| 22 | Super Mario Maker 2 | `super-mario-maker-2` | s1 | mario | SP, CL, CO, ML, MO |
-| 23 | Pokkén Tournament DX | `pokken-tournament-dx` | s1 | pokemon | SP, ML, MO |
-| 24 | Kirby y la Tierra Olvidada | `kirby-y-la-tierra-olvidada` | s2e | kirby | SP, CL |
-| 25 | Animal Crossing: New Horizons | `animal-crossing-new-horizons` | s2e | ac | SP, CL, MO |
+| 22 | Animal Crossing: New Horizons | `animal-crossing-new-horizons` | s2e | ac | SP, CL, MO |
+| 23 | Super Mario Maker 2 | `super-mario-maker-2` | s1 | mario | SP, CL, CO, ML, MO |
+| 24 | Pokkén Tournament DX | `pokken-tournament-dx` | s1 | pokemon | SP, ML, MO |
+| 25 | Kirby y la Tierra Olvidada | `kirby-y-la-tierra-olvidada` | s2e | kirby | SP, CL |
 
 Notas sobre los modos (apuntados de memoria, sin verificar en fuentes): Super Mario Party solo tiene historia en solitario en modos concretos y su online es limitado; los Pokémon Leyendas Z-A, Diamante Brillante y Arceus no tienen cooperativo propiamente dicho; en Smash el "cooperativo" son combates por equipos; en Galaxy el segundo jugador solo ayuda.
 
@@ -218,8 +260,11 @@ tools/sync-readme.mjs  deja la tabla del README y el .txt en el orden de orden.j
 | `juegos-switch-consola`, `-interna`, `-sd` | consola, memoria interna y tarjeta SD |
 | `juegos-switch-ajustes` | modo ligero, fondo, cursor y tamaño del texto |
 | `juegos-switch-token` | token de GitHub para publicar el orden (opcional, solo en el navegador de Rafael) |
+| `juegos-switch-perfil` | perfil elegido: `rafa` o `novia` (Jueguitos Switch) |
+| `juegos-switch-cuenta` | sesión iniciada: usuario, token y si hay cambios sin subir |
+| `juegos-switch-*-novia` | las mismas claves de arriba, pero del perfil Jueguitos Switch |
 
-Nada de esto se sincroniza entre dispositivos salvo el orden, que se publica en `orden.js`.
+Sin sesión, nada de esto se sincroniza entre dispositivos salvo el orden de Rafael, que se publica en `orden.js`. Con sesión iniciada, todo (menos ajustes, token, perfil y la propia sesión) se guarda en la cuenta (ver «Cuentas»).
 
 ## Rendimiento (optimización del 17/11/2026)
 

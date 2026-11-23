@@ -16,13 +16,18 @@ const STKEY="juegos-switch-estado";
 const MKEY="juegos-switch-mio";
 const OKEY="juegos-switch-orden";
 const EKEY="juegos-switch-extra";
+const PROF=window.PERFIL==="novia"?"novia":"rafa";
+const PK=k=>PROF==="rafa"||/-(ajustes|token|perfil|cuenta)$/.test(k)?k:k+"-novia";
+const saved=()=>document.dispatchEvent(new Event("js-guardado"));
 const store={
-get(k,f){try{const v=localStorage.getItem(k);return v===null?f:v}catch(e){return f}},
-set(k,v){try{localStorage.setItem(k,v)}catch(e){}},
-del(k){try{localStorage.removeItem(k)}catch(e){}}
+get(k,f){try{const v=localStorage.getItem(PK(k));return v===null?f:v}catch(e){return f}},
+set(k,v){try{localStorage.setItem(PK(k),v);saved()}catch(e){}},
+del(k){try{localStorage.removeItem(PK(k));saved()}catch(e){}}
 };
+if(PROF==="rafa"&&!localStorage.getItem("juegos-switch-mig1")){try{[KEY,PKEY,STKEY,MKEY,OKEY].forEach(k=>{const v=localStorage.getItem(k);if(v)localStorage.setItem(k,v.split('"pokemon-lets-go-eevee"').join('"pokemon-lets-go-pikachu"').split('"super-mario-party"').join('"super-mario-party-jamboree"'))});localStorage.setItem("juegos-switch-mig1","1")}catch(e){}}
 const jget=(k,f)=>{try{const v=JSON.parse(store.get(k,""));return v&&typeof v==="object"?v:f}catch(e){return f}};
-const BASE=window.GAMES;
+const LIST=(window.LISTS||{})[PROF];
+const BASE=LIST?LIST.map(x=>window.GAMES.find(g=>g.slug===x)).filter(Boolean):window.GAMES;
 const UPC=window.UPCOMING||[];
 const D=Object.assign({},window.DETAILS||{},Object.fromEntries(UPC.filter(u=>u.detail).map(u=>[u.slug,u.detail])));
 const $=s=>document.querySelector(s);
@@ -48,7 +53,7 @@ function buildGames(){
 const ex=extra.map(s=>UPC.find(u=>u.slug===s)).filter(Boolean).map(u=>({slug:u.slug,s:"otros",title:u.title,k:u.k,m:[],ex:true}));
 const def=[...BASE,...ex];
 const defSlugs=def.map(g=>g.slug);
-const pub=(window.ORDEN&&window.ORDEN.order)||[];
+const pub=PROF==="rafa"&&window.ORDEN&&window.ORDEN.order||[];
 const list=mergeOrder(defSlugs,Array.isArray(order)&&order.length?order:pub);
 const map=Object.fromEntries(def.map(g=>[g.slug,g]));
 GAMES=list.map(s=>map[s]);
