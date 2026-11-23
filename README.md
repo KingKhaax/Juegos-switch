@@ -81,6 +81,10 @@ La web tiene dos perfiles. Se cambia con el **botón redondo de arriba a la dere
   - `POST ?a=registro` y `POST ?a=entrar`: devuelven un token firmado válido 180 días. En el registro se puede mandar `perfil` y `data`.
   - `GET ?a=datos`: devuelve `{rafa:{…}, novia:{…}}`.
   - `PUT ?a=datos` con `{perfil, data}`: guarda solo esa lista.
+  - `POST ?a=perfil` (con token): cambia el nombre con mayúsculas (`nombre`, solo puede variar mayúsculas y minúsculas del usuario), la contraseña (`actual` y `nueva`) y la pregunta de recuperación (`pregunta`, `respuesta` y `actual`).
+  - `POST ?a=cerrar` (con token): cierra la sesión en los demás dispositivos subiendo un contador de sesión (`epoch`) de la cuenta y devuelve un token nuevo para este.
+  - `POST ?a=pregunta` con `{user}`: devuelve la pregunta de recuperación, o vacío si no existe la cuenta o no tiene.
+  - `POST ?a=recuperar` con `{user, respuesta, nueva}`: pone contraseña nueva si la respuesta es correcta (sin mirar mayúsculas ni espacios). Tras 5 fallos seguidos bloquea 15 minutos (429 `bloqueo`) y cierra todas las sesiones.
 
   Todas las de `datos` van con `Authorization: Bearer <token>`. Las cuentas antiguas con todas las claves juntas se separan solas por el sufijo `-novia`.
 - **Datos:** Vercel Blob privado `juegos-switch-cuentas` (región París), un archivo por usuario `cuentas/<usuario>.json`, con la contraseña cifrada con scrypt y sal (nunca en claro).
@@ -88,7 +92,7 @@ La web tiene dos perfiles. Se cambia con el **botón redondo de arriba a la dere
   - `BLOB_READ_WRITE_TOKEN`: la pone Vercel al conectar el Blob.
   - `CUENTAS_SECRET`: firma los tokens. Si se cambia, se cierran todas las sesiones.
 - **Publicar el servidor:** `cd cuentas && npm install && npx vercel deploy --prod --yes`. `cuentas/.vercel` y `.env.local` no van a git; se recrean con `npx vercel link --yes --project juegos-switch-cuentas`.
-- **No hay recuperación de contraseña.** Si se olvida, se borra el archivo del usuario (`npx vercel blob delete cuentas/<usuario>.json --rw-token <BLOB_READ_WRITE_TOKEN>`) y se crea la cuenta de nuevo.
+- **Recuperación de contraseña:** solo si la cuenta tiene pregunta de recuperación (se pone en «Mi cuenta», Seguridad). Si no la tiene y se olvida, se borra el archivo del usuario (`npx vercel blob delete cuentas/<usuario>.json --rw-token <BLOB_READ_WRITE_TOKEN>`) y se crea la cuenta de nuevo.
 
 ## Cómo funciona la web
 
@@ -311,3 +315,7 @@ Sin sesión, nada de esto se sincroniza entre dispositivos salvo el orden de Raf
 ## Estado de cada juego (desplegable, 23/11/2026)
 
 En los juegos que ya tengo, el botón de estado abre un **desplegable** con Pendiente, Jugando, Terminado y Abandonado (cada uno con su color y una marca en el actual), en vez de ir pasando de uno a otro con cada clic. Se maneja también con el teclado (flechas, Intro y Esc) y se cierra al pulsar fuera o al hacer scroll. El menú se pinta fuera de la tarjeta (`.stmenu`, posición fija) porque la tarjeta recorta su contenido.
+
+## Mi cuenta: perfil, código de amigo y resumen
+- El botón de la cuenta es el primero de la barra. Dentro: avatar (carátula o logo de `img/`), nombre con mayúsculas, nombre en Nintendo y región de la eShop, código de amigo `SW-0000-0000-0000` con botón Copiar, resumen de la colección (juegos, GB, gastado, horas, terminados) y Seguridad (contraseña, pregunta de recuperación y cerrar otras sesiones).
+- Todo se guarda en la cuenta como claves `juegos-switch-avatar`, `juegos-switch-nintendo` y `juegos-switch-amigo` (con sufijo `-novia` en la lista de Nicky).

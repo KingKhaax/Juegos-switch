@@ -146,8 +146,17 @@ export default async function handler(req, res) {
       if (!okPass(b.nueva)) return res.status(400).json({ error: 'clave' });
       const rec = await load(u);
       if (!rec || !rec.ah) { await sleep(400); return res.status(401).json({ error: 'respuesta' }); }
+      if (rec.lock && rec.lock > Date.now()) return res.status(429).json({ error: 'bloqueo' });
       const h = await hashPass(normAns(b.respuesta), rec.qsalt);
-      if (!crypto.timingSafeEqual(Buffer.from(h, 'hex'), Buffer.from(rec.ah, 'hex'))) { await sleep(800); return res.status(401).json({ error: 'respuesta' }); }
+      if (!crypto.timingSafeEqual(Buffer.from(h, 'hex'), Buffer.from(rec.ah, 'hex'))) {
+        rec.fa = (rec.fa || 0) + 1;
+        if (rec.fa >= 5) { rec.fa = 0; rec.lock = Date.now() + 15 * 60000; }
+        await save(u, rec);
+        await sleep(800);
+        return res.status(401).json({ error: 'respuesta' });
+      }
+      rec.fa = 0;
+      rec.lock = 0;
       rec.salt = crypto.randomBytes(16).toString('hex');
       rec.hash = await hashPass(b.nueva, rec.salt);
       rec.epoch = (rec.epoch || 0) + 1;
