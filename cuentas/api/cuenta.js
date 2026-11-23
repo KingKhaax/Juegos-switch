@@ -25,21 +25,25 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const hashPass = (pass, salt) => new Promise((res, rej) => crypto.scrypt(pass, salt, 64, (e, k) => (e ? rej(e) : res(k.toString('hex')))));
 const sign = (s) => crypto.createHmac('sha256', SECRET).update(s).digest('base64url');
 
-function makeToken(user) {
-  const body = Buffer.from(user).toString('base64url') + '.' + (Date.now() + 180 * DAY);
+function makeToken(user, ep = 0) {
+  const body = Buffer.from(user).toString('base64url') + '.' + (Date.now() + 180 * DAY) + '.' + ep;
   return body + '.' + sign(body);
 }
 function readToken(t) {
   if (typeof t !== 'string') return null;
-  const [u, exp, sig] = t.split('.');
+  const p = t.split('.');
+  const sig = p.pop();
+  const [u, exp, e] = p;
   if (!u || !exp || !sig) return null;
-  const body = u + '.' + exp;
+  const body = p.join('.');
   const good = sign(body);
   if (sig.length !== good.length || !crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(good))) return null;
   if (+exp < Date.now()) return null;
   const user = Buffer.from(u, 'base64url').toString();
-  return okUser(user) ? user : null;
+  return okUser(user) ? { user, ep: +(e || 0) } : null;
 }
+const normAns = (s) => String(s || '').trim().toLowerCase().replace(/s+/g, ' ');
+const okAns = (s) => normAns(s).length >= 3 && normAns(s).length <= 60;
 async function load(user) {
   const r = await get(path(user), { access: 'private', useCache: false });
   if (!r || r.statusCode !== 200) return null;
@@ -87,18 +91,28 @@ export default async function handler(req, res) {
       if (!rec) { await sleep(400); return res.status(401).json({ error: 'credenciales' }); }
       const h = await hashPass(pass, rec.salt);
       if (!crypto.timingSafeEqual(Buffer.from(h, 'hex'), Buffer.from(rec.hash, 'hex'))) { await sleep(400); return res.status(401).json({ error: 'credenciales' }); }
-      return res.status(200).json({ token: makeToken(user), user, nombre: rec.display || user, data: slots(rec.data), updated: rec.updated || 0 });
+      return res.status(200).json({ token: makeToken(user, rec.epoch || 0), user, nombre: rec.display || user, data: slots(rec.data), updated: rec.updated || 0 });
     }
     if (req.method === 'POST' && a === 'perfil') {
-      const user = readToken(String(req.headers.authorization || '').replace(/^Bearers+/i, ''));
-      if (!user) return res.status(401).json({ error: 'sesion' });
+      const tk = readToken(String(req.headers.authorization || '').replace(/^Bearer\s+/i, ''));
+      if (!tk) return res.status(401).json({ error: 'sesion' });
+      const user = tk.user;
       const rec = await load(user);
-      if (!rec) return res.status(401).json({ error: 'sesion' });
+      if (!rec || (rec.epoch || 0) !== tk.ep) return res.status(401).json({ error: 'sesion' });
       const b = await body(req);
       if (b.nombre !== undefined) {
         const n = String(b.nombre).trim();
         if (n.toLowerCase() !== user) return res.status(400).json({ error: 'nombre' });
         rec.display = n;
+      }
+      if (b.pregunta !== undefined) {
+        const q = String(b.pregunta).trim();
+        if (q.length < 3 || q.length > 80 || !okAns(b.respuesta)) return res.status(400).json({ error: 'pregunta' });
+        const h = await hashPass(String(b.actual || ''), rec.salt);
+        if (!crypto.timingSafeEqual(Buffer.from(h, 'hex'), Buffer.from(rec.hash, 'hex'))) { await sleep(400); return res.status(401).json({ error: 'credenciales' }); }
+        rec.q = q;
+        rec.qsalt = crypto.randomBytes(16).toString('hex');
+        rec.ah = await hashPass(normAns(b.respuesta), rec.qsalt);
       }
       if (b.nueva) {
         if (!okPass(b.nueva)) return res.status(400).json({ error: 'clave' });
@@ -108,14 +122,45 @@ export default async function handler(req, res) {
         rec.hash = await hashPass(b.nueva, rec.salt);
       }
       await save(user, rec);
-      return res.status(200).json({ nombre: rec.display || user });
+      return res.status(200).json({ nombre: rec.display || user, pregunta: rec.q || '' });
+    }
+    if (req.method === 'POST' && a === 'cerrar') {
+      const tk = readToken(String(req.headers.authorization || '').replace(/^Bearer\s+/i, ''));
+      if (!tk) return res.status(401).json({ error: 'sesion' });
+      const rec = await load(tk.user);
+      if (!rec || (rec.epoch || 0) !== tk.ep) return res.status(401).json({ error: 'sesion' });
+      rec.epoch = (rec.epoch || 0) + 1;
+      await save(tk.user, rec);
+      return res.status(200).json({ token: makeToken(tk.user, rec.epoch) });
+    }
+    if (req.method === 'POST' && a === 'pregunta') {
+      const b = await body(req);
+      const u = String(b.user || '').trim().toLowerCase();
+      const rec = okUser(u) ? await load(u) : null;
+      return res.status(200).json({ pregunta: (rec && rec.q) || '' });
+    }
+    if (req.method === 'POST' && a === 'recuperar') {
+      const b = await body(req);
+      const u = String(b.user || '').trim().toLowerCase();
+      if (!okUser(u) || !okAns(b.respuesta)) return res.status(400).json({ error: 'respuesta' });
+      if (!okPass(b.nueva)) return res.status(400).json({ error: 'clave' });
+      const rec = await load(u);
+      if (!rec || !rec.ah) { await sleep(400); return res.status(401).json({ error: 'respuesta' }); }
+      const h = await hashPass(normAns(b.respuesta), rec.qsalt);
+      if (!crypto.timingSafeEqual(Buffer.from(h, 'hex'), Buffer.from(rec.ah, 'hex'))) { await sleep(800); return res.status(401).json({ error: 'respuesta' }); }
+      rec.salt = crypto.randomBytes(16).toString('hex');
+      rec.hash = await hashPass(b.nueva, rec.salt);
+      rec.epoch = (rec.epoch || 0) + 1;
+      await save(u, rec);
+      return res.status(200).json({ ok: true });
     }
     if (a === 'datos') {
-      const user = readToken(String(req.headers.authorization || '').replace(/^Bearer\s+/i, ''));
-      if (!user) return res.status(401).json({ error: 'sesion' });
+      const tk = readToken(String(req.headers.authorization || '').replace(/^Bearer\s+/i, ''));
+      if (!tk) return res.status(401).json({ error: 'sesion' });
+      const user = tk.user;
       const rec = await load(user);
-      if (!rec) return res.status(401).json({ error: 'sesion' });
-      if (req.method === 'GET') return res.status(200).json({ user, nombre: rec.display || user, data: slots(rec.data), updated: rec.updated || 0 });
+      if (!rec || (rec.epoch || 0) !== tk.ep) return res.status(401).json({ error: 'sesion' });
+      if (req.method === 'GET') return res.status(200).json({ user, nombre: rec.display || user, pregunta: rec.q || '', data: slots(rec.data), updated: rec.updated || 0 });
       if (req.method === 'PUT') {
         const b = await body(req);
         if (!okPerfil(b.perfil) || !okData(b.data)) return res.status(400).json({ error: 'datos' });

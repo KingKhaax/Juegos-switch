@@ -26,13 +26,13 @@ const r=await fetch(API+"?a="+a,opt);
 let j={};try{j=await r.json()}catch(e){}
 return {ok:r.ok,status:r.status,j};
 }
-const ERR={nombre:"El nombre solo puede cambiar las mayúsculas y minúsculas del usuario.",existe:"Ese usuario ya existe. Elige otro o entra con él.",credenciales:"Usuario o contraseña incorrectos.",usuario:"Usuario no válido.",clave:"Contraseña no válida."};
+const ERR={pregunta:"Escribe una pregunta (3 a 80 letras) y una respuesta (3 o más).",respuesta:"La respuesta no es correcta.",nombre:"El nombre solo puede cambiar las mayúsculas y minúsculas del usuario.",existe:"Ese usuario ya existe. Elige otro o entra con él.",credenciales:"Usuario o contraseña incorrectos.",usuario:"Usuario no válido.",clave:"Contraseña no válida."};
 const btn=document.createElement("button");
 btn.type="button";
 btn.id="bcuenta";
 btn.className="ap";
 const nav=document.querySelector(".apartados");
-if(nav)nav.insertBefore(btn,document.getElementById("bset"));
+if(nav)nav.insertBefore(btn,nav.firstElementChild);
 let state="";
 const label=()=>{const s=ses();btn.innerHTML=s?`<span class="cu-dot ${state}" aria-hidden="true"></span>${esc(s.nombre||s.user)}`:`<span class="cu-dot" aria-hidden="true"></span>Invitado`;btn.setAttribute("aria-label",s?`Mi cuenta: ${s.user}`:"Estás como invitado. Iniciar sesión")};
 const mark=s=>{state=s;label();const d=document.getElementById("cuentaDlg");if(d&&d.open)render()};
@@ -60,6 +60,7 @@ try{
 const r=await call("datos",{headers:{Authorization:"Bearer "+s.token}});
 if(r.status===401){setSes(null);location.reload();return}
 if(!r.ok){mark("err");return}
+{const se=ses();if(se&&(se.q||"")!==(r.j.pregunta||"")){se.q=r.j.pregunta||"";if(r.j.nombre)se.nombre=r.j.nombre;setSes(se)}}
 const d=slot(r.j.data);
 if(!Object.keys(d).length&&Object.keys(collect()).length){push();return}
 if(!same(collect(),d)){
@@ -85,7 +86,7 @@ return "";
 }
 const formHTML=(mode,id)=>`<div class="cu-tabs" role="tablist"><button type="button" role="tab" aria-selected="${mode==="entrar"}" data-mode="entrar">Entrar</button><button type="button" role="tab" aria-selected="${mode==="registro"}" data-mode="registro">Crear cuenta</button></div>
 <form class="cu-form" novalidate data-form="${id}"><label>Usuario<input name="user" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="24" required></label><label>Contraseña<input name="pass" type="password" autocomplete="${mode==="entrar"?"current-password":"new-password"}" minlength="6" maxlength="100" required></label>
-<button type="submit" class="pri big2">${mode==="entrar"?"Entrar":"Crear cuenta"}</button></form>`;
+<button type="submit" class="pri big2">${mode==="entrar"?"Entrar":"Crear cuenta"}</button>${mode==="entrar"?'<button type="button" class="cu-forgot" data-forgot>¿Has olvidado la contraseña?</button>':""}</form>`;
 function check(f){
 const user=f.user.value.trim(),pass=f.pass.value;
 if(!/^[a-z0-9._-]{3,24}$/i.test(user))return [null,"El usuario tiene que tener de 3 a 24 letras o números, sin espacios ni tildes."];
@@ -149,30 +150,105 @@ root.classList.remove("gate");
 setTimeout(()=>{gate&&gate.remove();gate=null},450);
 }
 let dlg=null,mode="entrar",msg="",msgk="";
+const AV=["kitty.png","switch-logo.png","super-mario-odyssey.jpg","super-mario-bros-wonder.jpg","mario-kart-8-deluxe.jpg","mario-kart-world.jpg","animal-crossing-new-horizons.jpg","super-smash-bros-ultimate.jpg","kirby-y-la-tierra-olvidada.jpg","donkey-kong-bananza.jpg","pokemon-escarlata.jpg","pokemon-espada.jpg","pokemon-lets-go-pikachu.jpg","pokemon-lets-go-eevee.jpg","leyendas-pokemon-arceus.jpg","leyendas-pokemon-z-a.jpg","super-mario-party-jamboree.jpg","super-mario-maker-2.jpg","super-mario-galaxy-1-2.jpg","pokken-tournament-dx.jpg"];
+const AK="juegos-switch-avatar"+(NV?"-novia":"");
+const NK="juegos-switch-nintendo"+(NV?"-novia":"");
+const REG=["España","Resto de Europa","México","Estados Unidos","Japón","Otra"];
+const lget=k=>{try{return localStorage.getItem(k)||""}catch(e){return""}};
+const nin=()=>{try{return JSON.parse(lget(NK))||{}}catch(e){return{}}};
+const setNin=o=>{try{localStorage.setItem(NK,JSON.stringify(o))}catch(e){}document.dispatchEvent(new Event("js-guardado"))};
+const openS=new Set(["perfil"]);
+function resumen(){
+try{const j=window.JS,g=j.games.map(x=>({g:x,i:j.info(x),own:j.isOwn(x.slug)})),h=g.filter(x=>x.own),mio=j.mio();
+return {n:h.length,t:g.length,gb:h.filter(x=>x.i.playable).reduce((t,x)=>t+(x.i.mbEff||0),0)/1024,eur:h.reduce((t,x)=>t+(x.i.cost||0),0),hrs:h.reduce((t,x)=>t+((mio[x.g.slug]||{}).horas||0),0),done:h.filter(x=>j.stOf(x.g.slug)==="done").length}}catch(e){return null}
+}
+const sec=(id,t,ico,body)=>'<details class="cu-sec" data-s="'+id+'"'+(openS.has(id)?" open":"")+'><summary><span class="cu-si" aria-hidden="true">'+ico+'</span><b>'+t+'</b></summary><div class="cu-sb">'+body+'</div></details>';
+function avatarHTML(s){const a=lget(AK);return a?'<span class="cu-av has" aria-hidden="true"><img src="img/'+esc(a)+'" alt=""></span>':'<span class="cu-av" aria-hidden="true">'+esc((s.nombre||s.user).slice(0,1).toUpperCase())+'</span>'}
 function render(){
 const s=ses();
 const st={sync:"Guardando…",ok:"Todo guardado en tu cuenta",err:"No se ha podido guardar. Se reintentará con el siguiente cambio.","":""}[state]||"";
-dlg.innerHTML=`<div class="awin cu-win"><div class="fhead"><h3>${s?"Mi cuenta":"Iniciar sesión"}</h3><button class="x2" type="button" data-close aria-label="Cerrar">×</button></div>
-${s?`<div class="cu-me"><span class="cu-av" aria-hidden="true">${esc((s.nombre||s.user).slice(0,1).toUpperCase())}</span><div><b>${esc(s.nombre||s.user)}</b><small class="cu-st ${state}">${st}</small></div></div>
-<p class="adesc">Sesión de <b>${NAME}</b>. Todo lo que cambias aquí (lo que tienes, precios, estados, notas, orden y almacenamiento) se guarda solo en esta cuenta. La otra lista tiene su propia sesión.</p>
-<form class="cu-ed" data-ed novalidate><label>Nombre de usuario<input name="nombre" maxlength="24" autocapitalize="none" spellcheck="false" value="${esc(s.nombre||s.user)}"></label><label>Contraseña actual<input name="actual" type="password" autocomplete="current-password"></label><label>Contraseña nueva<input name="nueva" type="password" autocomplete="new-password" placeholder="Déjala vacía para no cambiarla"></label><button type="submit" class="nb2">Guardar cambios</button></form>
-<div class="cu-fc"><label for="fcIn"><b>Código de amigo de Switch</b></label><div class="cu-fcrow"><input id="fcIn" type="text" inputmode="numeric" autocomplete="off" maxlength="17" placeholder="SW-0000-0000-0000" value="${esc(getFc())}"><button type="button" class="nb2" data-fccopy ${getFc().length===17?"":"disabled"}>Copiar</button></div><small>Se guarda en tu cuenta. Con Copiar lo tienes listo para pegar en un mensaje.</small></div>
-<div class="cu-acts"><button type="button" class="pri" data-sync>Guardar ahora</button><button type="button" class="nb2" data-out>Cerrar sesión</button></div>`:
-`<p class="adesc">Estás como invitado en <b>${NAME}</b>. Entra para guardar esta lista en tu cuenta.</p>${formHTML(mode,"dlg")}`}
-<p class="amsg ${msgk}" role="status">${esc(msg)}</p></div>`;
+let body;
+if(s){
+const n=nin(),r=resumen(),fc=getFc(),av=lget(AK);
+const tile=(l,b)=>'<div class="cu-tile"><small>'+l+'</small><b>'+b+'</b></div>';
+body='<div class="cu-me">'+avatarHTML(s)+'<div><b>'+esc(s.nombre||s.user)+'</b><small class="cu-st '+state+'">'+st+'</small></div></div>'
++'<p class="adesc">Sesión de <b>'+NAME+'</b>. Lo que cambias aquí se guarda solo en esta cuenta; la otra lista tiene su propia sesión.</p>'
++sec("perfil","Perfil","👤",
+'<div class="cu-lbl">Avatar</div><div class="cu-avs">'+AV.map(f=>'<button type="button" class="cu-avb'+(av===f?" on":"")+'" data-av="'+f+'" aria-label="Elegir avatar" aria-pressed="'+(av===f)+'"><img src="img/'+f+'" alt="" loading="lazy"></button>').join("")+'</div>'
++(av?'<button type="button" class="nb2 cu-mini" data-av="">Quitar avatar</button>':"")
++'<form class="cu-form" data-ed novalidate><label>Nombre de usuario<input name="nombre" maxlength="24" autocapitalize="none" spellcheck="false" value="'+esc(s.nombre||s.user)+'"></label><small class="cu-h">Solo puedes cambiar mayúsculas y minúsculas: sigues entrando con el mismo usuario.</small><button type="submit" class="nb2">Guardar nombre</button></form>'
++'<div class="cu-form"><label>Nombre en Nintendo<input data-nin="nombre" maxlength="30" autocomplete="off" value="'+esc(n.nombre||"")+'" placeholder="Tu nombre de usuario de Nintendo"></label><label>Región de la eShop<select data-nin="region"><option value="">Sin indicar</option>'+REG.map(x=>'<option'+(n.region===x?" selected":"")+'>'+x+'</option>').join("")+'</select></label></div>')
++sec("amigo","Código de amigo","🎮",
+'<div class="cu-fcrow"><input id="fcIn" type="text" inputmode="numeric" autocomplete="off" maxlength="17" placeholder="SW-0000-0000-0000" value="'+esc(fc)+'" aria-label="Código de amigo de Switch"><button type="button" class="pri" data-fccopy '+(fc.length===17?"":"disabled")+'>Copiar</button></div><small class="cu-h">Se guarda en tu cuenta. Copiar deja el mensaje listo para pegar.</small>')
++sec("resumen","Resumen","📊",r?'<div class="cu-tiles">'+tile("Juegos que tienes",r.n+" de "+r.t)+tile("Espacio en consola",r.gb.toLocaleString("es-ES",{maximumFractionDigits:1})+" GB")+tile("Gastado",r.eur.toLocaleString("es-ES",{style:"currency",currency:"EUR"}))+tile("Horas jugadas",r.hrs.toLocaleString("es-ES",{maximumFractionDigits:1})+" h")+tile("Terminados",String(r.done))+'</div>':'<p class="adesc">El resumen aparece cuando se carga la lista.</p>')
++sec("seg","Seguridad","🔒",
+'<form class="cu-form" data-pw novalidate><div class="cu-lbl">Cambiar contraseña</div><label>Contraseña actual<input name="actual" type="password" autocomplete="current-password"></label><label>Contraseña nueva<input name="nueva" type="password" autocomplete="new-password" placeholder="6 caracteres o más"></label><button type="submit" class="nb2">Cambiar contraseña</button></form>'
++'<form class="cu-form" data-q novalidate><div class="cu-lbl">Pregunta de recuperación</div><small class="cu-h">'+(s.q?"Ahora tienes puesta: «"+esc(s.q)+"». Puedes cambiarla.":"Sin ella, si olvidas la contraseña no se puede recuperar la cuenta.")+'</small><label>Pregunta<input name="pregunta" maxlength="80" autocomplete="off" placeholder="Ej.: ¿Cómo se llamaba mi primera consola?"></label><label>Respuesta<input name="respuesta" maxlength="60" autocomplete="off"></label><label>Contraseña actual<input name="actual" type="password" autocomplete="current-password"></label><button type="submit" class="nb2">Guardar pregunta</button></form>'
++'<div class="cu-lbl">Otros dispositivos</div><button type="button" class="nb2" data-others>Cerrar sesión en los demás dispositivos</button>')
++'<div class="cu-acts"><button type="button" class="pri" data-sync>Guardar ahora</button><button type="button" class="nb2" data-out>Cerrar sesión</button></div>';
+}else body='<p class="adesc">Estás como invitado en <b>'+NAME+'</b>. Entra para guardar esta lista en tu cuenta.</p>'+formHTML(mode,"dlg");
+dlg.innerHTML='<div class="awin cu-win"><div class="fhead"><h3>'+(s?"Mi cuenta":"Iniciar sesión")+'</h3><button class="x2" type="button" data-close aria-label="Cerrar">×</button></div>'+body+'<p class="amsg '+msgk+'" role="status">'+esc(msg)+'</p></div>';
 }
+let rec=null,rstep=0,rq="",ru="",rmsg=null;
+function renderRec(){
+rec.innerHTML='<div class="awin cu-win"><div class="fhead"><h3>Recuperar contraseña</h3><button class="x2" type="button" data-close aria-label="Cerrar">×</button></div>'
++(rstep===0?'<form class="cu-form" data-r0 novalidate><label>Usuario<input name="user" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="24" value="'+esc(ru)+'"></label><button type="submit" class="pri">Buscar mi pregunta</button></form>'
+:'<form class="cu-form" data-r1 novalidate><p class="adesc">Tu pregunta: <b>'+esc(rq)+'</b></p><label>Respuesta<input name="respuesta" maxlength="60" autocomplete="off"></label><label>Contraseña nueva<input name="nueva" type="password" autocomplete="new-password" placeholder="6 caracteres o más"></label><button type="submit" class="pri">Cambiar contraseña y entrar</button></form>')
++'<p class="amsg '+((rmsg&&rmsg.k)||"")+'" role="status">'+esc((rmsg&&rmsg.t)||"")+'</p></div>';
+rec.querySelector("input")?.focus();
+}
+function openRec(){
+if(!rec){rec=document.createElement("dialog");rec.id="recDlg";rec.setAttribute("aria-label","Recuperar contraseña");document.body.appendChild(rec);if(window.JS&&window.JS.watchDialogs)window.JS.watchDialogs();
+rec.addEventListener("click",e=>{if(e.target===rec||e.target.closest("[data-close]"))rec.close()});
+rec.addEventListener("submit",async e=>{
+e.preventDefault();const f=e.target;
+try{
+if(f.matches("[data-r0]")){ru=f.user.value.trim();if(!/^[a-z0-9._-]{3,24}$/i.test(ru)){rmsg={k:"bad",t:ERR.usuario};renderRec();return}
+const r=await call("pregunta",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({user:ru})});
+if(!r.j.pregunta){rmsg={k:"bad",t:"Esa cuenta no existe o no tiene pregunta de recuperación. Sin ella no se puede recuperar."};renderRec();return}
+rq=r.j.pregunta;rstep=1;rmsg=null;renderRec();return}
+if(f.nueva.value.length<6){rmsg={k:"bad",t:ERR.clave};renderRec();return}
+const r=await call("recuperar",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({user:ru,respuesta:f.respuesta.value,nueva:f.nueva.value})});
+if(!r.ok){rmsg={k:"bad",t:ERR[r.j.error]||"No se ha podido conectar. Inténtalo de nuevo."};renderRec();return}
+const er=await login("entrar",ru,f.nueva.value);
+if(er){rmsg={k:"bad",t:er};renderRec();return}
+rec.close();if(ses()){try{closeGate()}catch(x){}label()}
+}catch(x){rmsg={k:"bad",t:"No se ha podido conectar. Inténtalo de nuevo."};renderRec()}
+});
+}
+rstep=0;rq="";rmsg=null;renderRec();if(!rec.open)rec.showModal();rec.querySelector("input")?.focus();
+}
+document.addEventListener("click",e=>{if(e.target.closest("[data-forgot]")){e.preventDefault();openRec()}});
+async function perfilCall0(){const se=ses();const r=await call("cerrar",{method:"POST",headers:{Authorization:"Bearer "+se.token}});if(r.ok&&r.j.token){se.token=r.j.token;setSes(se);return true}return false}
+async function perfilCall(body){const se=ses();return call("perfil",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+se.token},body:JSON.stringify(body)})}
 function open(){
 if(!dlg){dlg=document.createElement("dialog");dlg.id="cuentaDlg";dlg.setAttribute("aria-label","Mi cuenta");document.body.appendChild(dlg);if(window.JS&&window.JS.watchDialogs)window.JS.watchDialogs();
 dlg.addEventListener("click",async e=>{
 if(e.target===dlg||e.target.closest("[data-close]")){dlg.close();return}
 const m=e.target.closest("[data-mode]");if(m){mode=m.dataset.mode;msg="";render();dlg.querySelector("input")?.focus();return}
-if(e.target.closest("[data-fccopy]")){const c=getFc();try{await navigator.clipboard.writeText("Mi código de amigo de Nintendo Switch: "+c)}catch(x){const t=dlg.querySelector("#fcIn");t.select();document.execCommand("copy")}msg="Código copiado: "+c;msgk="ok";render();return}
 if(e.target.closest("[data-out]")){await push();setSes(null);setGuest(false);location.reload();return}
 if(e.target.closest("[data-sync]")){await push();msg=state==="ok"?"Guardado.":"No se ha podido guardar.";msgk=state==="ok"?"ok":"bad";render()}
 });
-dlg.addEventListener("input",e=>{if(e.target.id!=="fcIn")return;const v=fmtFc(e.target.value);e.target.value=v;try{v?localStorage.setItem(FK,v):localStorage.removeItem(FK)}catch(x){}document.dispatchEvent(new Event("js-guardado"));const b=dlg.querySelector("[data-fccopy]");if(b)b.disabled=v.length!==17});
+dlg.addEventListener("toggle",e=>{const d=e.target;if(d.matches&&d.matches("details.cu-sec")){d.open?openS.add(d.dataset.s):openS.delete(d.dataset.s)}},true);
+dlg.addEventListener("click",async e=>{
+const av=e.target.closest("[data-av]");if(av){try{av.dataset.av?localStorage.setItem(AK,av.dataset.av):localStorage.removeItem(AK)}catch(x){}document.dispatchEvent(new Event("js-guardado"));label();render();return}
+if(e.target.closest("[data-fccopy]")){const c=getFc();try{await navigator.clipboard.writeText("Mi código de amigo de Nintendo Switch: "+c)}catch(x){const t=dlg.querySelector("#fcIn");t.select();document.execCommand("copy")}msg="Código copiado: "+c;msgk="ok";render();return}
+if(e.target.closest("[data-others]")){try{const r=await perfilCall0();msg=r?"Se ha cerrado la sesión en los demás dispositivos.":"No se ha podido hacer.";msgk=r?"ok":"bad"}catch(x){msg="No se ha podido conectar.";msgk="bad"}render()}
+});
+dlg.addEventListener("input",e=>{const t=e.target;
+if(t.id==="fcIn"){const v=fmtFc(t.value);t.value=v;try{v?localStorage.setItem(FK,v):localStorage.removeItem(FK)}catch(x){}document.dispatchEvent(new Event("js-guardado"));const b=dlg.querySelector("[data-fccopy]");if(b)b.disabled=v.length!==17}
+if(t.dataset&&t.dataset.nin){const o=nin();o[t.dataset.nin]=t.value.trim();setNin(o)}});
+dlg.addEventListener("change",e=>{const t=e.target;if(t.dataset&&t.dataset.nin){const o=nin();o[t.dataset.nin]=t.value.trim();setNin(o)}});
 dlg.addEventListener("submit",async e=>{
 e.preventDefault();
+const fm=e.target;
+if(fm.matches("[data-ed],[data-pw],[data-q]")){
+const se=ses();let body;
+if(fm.matches("[data-ed]"))body={nombre:fm.nombre.value.trim()};
+else if(fm.matches("[data-pw]")){if(fm.nueva.value.length<6){msg=ERR.clave;msgk="bad";render();return}body={actual:fm.actual.value,nueva:fm.nueva.value}}
+else{body={pregunta:fm.pregunta.value,respuesta:fm.respuesta.value,actual:fm.actual.value}}
+try{const r=await perfilCall(body);if(r.ok){if(r.j.nombre){se.nombre=r.j.nombre}if(r.j.pregunta!==undefined)se.q=r.j.pregunta;setSes(se);label();msg=fm.matches("[data-pw]")?"Contraseña cambiada.":fm.matches("[data-q]")?"Pregunta de recuperación guardada.":"Nombre guardado.";msgk="ok"}else{msg=ERR[r.j.error]||"No se han podido guardar los cambios.";msgk="bad"}}catch(x){msg="No se ha podido conectar. Inténtalo de nuevo.";msgk="bad"}
+render();return}
 const [v,err]=check(e.target);
 if(!v){msg=err;msgk="bad";render();return}
 msg=mode==="entrar"?"Entrando…":"Creando la cuenta…";msgk="";render();
