@@ -26,7 +26,7 @@ const r=await fetch(API+"?a="+a,opt);
 let j={};try{j=await r.json()}catch(e){}
 return {ok:r.ok,status:r.status,j};
 }
-const ERR={bloqueo:"Demasiados intentos fallidos. Prueba de nuevo en 15 minutos.",pregunta:"Escribe una pregunta (3 a 80 letras) y una respuesta (3 o más).",respuesta:"La respuesta no es correcta.",nombre:"El nombre solo puede cambiar las mayúsculas y minúsculas del usuario.",existe:"Ese usuario ya existe. Elige otro o entra con él.",credenciales:"Usuario o contraseña incorrectos.",usuario:"Usuario no válido.",clave:"Contraseña no válida."};
+const ERR={bloqueo:"Demasiados intentos fallidos. Prueba de nuevo en 15 minutos.",bloqueo:"Demasiados intentos fallidos. Prueba de nuevo en 15 minutos.",pregunta:"Escribe una pregunta (3 a 80 letras) y una respuesta (3 o más).",respuesta:"La respuesta no es correcta.",nombre:"El nombre solo puede cambiar las mayúsculas y minúsculas del usuario.",existe:"Ese usuario ya existe. Elige otro o entra con él.",credenciales:"Usuario o contraseña incorrectos.",usuario:"Usuario no válido.",clave:"Contraseña no válida."};
 const btn=document.createElement("button");
 btn.type="button";
 btn.id="bcuenta";
@@ -35,7 +35,11 @@ const nav=document.querySelector(".apartados");
 if(nav)nav.insertBefore(btn,nav.firstElementChild);
 let state="";
 const label=()=>{const s=ses();btn.innerHTML=s?`<span class="cu-dot ${state}" aria-hidden="true"></span>${esc(s.nombre||s.user)}`:`<span class="cu-dot" aria-hidden="true"></span>Invitado`;btn.setAttribute("aria-label",s?`Mi cuenta: ${s.user}`:"Estás como invitado. Iniciar sesión")};
-const mark=s=>{state=s;label();const d=document.getElementById("cuentaDlg");if(d&&d.open)render()};
+let toast=null,retryT=0;
+const showToast=on=>{clearTimeout(retryT);if(!on){if(toast){toast.remove();toast=null}return}
+if(!toast){toast=document.createElement("div");toast.id="cu-toast";toast.setAttribute("role","alert");toast.innerHTML='<span>No se ha podido guardar en tu cuenta. Tus cambios siguen en este navegador y se reintentará solo.</span><button type="button" class="nb2" data-retry>Reintentar</button>';toast.addEventListener("click",e=>{if(e.target.closest("[data-retry]"))push()});document.body.appendChild(toast)}
+retryT=setTimeout(()=>{if(state==="err")push()},30000)};
+const mark=s=>{state=s;showToast(s==="err");label();const d=document.getElementById("cuentaDlg");if(d&&d.open)render()};
 let timer=0,busy=false,again=false;
 const putBody=()=>JSON.stringify({perfil:PROF,data:collect()});
 async function push(){

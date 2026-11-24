@@ -683,3 +683,13 @@ body:has(#gate.g-lista) .perfil-btn{display:none}
 .cu-forgot:hover{color:#fff}
 .cu-acts{padding-top:4px}
 @media(max-width:520px){.cu-fcrow{flex-direction:column}}
+
+#cu-toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:9999;display:flex;align-items:center;gap:14px;max-width:min(560px,calc(100vw - 24px));padding:12px 16px;border-radius:18px;background:linear-gradient(135deg,rgba(230,0,18,.3),#2a2d35 60%);border:1px solid rgba(255,123,123,.5);box-shadow:0 14px 34px rgba(0,0,0,.5);color:#fff;font-size:.9rem;line-height:1.4;animation:cutoast .3s ease}
+#cu-toast .nb2{flex:none;min-height:38px}
+@keyframes cutoast{from{opacity:0;transform:translate(-50%,12px)}}
+@media(max-width:520px){#cu-toast{flex-direction:column;align-items:stretch;text-align:center}}
+@media(prefers-reduced-motion:reduce){#cu-toast{animation:none}}
+.cu-win .pri{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 22px;border-radius:99px;background:linear-gradient(135deg,#ffd96a,#e1a000);color:#241a00;font-weight:800;transition:filter .2s,transform .2s}
+.cu-win .pri:hover:not(:disabled){filter:brightness(1.1);transform:translateY(-2px)}
+.cu-win .pri:disabled{opacity:.4;cursor:default}
+.cu-win .nb2{background:#343844}

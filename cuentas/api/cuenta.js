@@ -89,8 +89,16 @@ export default async function handler(req, res) {
         return res.status(200).json({ token: makeToken(user), user, nombre: raw, data: nrec.data, updated: nrec.updated });
       }
       if (!rec) { await sleep(400); return res.status(401).json({ error: 'credenciales' }); }
+      if (rec.llock && rec.llock > Date.now()) return res.status(429).json({ error: 'bloqueo' });
       const h = await hashPass(pass, rec.salt);
-      if (!crypto.timingSafeEqual(Buffer.from(h, 'hex'), Buffer.from(rec.hash, 'hex'))) { await sleep(400); return res.status(401).json({ error: 'credenciales' }); }
+      if (!crypto.timingSafeEqual(Buffer.from(h, 'hex'), Buffer.from(rec.hash, 'hex'))) {
+        rec.lf = (rec.lf || 0) + 1;
+        if (rec.lf >= 8) { rec.lf = 0; rec.llock = Date.now() + 15 * 60000; }
+        await save(user, rec);
+        await sleep(400);
+        return res.status(401).json({ error: 'credenciales' });
+      }
+      if (rec.lf || rec.llock) { rec.lf = 0; rec.llock = 0; await save(user, rec); }
       return res.status(200).json({ token: makeToken(user, rec.epoch || 0), user, nombre: rec.display || user, data: slots(rec.data), updated: rec.updated || 0 });
     }
     if (req.method === 'POST' && a === 'perfil') {

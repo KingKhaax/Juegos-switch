@@ -109,20 +109,6 @@ render();
 if(!dlg.open)dlg.showModal();
 }
 document.addEventListener("click",e=>{if(e.target.closest("#bset"))open()});
-document.addEventListener("keydown",e=>{
-const t=e.target;
-if(t.closest&&t.closest("input,textarea,select"))return;
-if(document.querySelector("dialog[open]")&&!(dlg&&dlg.open))return;
-if(e.key==="/"){
-if(document.querySelector("dialog[open]"))return;
-e.preventDefault();
-const q=document.getElementById("q");
-q.focus();q.select();
-}else if(e.key==="?"){
-e.preventDefault();
-if(dlg&&dlg.open)dlg.close();else open();
-}
-});
 window.JSajustes={open};
 if(location.hash==="#ajustes")open();
 })();

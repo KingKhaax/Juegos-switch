@@ -319,3 +319,10 @@ En los juegos que ya tengo, el botón de estado abre un **desplegable** con Pend
 ## Mi cuenta: perfil, código de amigo y resumen
 - El botón de la cuenta es el primero de la barra. Dentro: avatar (carátula o logo de `img/`), nombre con mayúsculas, nombre en Nintendo y región de la eShop, código de amigo `SW-0000-0000-0000` con botón Copiar, resumen de la colección (juegos, GB, gastado, horas, terminados) y Seguridad (contraseña, pregunta de recuperación y cerrar otras sesiones).
 - Todo se guarda en la cuenta como claves `juegos-switch-avatar`, `juegos-switch-nintendo` y `juegos-switch-amigo` (con sufijo `-novia` en la lista de Nicky).
+
+## Seguridad, avisos y enlace compartido (24/11/2026)
+- **Entrar:** tras 8 contraseñas erróneas seguidas la cuenta se bloquea 15 minutos (429 `bloqueo`), incluso con la contraseña buena. Se desbloquea sola.
+- **Aviso de guardado:** si falla el guardado en la nube sale un aviso abajo con botón «Reintentar»; además se reintenta solo cada 30 s.
+- **Atajos de teclado:** quitados (`/` para buscar y `?` para Ajustes). Siguen las flechas dentro de una ficha y Escape en los menús.
+- **Vista previa del enlace:** título, descripción e imagen (`img/og.png`, 1200x630) en `index.html`.
+- **Publicar mi orden:** solo aparece en Ajustes si no hay sesión iniciada.
