@@ -694,8 +694,10 @@ body:has(#gate.g-lista) .perfil-btn{display:none}
 .cu-win .pri:disabled{opacity:.4;cursor:default}
 .cu-win .nb2{background:#343844}
 .cu-hid{position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none}
-.cu-avs{max-height:340px;overflow-y:auto;padding:4px;scrollbar-width:thin}
 .cu-nav-av{position:relative;display:inline-grid;place-items:center;flex:none;width:30px;height:30px;margin:-4px 2px -4px -8px;border-radius:50%;background:linear-gradient(135deg,var(--red),var(--cyan))}
 .cu-nav-av img{width:100%;height:100%;border-radius:50%;object-fit:cover;background:#23262d}
 .cu-nav-av b{font-size:.85rem;color:#fff}
 .cu-nav-av .cu-dot{position:absolute;right:-3px;bottom:-3px;width:11px;height:11px;border:2px solid #2c2f38;box-sizing:border-box}
+.cu-avg-w{display:grid;gap:8px}.cu-avg{border-radius:14px;background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.08);overflow:hidden}.cu-avg[open]{border-color:rgba(0,195,227,.3)}.cu-avg summary{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;list-style:none}.cu-avg summary::-webkit-details-marker{display:none}.cu-avg summary small{margin-left:auto;color:var(--mute);font-weight:700}.cu-avg summary::after{content:"";width:8px;height:8px;border-right:2px solid var(--mute);border-bottom:2px solid var(--mute);transform:rotate(45deg);transition:transform .25s}.cu-avg[open] summary::after{transform:rotate(-135deg)}.cu-avg summary:hover{background:rgba(255,255,255,.05)}.cu-avg .cu-avs{padding:6px 12px 14px;grid-template-columns:repeat(auto-fill,minmax(60px,1fr));gap:10px}.cu-avb{min-width:0;min-height:0}
+.cu-sec .cu-avg summary::after{transform:rotate(45deg)}.cu-sec .cu-avg[open] summary::after{transform:rotate(-135deg)}.cu-sec .cu-avg summary{font-size:.95rem}
+.cu-sec .cu-avg summary::after{margin-left:0}
