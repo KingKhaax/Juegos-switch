@@ -26,7 +26,7 @@ const r=await fetch(API+"?a="+a,opt);
 let j={};try{j=await r.json()}catch(e){}
 return {ok:r.ok,status:r.status,j};
 }
-const ERR={bloqueo:"Demasiados intentos fallidos. Prueba de nuevo en 15 minutos.",bloqueo:"Demasiados intentos fallidos. Prueba de nuevo en 15 minutos.",pregunta:"Escribe una pregunta (3 a 80 letras) y una respuesta (3 o más).",respuesta:"La respuesta no es correcta.",nombre:"El nombre solo puede cambiar las mayúsculas y minúsculas del usuario.",existe:"Ese usuario ya existe. Elige otro o entra con él.",credenciales:"Usuario o contraseña incorrectos.",usuario:"Usuario no válido.",clave:"Contraseña no válida."};
+const ERR={correo:"Ese correo no es válido.",codigo:"El código no es correcto o ha caducado.",espera:"Espera un minuto antes de pedir otro código.",envio:"No se ha podido enviar el correo. Inténtalo más tarde.",correo_no:"El envío por correo aún no está activado.",bloqueo:"Demasiados intentos fallidos. Prueba de nuevo en 15 minutos.",bloqueo:"Demasiados intentos fallidos. Prueba de nuevo en 15 minutos.",pregunta:"Escribe una pregunta (3 a 80 letras) y una respuesta (3 o más).",respuesta:"La respuesta no es correcta.",nombre:"El nombre solo puede cambiar las mayúsculas y minúsculas del usuario.",existe:"Ese usuario ya existe. Elige otro o entra con él.",credenciales:"Usuario o contraseña incorrectos.",usuario:"Usuario no válido.",clave:"Contraseña no válida."};
 const btn=document.createElement("button");
 btn.type="button";
 btn.id="bcuenta";
@@ -64,7 +64,7 @@ try{
 const r=await call("datos",{headers:{Authorization:"Bearer "+s.token}});
 if(r.status===401){setSes(null);location.reload();return}
 if(!r.ok){mark("err");return}
-{const se=ses();if(se&&(se.q||"")!==(r.j.pregunta||"")){se.q=r.j.pregunta||"";if(r.j.nombre)se.nombre=r.j.nombre;setSes(se)}}
+{const se=ses();if(se&&(se.q||"")!==(r.j.pregunta||"")){se.q=r.j.pregunta||"";if(r.j.nombre)se.nombre=r.j.nombre;setSes(se)}if(se&&(se.correo||"")!==(r.j.correo||"")){se.correo=r.j.correo||"";setSes(se)}}
 const d=slot(r.j.data);
 if(!Object.keys(d).length&&Object.keys(collect()).length){push();return}
 if(!same(collect(),d)){
@@ -187,30 +187,40 @@ body='<div class="cu-me">'+avatarHTML(s)+'<div><b>'+esc(s.nombre||s.user)+'</b><
 +sec("resumen","Resumen","📊",r?'<div class="cu-tiles">'+tile("Juegos que tienes",r.n+" de "+r.t)+tile("Espacio en consola",r.gb.toLocaleString("es-ES",{maximumFractionDigits:1})+" GB")+tile("Gastado",r.eur.toLocaleString("es-ES",{style:"currency",currency:"EUR"}))+tile("Horas jugadas",r.hrs.toLocaleString("es-ES",{maximumFractionDigits:1})+" h")+tile("Terminados",String(r.done))+'</div>':'<p class="adesc">El resumen aparece cuando se carga la lista.</p>')
 +sec("seg","Seguridad","🔒",
 '<form class="cu-form" data-pw novalidate><div class="cu-lbl">Cambiar contraseña</div><label>Contraseña actual<input name="actual" type="password" autocomplete="current-password"></label><label>Contraseña nueva<input name="nueva" type="password" autocomplete="new-password" placeholder="6 caracteres o más"></label><button type="submit" class="nb2">Cambiar contraseña</button></form>'
++'<form class="cu-form" data-mail novalidate><div class="cu-lbl">Correo de recuperación</div><small class="cu-h">'+(s.correo?"Ahora tienes puesto: "+esc(s.correo)+". Para quitarlo, deja el campo vacío.":"Si olvidas la contraseña, te enviamos un código a este correo para poner otra. Mejor un Gmail.")+'</small><label>Correo<input name="correo" type="email" autocomplete="email" maxlength="80" placeholder="tucorreo@gmail.com"></label><label>Contraseña actual<input name="actual" type="password" autocomplete="current-password"></label><button type="submit" class="nb2">Guardar correo</button></form>'
 +'<form class="cu-form" data-q novalidate><div class="cu-lbl">Pregunta de recuperación</div><small class="cu-h">'+(s.q?"Ahora tienes puesta: «"+esc(s.q)+"». Puedes cambiarla.":"Sin ella, si olvidas la contraseña no se puede recuperar la cuenta.")+'</small><label>Pregunta<input name="pregunta" maxlength="80" autocomplete="off" placeholder="Ej.: ¿Cómo se llamaba mi primera consola?"></label><label>Respuesta<input name="respuesta" maxlength="60" autocomplete="off"></label><label>Contraseña actual<input name="actual" type="password" autocomplete="current-password"></label><button type="submit" class="nb2">Guardar pregunta</button></form>'
 +'<div class="cu-lbl">Otros dispositivos</div><button type="button" class="nb2" data-others>Cerrar sesión en los demás dispositivos</button>')
 +'<div class="cu-acts"><button type="button" class="pri" data-sync>Guardar ahora</button><button type="button" class="nb2" data-out>Cerrar sesión</button></div>';
 }else body='<p class="adesc">Estás como invitado en <b>'+NAME+'</b>. Entra para guardar esta lista en tu cuenta.</p>'+formHTML(mode,"dlg");
 dlg.innerHTML='<div class="awin cu-win"><div class="fhead"><h3>'+(s?"Mi cuenta":"Iniciar sesión")+'</h3><button class="x2" type="button" data-close aria-label="Cerrar">×</button></div>'+body+'<p class="amsg '+msgk+'" role="status">'+esc(msg)+'</p></div>';
 }
-let rec=null,rstep=0,rq="",ru="",rmsg=null;
+let rec=null,rstep=0,rq="",ru="",rmsg=null,rmail=false;
 function renderRec(){
 rec.innerHTML='<div class="awin cu-win"><div class="fhead"><h3>Recuperar contraseña</h3><button class="x2" type="button" data-close aria-label="Cerrar">×</button></div>'
 +(rstep===0?'<form class="cu-form" data-r0 novalidate><label>Usuario<input name="user" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="24" value="'+esc(ru)+'"></label><button type="submit" class="pri">Buscar mi pregunta</button></form>'
-:'<form class="cu-form" data-r1 novalidate><p class="adesc">Tu pregunta: <b>'+esc(rq)+'</b></p><label>Respuesta<input name="respuesta" maxlength="60" autocomplete="off"></label><label>Contraseña nueva<input name="nueva" type="password" autocomplete="new-password" placeholder="6 caracteres o más"></label><button type="submit" class="pri">Cambiar contraseña y entrar</button></form>')
+:rstep===2?'<form class="cu-form" data-r2 novalidate><p class="adesc">Te hemos enviado un código de 6 cifras al correo de la cuenta. Caduca en 15 minutos. Mira también el correo no deseado.</p><label>Código<input name="codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000"></label><label>Contraseña nueva<input name="nueva" type="password" autocomplete="new-password" placeholder="6 caracteres o más"></label><button type="submit" class="pri">Cambiar contraseña y entrar</button></form>'
+:(rq?'<form class="cu-form" data-r1 novalidate><p class="adesc">Tu pregunta: <b>'+esc(rq)+'</b></p><label>Respuesta<input name="respuesta" maxlength="60" autocomplete="off"></label><label>Contraseña nueva<input name="nueva" type="password" autocomplete="new-password" placeholder="6 caracteres o más"></label><button type="submit" class="pri">Cambiar contraseña y entrar</button></form>':"")+(rmail?'<div class="cu-form"><p class="adesc">'+(rq?"O recibe":"Recibe")+' un código en el correo de la cuenta.</p><button type="button" class="nb2" data-sendcode>Enviarme un código por correo</button></div>':""))
 +'<p class="amsg '+((rmsg&&rmsg.k)||"")+'" role="status">'+esc((rmsg&&rmsg.t)||"")+'</p></div>';
 rec.querySelector("input")?.focus();
 }
 function openRec(){
 if(!rec){rec=document.createElement("dialog");rec.id="recDlg";rec.setAttribute("aria-label","Recuperar contraseña");document.body.appendChild(rec);if(window.JS&&window.JS.watchDialogs)window.JS.watchDialogs();
-rec.addEventListener("click",e=>{if(e.target===rec||e.target.closest("[data-close]"))rec.close()});
+rec.addEventListener("click",async e=>{if(e.target===rec||e.target.closest("[data-close]")){rec.close();return}
+if(e.target.closest("[data-sendcode]")){try{const r=await call("codigo",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({user:ru})});if(r.ok){rstep=2;rmsg={k:"ok",t:"Código enviado."}}else rmsg={k:"bad",t:ERR[r.j.error]||"No se ha podido enviar."}}catch(x){rmsg={k:"bad",t:"No se ha podido conectar. Inténtalo de nuevo."}}renderRec()}});
 rec.addEventListener("submit",async e=>{
 e.preventDefault();const f=e.target;
 try{
 if(f.matches("[data-r0]")){ru=f.user.value.trim();if(!/^[a-z0-9._-]{3,24}$/i.test(ru)){rmsg={k:"bad",t:ERR.usuario};renderRec();return}
 const r=await call("pregunta",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({user:ru})});
-if(!r.j.pregunta){rmsg={k:"bad",t:"Esa cuenta no existe o no tiene pregunta de recuperación. Sin ella no se puede recuperar."};renderRec();return}
-rq=r.j.pregunta;rstep=1;rmsg=null;renderRec();return}
+if(!r.j.pregunta&&!r.j.correo){rmsg={k:"bad",t:"Esa cuenta no existe o no tiene pregunta ni correo de recuperación. Sin ellos no se puede recuperar."};renderRec();return}
+rq=r.j.pregunta||"";rmail=!!r.j.correo;rstep=1;rmsg=null;renderRec();return}
+if(f.matches("[data-r2]")){if(!/^\d{6}$/.test(f.codigo.value.trim())){rmsg={k:"bad",t:ERR.codigo};renderRec();return}
+if(f.nueva.value.length<6){rmsg={k:"bad",t:ERR.clave};renderRec();return}
+const r2=await call("recuperar_codigo",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({user:ru,codigo:f.codigo.value.trim(),nueva:f.nueva.value})});
+if(!r2.ok){rmsg={k:"bad",t:ERR[r2.j.error]||"No se ha podido conectar. Inténtalo de nuevo."};renderRec();return}
+const er2=await login("entrar",ru,f.nueva.value);
+if(er2){rmsg={k:"bad",t:er2};renderRec();return}
+rec.close();if(ses()){try{closeGate()}catch(x){}label()}return}
 if(f.nueva.value.length<6){rmsg={k:"bad",t:ERR.clave};renderRec();return}
 const r=await call("recuperar",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({user:ru,respuesta:f.respuesta.value,nueva:f.nueva.value})});
 if(!r.ok){rmsg={k:"bad",t:ERR[r.j.error]||"No se ha podido conectar. Inténtalo de nuevo."};renderRec();return}
@@ -246,12 +256,13 @@ dlg.addEventListener("change",e=>{const t=e.target;if(t.dataset&&t.dataset.nin){
 dlg.addEventListener("submit",async e=>{
 e.preventDefault();
 const fm=e.target;
-if(fm.matches("[data-ed],[data-pw],[data-q]")){
+if(fm.matches("[data-ed],[data-pw],[data-q],[data-mail]")){
 const se=ses();let body;
 if(fm.matches("[data-ed]"))body={nombre:fm.nombre.value.trim()};
 else if(fm.matches("[data-pw]")){if(fm.nueva.value.length<6){msg=ERR.clave;msgk="bad";render();return}body={actual:fm.actual.value,nueva:fm.nueva.value}}
+else if(fm.matches("[data-mail]")){body={correo:fm.correo.value.trim(),actual:fm.actual.value}}
 else{body={pregunta:fm.pregunta.value,respuesta:fm.respuesta.value,actual:fm.actual.value}}
-try{const r=await perfilCall(body);if(r.ok){if(r.j.nombre){se.nombre=r.j.nombre}if(r.j.pregunta!==undefined)se.q=r.j.pregunta;setSes(se);label();msg=fm.matches("[data-pw]")?"Contraseña cambiada.":fm.matches("[data-q]")?"Pregunta de recuperación guardada.":"Nombre guardado.";msgk="ok"}else{msg=ERR[r.j.error]||"No se han podido guardar los cambios.";msgk="bad"}}catch(x){msg="No se ha podido conectar. Inténtalo de nuevo.";msgk="bad"}
+try{const r=await perfilCall(body);if(r.ok){if(r.j.nombre){se.nombre=r.j.nombre}if(r.j.pregunta!==undefined)se.q=r.j.pregunta;if(r.j.correo!==undefined)se.correo=r.j.correo;setSes(se);label();msg=fm.matches("[data-pw]")?"Contraseña cambiada.":fm.matches("[data-mail]")?(r.j.correo?"Correo guardado.":"Correo quitado."):fm.matches("[data-q]")?"Pregunta de recuperación guardada.":"Nombre guardado.";msgk="ok"}else{msg=ERR[r.j.error]||"No se han podido guardar los cambios.";msgk="bad"}}catch(x){msg="No se ha podido conectar. Inténtalo de nuevo.";msgk="bad"}
 render();return}
 const [v,err]=check(e.target);
 if(!v){msg=err;msgk="bad";render();return}

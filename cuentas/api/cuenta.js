@@ -1,5 +1,6 @@
 import { put, get } from '@vercel/blob';
 import crypto from 'node:crypto';
+import nodemailer from 'nodemailer';
 
 const ORIGINS = ['https://kingkhaax.github.io'];
 const SECRET = process.env.CUENTAS_SECRET || '';
@@ -41,6 +42,19 @@ function readToken(t) {
   if (+exp < Date.now()) return null;
   const user = Buffer.from(u, 'base64url').toString();
   return okUser(user) ? { user, ep: +(e || 0) } : null;
+}
+const okMail = (m) => typeof m === 'string' && m.length <= 80 && /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(m);
+const maskMail = (m) => (m ? m.replace(/^(.).*(@.*)$/, '$1***$2') : '');
+const MAIL_USER = process.env.GMAIL_USER || '';
+const MAIL_PASS = process.env.GMAIL_APP_PASSWORD || '';
+async function sendCode(to, code) {
+  const tr = nodemailer.createTransport({ service: 'gmail', auth: { user: MAIL_USER, pass: MAIL_PASS } });
+  await tr.sendMail({
+    from: '"Jueguitos Switch" <' + MAIL_USER + '>',
+    to,
+    subject: 'Tu código para recuperar la contraseña: ' + code,
+    text: 'Tu código es ' + code + '. Caduca en 15 minutos. Si no lo has pedido tú, ignora este correo y no pasa nada.\n\nJueguitos Switch',
+  });
 }
 const normAns = (s) => String(s || '').trim().toLowerCase().replace(/s+/g, ' ');
 const okAns = (s) => normAns(s).length >= 3 && normAns(s).length <= 60;
@@ -122,6 +136,13 @@ export default async function handler(req, res) {
         rec.qsalt = crypto.randomBytes(16).toString('hex');
         rec.ah = await hashPass(normAns(b.respuesta), rec.qsalt);
       }
+      if (b.correo !== undefined) {
+        const m = String(b.correo).trim().toLowerCase();
+        const h = await hashPass(String(b.actual || ''), rec.salt);
+        if (!crypto.timingSafeEqual(Buffer.from(h, 'hex'), Buffer.from(rec.hash, 'hex'))) { await sleep(400); return res.status(401).json({ error: 'credenciales' }); }
+        if (m && !okMail(m)) return res.status(400).json({ error: 'correo' });
+        rec.email = m;
+      }
       if (b.nueva) {
         if (!okPass(b.nueva)) return res.status(400).json({ error: 'clave' });
         const h = await hashPass(String(b.actual || ''), rec.salt);
@@ -130,7 +151,7 @@ export default async function handler(req, res) {
         rec.hash = await hashPass(b.nueva, rec.salt);
       }
       await save(user, rec);
-      return res.status(200).json({ nombre: rec.display || user, pregunta: rec.q || '' });
+      return res.status(200).json({ nombre: rec.display || user, pregunta: rec.q || '', correo: maskMail(rec.email) });
     }
     if (req.method === 'POST' && a === 'cerrar') {
       const tk = readToken(String(req.headers.authorization || '').replace(/^Bearer\s+/i, ''));
@@ -145,7 +166,51 @@ export default async function handler(req, res) {
       const b = await body(req);
       const u = String(b.user || '').trim().toLowerCase();
       const rec = okUser(u) ? await load(u) : null;
-      return res.status(200).json({ pregunta: (rec && rec.q) || '' });
+      return res.status(200).json({ pregunta: (rec && rec.q) || '', correo: !!(rec && rec.email && MAIL_USER && MAIL_PASS) });
+    }
+    if (req.method === 'POST' && a === 'codigo') {
+      const b = await body(req);
+      const u = String(b.user || '').trim().toLowerCase();
+      if (!okUser(u)) return res.status(400).json({ error: 'usuario' });
+      if (!MAIL_USER || !MAIL_PASS) return res.status(503).json({ error: 'correo_no' });
+      const rec = await load(u);
+      if (rec && rec.email) {
+        if (rec.rclast && Date.now() - rec.rclast < 60000) return res.status(429).json({ error: 'espera' });
+        const code = String(crypto.randomInt(0, 1000000)).padStart(6, '0');
+        rec.rcsalt = crypto.randomBytes(16).toString('hex');
+        rec.rch = await hashPass(code, rec.rcsalt);
+        rec.rcexp = Date.now() + 15 * 60000;
+        rec.rcfa = 0;
+        rec.rclast = Date.now();
+        await save(u, rec);
+        try { await sendCode(rec.email, code); } catch { return res.status(502).json({ error: 'envio' }); }
+      } else await sleep(600);
+      return res.status(200).json({ ok: true });
+    }
+    if (req.method === 'POST' && a === 'recuperar_codigo') {
+      const b = await body(req);
+      const u = String(b.user || '').trim().toLowerCase();
+      const code = String(b.codigo || '').trim();
+      if (!okUser(u) || !/^\d{6}$/.test(code)) return res.status(400).json({ error: 'codigo' });
+      if (!okPass(b.nueva)) return res.status(400).json({ error: 'clave' });
+      const rec = await load(u);
+      if (!rec || !rec.rch || (rec.rcexp || 0) < Date.now() || (rec.rcfa || 0) >= 5) { await sleep(600); return res.status(401).json({ error: 'codigo' }); }
+      const h = await hashPass(code, rec.rcsalt);
+      if (!crypto.timingSafeEqual(Buffer.from(h, 'hex'), Buffer.from(rec.rch, 'hex'))) {
+        rec.rcfa = (rec.rcfa || 0) + 1;
+        await save(u, rec);
+        await sleep(600);
+        return res.status(401).json({ error: 'codigo' });
+      }
+      rec.rch = '';
+      rec.rcexp = 0;
+      rec.salt = crypto.randomBytes(16).toString('hex');
+      rec.hash = await hashPass(b.nueva, rec.salt);
+      rec.epoch = (rec.epoch || 0) + 1;
+      rec.lf = 0;
+      rec.llock = 0;
+      await save(u, rec);
+      return res.status(200).json({ ok: true });
     }
     if (req.method === 'POST' && a === 'recuperar') {
       const b = await body(req);
@@ -177,7 +242,7 @@ export default async function handler(req, res) {
       const user = tk.user;
       const rec = await load(user);
       if (!rec || (rec.epoch || 0) !== tk.ep) return res.status(401).json({ error: 'sesion' });
-      if (req.method === 'GET') return res.status(200).json({ user, nombre: rec.display || user, pregunta: rec.q || '', data: slots(rec.data), updated: rec.updated || 0 });
+      if (req.method === 'GET') return res.status(200).json({ user, nombre: rec.display || user, pregunta: rec.q || '', correo: maskMail(rec.email), data: slots(rec.data), updated: rec.updated || 0 });
       if (req.method === 'PUT') {
         const b = await body(req);
         if (!okPerfil(b.perfil) || !okData(b.data)) return res.status(400).json({ error: 'datos' });

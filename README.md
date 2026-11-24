@@ -326,3 +326,4 @@ En los juegos que ya tengo, el botón de estado abre un **desplegable** con Pend
 - **Atajos de teclado:** quitados (`/` para buscar y `?` para Ajustes). Siguen las flechas dentro de una ficha y Escape en los menús.
 - **Vista previa del enlace:** título, descripción e imagen (`img/og.png`, 1200x630) en `index.html`.
 - **Publicar mi orden:** solo aparece en Ajustes si no hay sesión iniciada.
+- **Correo de recuperación (24/11/2026):** en «Mi cuenta» → Seguridad se puede guardar un correo. Con `POST ?a=codigo {user}` el servidor envía un código de 6 cifras (caduca en 15 min, 1 por minuto, 5 intentos) y `POST ?a=recuperar_codigo {user, codigo, nueva}` pone la contraseña nueva. Las contraseñas están cifradas y nunca se envían. El envío usa Gmail (nodemailer) con las variables de Vercel `GMAIL_USER` y `GMAIL_APP_PASSWORD` (contraseña de aplicación). Sin ellas, `codigo` responde 503 y la web no ofrece el botón.
