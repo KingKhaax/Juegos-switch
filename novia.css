@@ -748,3 +748,4 @@ body{background:radial-gradient(1200px 700px at 15% -10%,rgba(255,79,154,.18),tr
 .apartados.drawer a[href="#quiero"]:hover svg{color:#ff6b78}
 @media(prefers-reduced-motion:reduce){.apartados.drawer,#drawer-bd,#bmenu{transition:none!important}}
 html.gate #bmenu,html.gate #drawer-bd{display:none}
+#cuentaDlg,#hrdlg,#drawer,#recDlg{-webkit-user-select:none;user-select:none}#cuentaDlg input,#cuentaDlg textarea,#hrdlg input,#recDlg input{-webkit-user-select:text;user-select:text}

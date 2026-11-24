@@ -243,6 +243,7 @@ document.addEventListener("click",e=>{if(e.target.closest("[data-forgot]")){e.pr
 async function perfilCall0(){const se=ses();const r=await call("cerrar",{method:"POST",headers:{Authorization:"Bearer "+se.token}});if(r.ok&&r.j.token){se.token=r.j.token;setSes(se);return true}return false}
 async function perfilCall(body){const se=ses();return call("perfil",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+se.token},body:JSON.stringify(body)})}
 function open(){
+openS.clear();["perfil","amigo","resumen","seg"].forEach(k=>openS.add(k));AVG.forEach(g=>openS.add("g:"+g[0]));
 if(!dlg){dlg=document.createElement("dialog");dlg.id="cuentaDlg";dlg.setAttribute("aria-label","Mi cuenta");document.body.appendChild(dlg);if(window.JS&&window.JS.watchDialogs)window.JS.watchDialogs();
 dlg.addEventListener("click",async e=>{
 if(e.target===dlg||e.target.closest("[data-close]")){dlg.close();return}

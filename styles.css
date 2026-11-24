@@ -741,3 +741,4 @@ body:has(#gate.g-lista) .perfil-btn{display:none}
 .apartados.drawer a[href="#quiero"]:hover svg{color:#ff6b78}
 @media(prefers-reduced-motion:reduce){.apartados.drawer,#drawer-bd,#bmenu{transition:none!important}}
 html.gate #bmenu,html.gate #drawer-bd{display:none}
+#cuentaDlg,#hrdlg,#drawer,#recDlg{-webkit-user-select:none;user-select:none}#cuentaDlg input,#cuentaDlg textarea,#hrdlg input,#recDlg input{-webkit-user-select:text;user-select:text}
