@@ -717,3 +717,27 @@ body:has(#gate.g-lista) .perfil-btn{display:none}
 .hr-in input{width:92px;padding:9px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.3);color:#fff;font-size:1rem;text-align:right;min-height:42px}
 .hr-in input.bad{border-color:#ff7b7b}
 .hr-tot{font-weight:800;text-align:right;color:#ffd96a}
+#bmenu{position:fixed;top:14px;left:14px;z-index:960;width:52px;height:52px;border-radius:50%;display:grid;place-items:center;background:var(--card);color:#fff;box-shadow:0 8px 22px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.12);transition:transform .2s,background .2s}
+#bmenu:hover{transform:scale(1.07);background:#4a4e5a}
+#bmenu svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#drawer-bd{position:fixed;inset:0;z-index:940;background:rgba(6,7,12,.6);backdrop-filter:blur(3px);opacity:0;visibility:hidden;transition:opacity .25s,visibility 0s .25s}
+.menu-open #drawer-bd{opacity:1;visibility:visible;transition:opacity .25s}
+.apartados.drawer{position:fixed;top:0;left:0;bottom:0;z-index:950;width:min(330px,88vw);margin:0;padding:84px 14px 18px;display:grid;grid-auto-rows:min-content;align-content:start;gap:4px;justify-content:stretch;background:linear-gradient(180deg,rgba(230,0,18,.18),transparent 220px),var(--card);box-shadow:18px 0 50px rgba(0,0,0,.55);overflow-y:auto;overscroll-behavior:contain;transform:translateX(-105%);visibility:hidden;transition:transform .32s cubic-bezier(.2,.9,.3,1),visibility 0s .32s}
+.menu-open .apartados.drawer{transform:none;visibility:visible;transition:transform .32s cubic-bezier(.2,.9,.3,1)}
+.apartados.drawer>*{width:100%;min-height:50px;padding:0 14px;border-radius:14px;background:transparent;justify-content:flex-start;gap:14px;font-size:1rem;font-weight:700;color:#d9dbe4;text-align:left;white-space:nowrap}
+.apartados.drawer>*:hover{background:rgba(255,255,255,.08);color:#fff;transform:none}
+.apartados.drawer>*:focus-visible{outline:2px solid #fff;outline-offset:-2px}
+.apartados.drawer svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.apartados.drawer b{margin-left:auto;min-width:26px;text-align:center}
+.apartados.drawer #bcuenta{display:grid;grid-template-columns:auto 1fr;grid-template-areas:"av n" "av s";column-gap:14px;align-items:center;min-height:76px;padding:8px 14px;margin-bottom:10px;border-radius:18px;background:rgba(255,255,255,.07);font-size:1.1rem;font-weight:800;color:#fff}
+.apartados.drawer #bcuenta .cu-nav-av{grid-area:av;width:52px;height:52px;margin:0}
+.apartados.drawer #bcuenta .cu-nav-av .cu-dot{width:14px;height:14px}
+.apartados.drawer #bcuenta::after{grid-area:s;font-size:.78rem;font-weight:700;color:var(--mute);content:"Mi cuenta"}
+.apartados.drawer #bcuenta:has(.cu-dot.ok)::after{content:"Todo guardado";color:#3ddc84}
+.apartados.drawer #bcuenta:has(.cu-dot.sync)::after{content:"Guardando…";color:#ffc531}
+.apartados.drawer #bcuenta:has(.cu-dot.err)::after{content:"No guardado";color:#ff7b7b}
+.apartados.drawer #bnext{position:relative}
+.apartados.drawer .nx{margin-left:auto;font-style:normal;font-size:.74rem;font-weight:800;padding:3px 10px;border-radius:99px;background:linear-gradient(135deg,#ffd96a,#e1a000);color:#241a00;line-height:1.2}
+.apartados.drawer a[href="#quiero"]:hover svg{color:#ff6b78}
+@media(prefers-reduced-motion:reduce){.apartados.drawer,#drawer-bd,#bmenu{transition:none!important}}
+html.gate #bmenu,html.gate #drawer-bd{display:none}

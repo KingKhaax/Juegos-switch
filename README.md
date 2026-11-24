@@ -334,3 +334,6 @@ En los juegos que ya tengo, el botón de estado abre un **desplegable** con Pend
 ## Mis horas jugadas (24/11/2026)
 - Botón «Mis horas» en la barra, antes de Ajustes (`horas.js`). Lista los juegos marcados como «ya tengo» con un campo de horas cada uno, buscador y total. Acepta `12,5`, `12 h 30 min` o `12h30m`; se guarda al salir del campo y con Intro pasa al siguiente. Escribe en el mismo dato que el campo «Horas jugadas» de cada ficha (`juegos-switch-mio`), así que se sincroniza con la cuenta. Al cerrar redibuja las tarjetas (`JS.redraw`, `JS.setMi` en `app.js`).
 - No hay forma oficial de leer las horas de Nintendo: se copian a mano desde la consola (Perfil → Historial de juego).
+
+## Menú lateral (24/11/2026)
+- La barra de botones de la cabecera es ahora un cajón lateral (`drawer.js`): un botón redondo arriba a la izquierda (`#bmenu`) lo abre y se cierra con la X, tocando fuera, con Escape o al elegir algo. Dentro: tu perfil con estado de guardado, Los que quiero, Los que ya tengo, Estadísticas, Próximos lanzamientos (con la cantidad de juegos anunciados), Mis horas y Ajustes, cada uno con su icono. Los botones siguen siendo los mismos elementos (`#bstats`, `#bnext`, `#bhoras`, `#bset`, `#bcuenta`), solo cambia el estilo. El botón redondo de arriba a la derecha sigue siendo el de cambiar de lista.
