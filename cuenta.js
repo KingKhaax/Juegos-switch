@@ -196,9 +196,10 @@ body='<div class="cu-me">'+avatarHTML(s)+'<div><b>'+esc(s.nombre||s.user)+'</b><
 dlg.innerHTML='<div class="awin cu-win"><div class="fhead"><h3>'+(s?"Mi cuenta":"Iniciar sesión")+'</h3><button class="x2" type="button" data-close aria-label="Cerrar">×</button></div>'+body+'<p class="amsg '+msgk+'" role="status">'+esc(msg)+'</p></div>';
 cleanAuto();
 }
-function cleanAuto(){const fix=()=>{if(!dlg)return;dlg.querySelectorAll("input[data-exp]").forEach(i=>{if(i.dataset.touched!=="1"&&i.value!==i.dataset.exp)i.value=i.dataset.exp})};
-dlg.querySelectorAll("input[data-exp]").forEach(i=>i.addEventListener("keydown",()=>{i.dataset.touched="1"},{once:true}));
-[60,300,900,2000].forEach(t=>setTimeout(fix,t))}
+let autoT=0;
+function cleanAuto(){clearInterval(autoT);const fix=()=>{if(!dlg||!dlg.open){clearInterval(autoT);return}dlg.querySelectorAll("input[data-exp]").forEach(i=>{if(i.dataset.touched!=="1"&&i.value!==i.dataset.exp)i.value=i.dataset.exp})};
+dlg.querySelectorAll("input[data-exp]").forEach(i=>{const t=()=>{i.dataset.touched="1"};i.addEventListener("keydown",t,{once:true});i.addEventListener("paste",t,{once:true});i.addEventListener("compositionstart",t,{once:true});i.addEventListener("focus",fix);i.addEventListener("change",fix)});
+autoT=setInterval(fix,250)}
 let rec=null,rstep=0,rq="",ru="",rmsg=null,rmail=false;
 function renderRec(){
 rec.innerHTML='<div class="awin cu-win"><div class="fhead"><h3>Recuperar contraseña</h3><button class="x2" type="button" data-close aria-label="Cerrar">×</button></div>'
