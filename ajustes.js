@@ -82,6 +82,7 @@ msg("Orden publicado en GitHub. Quien abra la web lo verá en unos 10 minutos (G
 msg(e.message==="auth"?"GitHub ha rechazado el token. Comprueba que es de este repositorio y que tiene permiso «Contents: Read and write».":"No se ha podido publicar ("+esc(e.message)+"). Inténtalo de nuevo.","bad");
 }
 }
+const sesion=()=>{try{return !!localStorage.getItem(window.PERFIL==="novia"?"juegos-switch-cuenta-novia":"juegos-switch-cuenta")}catch(e){return false}};
 function render(){
 const tok=J().store.get(TKEY,"");
 const sw=(k,l,d)=>`<div class="arow"><div><b>${l}</b><small>${d}</small></div><button type="button" class="tgl" role="switch" aria-checked="${!!A[k]}" data-tg="${k}"><i></i></button></div>`;
@@ -91,7 +92,8 @@ ${sw("lite","Modo ligero","Apaga el fondo animado, el cursor y las animaciones. 
 ${A.lite?"":`${sw("bg","Fondo animado","Luces y botones flotando.")}${sw("cursor","Cursor magnético","Punto y anillo que sustituyen al cursor.")}`}
 </div>
 <div class="agroup"><h4>Tamaño del texto</h4><div class="stbar" role="group" aria-label="Tamaño del texto">${[["Normal",0],["Grande",1],["Muy grande",2]].map(([l,v])=>`<button type="button" class="stb" data-font="${v}" aria-pressed="${A.font===v}">${l}</button>`).join("")}</div></div>
-<div class="agroup pubgrp"><h4>Publicar mi orden</h4>
+${sesion()?"":`<div class="agroup pubgrp"><h4>Publicar mi orden</h4>
+<p class="adesc"><b>Solo para cuentas de invitado</b> (sin iniciar sesión). Si tienes cuenta, tu orden ya se guarda en ella y esta opción no aparece.</p>
 <p class="adesc">El orden que pones con «Reordenar» solo lo ves tú. Si lo publicas, se guarda en GitHub (archivo <code>orden.js</code>) y cualquiera que abra la web, como tu novia, lo verá igual.</p>
 <button type="button" class="pri big2" data-pub>Publicar mi orden en GitHub</button>
 <div id="fallback" hidden><textarea id="orden-txt" rows="4" readonly></textarea><button type="button" class="nb2" data-copy>Copiar el texto</button></div>
@@ -99,7 +101,7 @@ ${A.lite?"":`${sw("bg","Fondo animado","Luces y botones flotando.")}${sw("cursor
 <details class="tokd"${tok?"":""}><summary>${tok?"Token guardado: publicar con un clic":"Publicar con un clic (opcional)"}</summary>
 <p class="adesc">Con un token personal de GitHub la web puede guardar el orden sin pasos manuales. Créalo en GitHub: Settings → Developer settings → Fine-grained tokens → solo el repositorio <b>${REPO}</b> → permiso <b>Contents: Read and write</b>. Se guarda únicamente en este navegador, nunca en la web. No se lo des a nadie.</p>
 ${tok?`<button type="button" class="nb2" data-deltok>Borrar el token de este navegador</button>`:`<div class="arow2"><input id="tok" type="password" autocomplete="off" placeholder="github_pat_…" aria-label="Token de GitHub"><button type="button" class="nb2" data-savetok>Guardar</button></div>`}
-</details></div></div>`;
+</details></div>`}</div>`;
 }
 function open(){
 ensure();
