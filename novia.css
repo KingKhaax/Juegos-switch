@@ -700,3 +700,4 @@ body{background:radial-gradient(1200px 700px at 15% -10%,rgba(255,79,154,.18),tr
 .cu-win .pri:hover:not(:disabled){filter:brightness(1.1);transform:translateY(-2px)}
 .cu-win .pri:disabled{opacity:.4;cursor:default}
 .cu-win .nb2{background:#343844}
+.cu-hid{position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none}
