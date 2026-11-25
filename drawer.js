@@ -8,6 +8,7 @@ tengo:svg('<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7 5.3-5.7"/>'),
 bstats:svg('<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>'),
 bnext:svg('<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/>'),
 bhoras:svg('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'),
+bnso:svg('<rect x="3" y="6" width="18" height="12" rx="3"/><path d="M8 10h.01M16 10h.01M9 14c1.5 1 4.5 1 6 0"/>'),
 bset:svg('<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>')
 };
 const BURGER=svg('<path d="M4 7h16M4 12h16M4 17h16"/>');
