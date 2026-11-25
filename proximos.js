@@ -31,18 +31,18 @@ function render(){
 const j=J();
 const list=[...j.UPC].sort((a,b)=>(a.days??9999)-(b.days??9999));
 const scraped=list[0]&&list[0].scraped?list[0].scraped.split("-").reverse().join("/"):"";
-dlg.innerHTML=`<div class="nwin"><div class="fhead"><h3>Próximos lanzamientos</h3><button class="x2" type="button" data-close aria-label="Cerrar">×</button></div><p class="fdesc">Los próximos exclusivos que anuncia nswitchex.com${scraped?` (datos del ${scraped})`:""}. Pulsa «Lo quiero» para añadirlos a Los que quiero; se verán en tu lista como los demás.</p><ul class="nlist">${list.map(u=>{
+dlg.innerHTML=`<div class="nwin"><div class="fhead"><h3>Próximos lanzamientos</h3><button class="x2" type="button" data-close aria-label="Cerrar">×</button></div><p class="fdesc">Los próximos exclusivos que anuncia <mark class="m-cy">nswitchex.com</mark>${scraped?` (datos del ${scraped})`:""}. Pulsa <mark class="m-go">«Lo quiero»</mark> para añadirlos a <mark class="m-pk">Los que quiero</mark>; se verán en tu lista como los demás.</p><ul class="nlist">${list.map(u=>{
 const d=u.detail||{};
 const inList=j.isExtra(u.slug);
 const dl=daysLeft(u);
 const when=d.date||"Por confirmar";
 const eta=dl==null?"":dl<0?"":dl===0?"Sale hoy":`En ${dl} días`;
-return `<li class="nit"><img src="img/t/${u.slug}.jpg" width="96" height="96" loading="lazy" alt=""><div class="nbody"><h4>${esc(u.title)}</h4><p class="nmeta">${esc(when)}${eta?` · <b>${eta}</b>`:""}${u.k==="s2"?" · Solo Switch 2":""}</p><p class="ngen">${esc([d.dev,(d.genres||[]).join(", ")].filter(Boolean).join(" · "))}</p><div class="nact"><button type="button" class="${inList?"nb2 on":"nb2"}" data-add="${u.slug}"${inList&&j.isOwn(u.slug)?" disabled":""}>${inList?(j.isOwn(u.slug)?"Ya lo tengo":"En mi lista · quitar"):"Lo quiero"}</button>${inList?`<button type="button" class="nb2" data-ver="${u.slug}">Ver ficha</button>`:""}<a class="nb2" href="https://nswitchex.com/es/details/${u.slug}/" target="_blank" rel="noopener noreferrer">nswitchex ↗</a></div></div></li>`;
+return `<li class="nit"><img src="img/t/${u.slug}.jpg" width="96" height="96" loading="lazy" alt=""><div class="nbody"><h4>${esc(u.title)}</h4><p class="nmeta">${d.date?esc(when):'<mark class="m-or">Por confirmar</mark>'}${eta?` · <b class="${dl!=null&&dl>=0&&dl<=60?"soon":""}">${eta}</b>`:""}${u.k==="s2"?' · <mark class="m-cy">Solo Switch 2</mark>':""}</p><p class="ngen">${esc([d.dev,(d.genres||[]).join(", ")].filter(Boolean).join(" · "))}</p><div class="nact"><button type="button" class="${inList?"nb2 on":"nb2"}" data-add="${u.slug}"${inList&&j.isOwn(u.slug)?" disabled":""}>${inList?(j.isOwn(u.slug)?"Ya lo tengo":"En mi lista · quitar"):"Lo quiero"}</button>${inList?`<button type="button" class="nb2" data-ver="${u.slug}">Ver ficha</button>`:""}<a class="nb2" href="https://nswitchex.com/es/details/${u.slug}/" target="_blank" rel="noopener noreferrer">nswitchex ↗</a></div></div></li>`;
 }).join("")}</ul></div>`;
 }
 function open(){
 ensure();
-render();
+render();dlg.classList.add("fx-open");setTimeout(()=>dlg.classList.remove("fx-open"),1300);
 if(!dlg.open)dlg.showModal();
 }
 document.addEventListener("click",e=>{if(e.target.closest("#bnext"))open()});

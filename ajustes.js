@@ -88,12 +88,12 @@ const tok=J().store.get(TKEY,"");
 const sw=(k,l,d)=>`<div class="arow"><div><b>${l}</b><small>${d}</small></div><button type="button" class="tgl" role="switch" aria-checked="${!!A[k]}" data-tg="${k}"><i></i></button></div>`;
 dlg.innerHTML=`<div class="awin"><div class="fhead"><h3>Ajustes</h3><button class="x2" type="button" data-close aria-label="Cerrar">×</button></div>
 <div class="agroup"><h4>Rendimiento</h4>
-${sw("lite","Modo ligero","Apaga el fondo animado, el cursor y las animaciones. Para móviles o equipos lentos.")}
-${A.lite?"":`${sw("bg","Fondo animado","Luces y botones flotando.")}${sw("cursor","Cursor magnético","Punto y anillo que sustituyen al cursor.")}`}
+${sw("lite","Modo ligero","Apaga el fondo animado, el cursor y las animaciones. Para <mark class='m-or'>móviles o equipos lentos</mark>.")}
+${A.lite?"":`${sw("bg","Fondo animado","<mark class='m-cy'>Luces</mark> y <mark class='m-pk'>botones</mark> flotando.")}${sw("cursor","Cursor magnético","<mark class='m-pu'>Punto y anillo</mark> que sustituyen al cursor.")}`}
 </div>
 <div class="agroup"><h4>Tamaño del texto</h4><div class="stbar" role="group" aria-label="Tamaño del texto">${[["Normal",0],["Grande",1],["Muy grande",2]].map(([l,v])=>`<button type="button" class="stb" data-font="${v}" aria-pressed="${A.font===v}">${l}</button>`).join("")}</div></div>
 ${sesion()?"":`<div class="agroup pubgrp"><h4>Publicar mi orden</h4>
-<p class="adesc"><b>Solo para cuentas de invitado</b> (sin iniciar sesión). Si tienes cuenta, tu orden ya se guarda en ella y esta opción no aparece.</p>
+<p class="adesc"><mark class="m-or">Solo para cuentas de invitado</mark> (sin iniciar sesión). Si tienes cuenta, tu orden ya se guarda en ella y esta opción no aparece.</p>
 <p class="adesc">El orden que pones con «Reordenar» solo lo ves tú. Si lo publicas, se guarda en GitHub (archivo <code>orden.js</code>) y cualquiera que abra la web, como tu novia, lo verá igual.</p>
 <button type="button" class="pri big2" data-pub>Publicar mi orden en GitHub</button>
 <div id="fallback" hidden><textarea id="orden-txt" rows="4" readonly></textarea><button type="button" class="nb2" data-copy>Copiar el texto</button></div>
@@ -105,7 +105,7 @@ ${tok?`<button type="button" class="nb2" data-deltok>Borrar el token de este nav
 }
 function open(){
 ensure();
-render();
+render();dlg.classList.add("fx-open");setTimeout(()=>dlg.classList.remove("fx-open"),1300);
 if(!dlg.open)dlg.showModal();
 }
 document.addEventListener("click",e=>{if(e.target.closest("#bset"))open()});

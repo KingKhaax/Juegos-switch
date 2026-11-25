@@ -55,11 +55,11 @@ ${tile("Metascore medio",`${mH?j.nf(mH,0):"—"} <small>tengo</small> · ${mW?j.
 <h4>Por género</h4>${bars(genres)}
 <h4>Estado de lo que tengo</h4>${bars(states,r=>r.h)}
 ${mrows.length?`<h4>Gasto por mes de compra</h4>${bars(mrows,r=>j.eur(r.h))}`:""}
-<p class="src">Se calcula con tu consola (Switch ${j.cons}), el formato digital o físico y el precio que pagaste.</p></div>`;
+<p class="src">Se calcula con tu <mark class="m-cy">consola (Switch ${j.cons})</mark>, el <mark class="m-pu">formato digital o físico</mark> y el <mark class="m-go">precio que pagaste</mark>.</p></div>`;
 }
 function open(){
 ensure();
-dlg.innerHTML=build();
+dlg.innerHTML=build();dlg.classList.add("fx-open");setTimeout(()=>dlg.classList.remove("fx-open"),1300);
 if(!dlg.open)dlg.showModal();
 }
 document.addEventListener("click",e=>{if(e.target.closest("#bstats"))open()});

@@ -26,7 +26,7 @@ return `<div class="hr-list">${r.map(g=>{const i=j.info(g),main=i.hours;return `
 function totalTxt(){const t=total();return `Total: ${J().nf(t,1)} h jugadas`}
 function render(q){
 dlg.innerHTML=`<div class="awin hr-win"><div class="fhead"><h3>Mis horas jugadas</h3><button class="x2" type="button" data-close aria-label="Cerrar">×</button></div>
-<p class="adesc">Copia las horas desde la consola (Perfil → Historial de juego). Puedes escribir <b>12,5</b>, <b>12 h 30 min</b> o <b>12h30m</b>. Se guarda al salir del campo y con Intro pasas al siguiente juego.</p>
+<p class="adesc">Copia las horas desde la consola (Perfil → <mark class="m-pk">Historial de juego</mark>). Puedes escribir <mark class="m-cy">12,5</mark>, <mark class="m-gr">12 h 30 min</mark> o <mark class="m-or">12h30m</mark>. Se guarda al salir del campo y con Intro pasas al siguiente juego.</p>
 <input type="search" class="hr-q" placeholder="Buscar entre mis juegos" aria-label="Buscar entre mis juegos" value="${esc(q||"")}" autocomplete="off">
 <div id="hrlist">${list(q)}</div>
 <p class="hr-tot" id="hrtot" role="status">${totalTxt()}</p></div>`;
@@ -58,7 +58,7 @@ e.target.blur();
 (all[i+1]||e.target).focus();
 });
 }
-function open(){ensure();render("");if(!dlg.open)dlg.showModal();dlg.querySelector(".hr-q").focus()}
+function open(){ensure();dlg.classList.add("fx-open");setTimeout(()=>dlg.classList.remove("fx-open"),1300);render("");if(!dlg.open)dlg.showModal();dlg.querySelector(".hr-q").focus()}
 const nav=document.querySelector(".apartados");
 const b=document.createElement("button");
 b.type="button";b.id="bhoras";b.className="ap";b.textContent="Mis horas";
