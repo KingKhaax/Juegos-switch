@@ -115,6 +115,24 @@ Cada cuenta tiene un **rol**. Sale como título con efectos justo debajo del nom
 - **Publicar el servidor:** `cd cuentas && npm install && npx vercel deploy --prod --yes`. `cuentas/.vercel` y `.env.local` no van a git; se recrean con `npx vercel link --yes --project juegos-switch-cuentas`.
 - **Recuperación de contraseña:** solo si la cuenta tiene pregunta de recuperación (se pone en «Mi cuenta», Seguridad). Si no la tiene y se olvida, se borra el archivo del usuario (`npx vercel blob delete cuentas/<usuario>.json --rw-token <BLOB_READ_WRITE_TOKEN>`) y se crea la cuenta de nuevo.
 
+## Región y generaciones en los juegos de Pokémon (26/11/2026)
+
+En la ficha de los juegos de Pokémon, junto al título «Resumen», salen unas pastillas con efectos (`pokemon.js`; estilos `.pk-*` en `styles.css`):
+
+- **Región** donde transcurre el juego, con un color propio para cada una: Kanto, Sinnoh, Hisui, Galar, Paldea, Kalos (Ciudad Luminalia), Ferrum y la región nueva de Pokémon Viento/Oleaje.
+- **Generaciones** de los Pokémon que incluye el juego. Cada una lleva su icono de dos colores con el número romano (I rojo y azul, II oro y plata, III rubí y zafiro, IV azul y rosa, V negro y blanco, VI azul y rojo, VII naranja y morado, VIII celeste y magenta, IX rojo y morado, X verde y azul) y su nombre (Primera, Segunda…).
+- **Datos** (en `P` de `pokemon.js`):
+  - Let's Go: Kanto, I y VII (Meltan).
+  - Diamante Brillante y Perla Reluciente: Sinnoh, I a IV.
+  - Leyendas Arceus: Hisui, I a VIII.
+  - Espada: Galar, I a VIII.
+  - Escarlata: Paldea, I a IX.
+  - Leyendas Z-A: Kalos, I a VI.
+  - Pokkén Tournament DX: Ferrum, I a VII (luchadores).
+  - Viento y Oleaje: región nueva, X, por confirmar.
+- **Juego de Pokémon nuevo:** se añade su fila en `P` de `pokemon.js`.
+- **Ojo:** las variables de color se llaman `--pa`/`--pb` porque `--a` ya está registrada como ángulo (`@property`) para otra animación.
+
 ## Cómo funciona la web
 
 - Los `.js` (menos `orden.js`) y `styles.css` se enlazan en `index.html` con `?v=AAAAMMDD`: **al cambiar cualquiera de ellos, sube esa fecha** para que los navegadores no sigan usando la versión vieja guardada (GitHub Pages deja guardar los archivos 10 minutos y algunos navegadores más).

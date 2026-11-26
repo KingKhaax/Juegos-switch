@@ -512,7 +512,7 @@ ${i.meta?`<div class="ring ${metaCls(i.meta)}" style="--v:${i.meta}" title="Meta
 ${soon}${cinfo}
 <div class="actions"><button class="own big" type="button" data-slug="${g.slug}" aria-pressed="${owned}"><span class="tick">${svg.card}${svg.ok.replace("<svg ",'<svg class="ic-ok" ')}</span><span class="otxt">${owned?"Lo tengo · quitar":"Ya lo tengo"}</span></button>${i.cost!=null&&i.playable?(owned?`<button class="price paidtag" type="button" data-pay="1"><small>${paid[g.slug]!=null?"Pagado":"PVPR"}</small><b>${eur(i.cost)}</b>${paid[g.slug]!=null&&i.price!=null&&i.price!==i.cost?`<s>PVPR ${eur(i.price)}</s>`:""}<em>cambiar precio</em></button>`:`<div class="price"><small>PVPR ${e.name||""}</small><b>${eur(i.price)}</b></div>`):""}${owned?fmtBadgeBig:""}${links}</div>${owned?stbar:""}
 ${owned?mioHtml(g,i):""}
-${d.summary?`<section class="panel desc"><h3>Resumen</h3><p>${d.summary}</p></section>`:""}
+${d.summary?`<section class="panel desc"><div class="pk-head"><h3>Resumen</h3>${window.pkPills?window.pkPills(g.slug):""}</div><p>${d.summary}</p></section>`:""}
 <div class="grid2">
 <section class="panel size"><h3>Tamaño en Switch ${cons==="1"?"1":"2"}</h3>${i.playable?`<b class="big" data-to="${i.mbEff/1024}" data-dec="1" data-suf=" GB">${i.mbEff?gb(i.mbEff):"0,0 GB"}</b><div class="sdbar" title="Porcentaje de una tarjeta de 128 GB"><i style="--w:${pct.toFixed(1)}%"></i></div><small class="note">Ocupa el ${nf(pct,1)} % de una tarjeta de 128 GB${e.name?` · edición ${e.name}`:""}</small>`:`<p class="warn">Este juego solo funciona en Switch 2.</p>`}
 ${other&&other.sizeMB?`<div class="alt"><span>${otherLbl}</span><b>${gb(other.sizeMB)}</b>${other.price?`<em>${other.price.replace("€"," €")}</em>`:""}</div>`:""}
