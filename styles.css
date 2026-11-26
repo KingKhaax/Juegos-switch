@@ -1108,3 +1108,4 @@ dialog .chips,dialog .chips *,dialog .actions,dialog .actions *,dialog .pk-tags,
 @keyframes admspin{to{transform:rotate(360deg)}}
 @media(max-width:620px){.adm-r{grid-template-columns:auto 1fr auto}.adm-rv,.adm-rc{grid-column:2}.adm-u{grid-template-columns:44px 1fr}.adm-av{width:44px;height:44px}}
 @media(prefers-reduced-motion:reduce){.adm-title,.adm-crown,.adm-r,.adm-u,.adm-pill.on,.adm-spin,.apartados.drawer #badm,.apartados.drawer #badm::after,.apartados.drawer #badm svg.i{animation:none!important}}
+.adm-q{flex:1;min-width:0;background:none;border:0;outline:0;color:#fff;font:inherit;font-size:1rem;font-weight:700}.adm-q::placeholder{color:#7d8190}
