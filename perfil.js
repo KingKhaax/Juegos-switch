@@ -4,7 +4,7 @@ const root=document.documentElement;
 const reduce=matchMedia("(prefers-reduced-motion:reduce)").matches;
 const T=document.querySelector(".title"),S=document.querySelector(".sub");
 if(T)T.textContent=NV?"Jueguitos Switch de Nicky":"Jueguitos Switch de Rafita";if(NV){if(S)S.textContent="Mis juegos favoritos, ordenados por preferencia · Switch 1 y Switch 2"}
-const icoR='<svg viewBox="0 0 64 64" aria-hidden="true"><rect x="8" y="14" width="20" height="36" rx="10" fill="#00c3e3"/><rect x="36" y="14" width="20" height="36" rx="10" fill="#e60012"/><circle cx="18" cy="26" r="4" fill="#0b0d12"/><circle cx="46" cy="40" r="4" fill="#0b0d12"/><rect x="26" y="20" width="12" height="24" rx="3" fill="#1c1e24"/></svg>';
+const icoR='<img src="img/switch-mark.png?v=20261126a" width="220" height="220" alt="" decoding="async">';
 const icoN='<img src="img/kitty.png?v=20261123c" width="256" height="256" alt="" decoding="async">';
 const next=NV?"rafa":"novia";
 const b=document.createElement("button");
