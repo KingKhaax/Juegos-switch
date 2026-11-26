@@ -23,7 +23,8 @@ const same=(a,b)=>JSON.stringify(a)===JSON.stringify(Object.fromEntries(Object.e
 const slot=d=>(d&&d[PROF])||{};
 const ROLI={invitado:{id:"invitado",nombre:"Invitado"}};
 const rolDe=s=>(s&&s.rol)||ROLI.invitado;
-const rolHTML=r=>'<span class="rol rol-'+esc(r.id)+'"><i aria-hidden="true"></i><span>'+esc(r.nombre)+'</span></span>';
+const ROLK=["admin","mod","usuario","invitado"],ROLC={admin:"#ffb800",mod:"#ff5fa8",usuario:"#1f8fff",invitado:"#8a90a0"};
+const rolHTML=r=>{const k=(r.color||"").toLowerCase(),cls=ROLK.includes(r.id)&&(!k||k===ROLC[r.id])?"rol-"+esc(r.id):"rol-x";return '<span class="rol '+cls+'" style="--rc:'+esc(r.color||"#8a90a0")+'"><i aria-hidden="true"></i><span>'+esc(r.nombre)+'</span></span>'};
 const puedeEditar=()=>{const s=ses();if(!s)return false;if(!s.puede)return true;return !!s.puede[PROF]};
 function lectura(){
 const ro=!puedeEditar();
@@ -95,7 +96,7 @@ try{
 const r=await call("datos",{headers:{Authorization:"Bearer "+s.token}});
 if(r.status===401){setSes(null);location.reload();return}
 if(!r.ok){mark("err");return}
-{const se=ses();if(se&&r.j.rol&&JSON.stringify([se.rol,se.puede])!==JSON.stringify([r.j.rol,r.j.puede])){se.rol=r.j.rol;se.puede=r.j.puede;setSes(se);lectura()}if(se&&(se.q||"")!==(r.j.pregunta||"")){se.q=r.j.pregunta||"";if(r.j.nombre)se.nombre=r.j.nombre;setSes(se)}if(se&&(se.correo||"")!==(r.j.correo||"")){se.correo=r.j.correo||"";if(!se.correo)se.correoFull="";setSes(se)}}
+{const se=ses();if(se&&r.j.rol&&JSON.stringify([se.rol,se.puede,se.admin])!==JSON.stringify([r.j.rol,r.j.puede,r.j.admin])){se.rol=r.j.rol;se.puede=r.j.puede;se.admin=r.j.admin;setSes(se);lectura()}if(se&&(se.q||"")!==(r.j.pregunta||"")){se.q=r.j.pregunta||"";if(r.j.nombre)se.nombre=r.j.nombre;setSes(se)}if(se&&(se.correo||"")!==(r.j.correo||"")){se.correo=r.j.correo||"";if(!se.correo)se.correoFull="";setSes(se)}}
 const d=slot(r.j.data);
 if(!Object.keys(d).length&&Object.keys(collect()).length){push();return}
 if(!same(collect(),d)){
@@ -111,7 +112,7 @@ if(mode==="registro"){body.perfil=PROF;body.data=collect()}
 const r=await call(mode,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
 if(!r.ok)return ERR[r.j.error]||"No se ha podido conectar. Inténtalo de nuevo.";
 setGuest(false);
-setSes({user:r.j.user,nombre:r.j.nombre||r.j.user,token:r.j.token,synced:r.j.updated,dirty:0,rol:r.j.rol,puede:r.j.puede});lectura();
+setSes({user:r.j.user,nombre:r.j.nombre||r.j.user,token:r.j.token,synced:r.j.updated,dirty:0,rol:r.j.rol,puede:r.j.puede,admin:r.j.admin});lectura();
 if(mode==="entrar"){
 const d=slot(r.j.data);
 if(!Object.keys(d).length){if(Object.keys(collect()).length)await push()}

@@ -1,4 +1,4 @@
-import { put, get } from '@vercel/blob';
+import { put, get, list } from '@vercel/blob';
 import crypto from 'node:crypto';
 import nodemailer from 'nodemailer';
 
@@ -25,7 +25,88 @@ const ADMIN = 'kingkhaax';
 const MODS = { zya: 'Moderadora' };
 const DUENOS = { rafa: ADMIN, novia: 'zya' };
 const PERSONAL = /^juegos-switch-(avatar|nintendo|amigo)(-novia)?$/;
-const rol = (u) => (u === ADMIN ? { id: 'admin', nombre: 'Administrador' } : MODS[u] ? { id: 'mod', nombre: MODS[u] } : { id: 'usuario', nombre: 'Usuario' });
+const ROLES_RUTA = 'config/roles.json';
+const ROLES_BASE = [
+  { id: 'admin', nombre: 'Administrador', color: '#ffb800' },
+  { id: 'mod', nombre: 'Moderadora', color: '#ff5fa8' },
+  { id: 'usuario', nombre: 'Usuario', color: '#1f8fff' },
+  { id: 'invitado', nombre: 'Invitado', color: '#8a90a0' },
+];
+const ROLES_FIJOS = ['admin', 'usuario', 'invitado'];
+const NO_ASIGNABLES = ['admin', 'invitado'];
+let rolesMem = null;
+let rolesT = 0;
+async function loadRoles(force) {
+  if (!force && rolesMem && Date.now() - rolesT < 20000) return rolesMem;
+  let r = null;
+  try {
+    const g = await get(ROLES_RUTA, { access: 'private', useCache: false });
+    if (g && g.statusCode === 200) {
+      const j = JSON.parse(await new Response(g.stream).text());
+      if (Array.isArray(j.roles) && j.roles.length) r = j.roles;
+    }
+  } catch {}
+  rolesMem = r || ROLES_BASE;
+  rolesT = Date.now();
+  return rolesMem;
+}
+const saveRoles = (roles) => {
+  rolesMem = roles;
+  rolesT = Date.now();
+  return put(ROLES_RUTA, JSON.stringify({ roles }), { access: 'private', allowOverwrite: true, addRandomSuffix: false, contentType: 'application/json' });
+};
+const rolDe = (u, rec, roles) => {
+  if (u === ADMIN) return roles.find((r) => r.id === 'admin') || ROLES_BASE[0];
+  const id = rec && rec.role ? rec.role : MODS[u] ? 'mod' : 'usuario';
+  return roles.find((r) => r.id === id) || roles.find((r) => r.id === 'usuario') || ROLES_BASE[2];
+};
+const okRoleList = (l) => {
+  if (!Array.isArray(l) || l.length < 3 || l.length > 14) return null;
+  const ids = new Set();
+  const out = [];
+  for (const r of l) {
+    if (!r || typeof r.id !== 'string' || !/^[a-z0-9_-]{2,20}$/.test(r.id) || ids.has(r.id)) return null;
+    const nombre = String(r.nombre || '').trim();
+    if (nombre.length < 1 || nombre.length > 24) return null;
+    const color = /^#[0-9a-fA-F]{6}$/.test(r.color || '') ? r.color : '#8a90a0';
+    ids.add(r.id);
+    out.push({ id: r.id, nombre, color });
+  }
+  return ROLES_FIJOS.every((f) => ids.has(f)) ? out : null;
+};
+async function todosLosUsuarios() {
+  const names = [];
+  let cursor;
+  do {
+    const r = await list({ prefix: 'cuentas/', limit: 1000, cursor });
+    for (const b of r.blobs) {
+      const m = /^cuentas\/([a-z0-9._-]{3,24})\.json$/.exec(b.pathname);
+      if (m) names.push(m[1]);
+    }
+    cursor = r.hasMore ? r.cursor : undefined;
+  } while (cursor);
+  const out = [];
+  for (let i = 0; i < names.length; i += 8) {
+    const lote = await Promise.all(names.slice(i, i + 8).map(async (u) => [u, await load(u)]));
+    for (const [u, rec] of lote) if (rec) out.push([u, rec]);
+  }
+  return out;
+}
+const horasDe = (r) => {
+  try {
+    return Object.values(JSON.parse(r['juegos-switch-mio'] || '{}')).reduce((t, m) => t + (Number(m && m.horas) || 0), 0);
+  } catch {
+    return 0;
+  }
+};
+const cuenta = (d, k) => {
+  try {
+    const v = JSON.parse((d || {})[k] || '[]');
+    return Array.isArray(v) ? v.length : Object.keys(v || {}).length;
+  } catch {
+    return 0;
+  }
+};
 const puede = (u, p) => u === ADMIN || u === DUENOS[p];
 const sinPersonal = (d) => Object.fromEntries(Object.entries(d || {}).filter(([k]) => !PERSONAL.test(k)));
 const soloPersonal = (d) => Object.fromEntries(Object.entries(d || {}).filter(([k]) => PERSONAL.test(k)));
@@ -39,7 +120,7 @@ async function efectivas(user, rec) {
   }
   return out;
 }
-const extra = (user) => ({ rol: rol(user), puede: Object.fromEntries(PERFILES.map((p) => [p, puede(user, p)])) });
+const extra = async (user, rec) => ({ rol: rolDe(user, rec, await loadRoles()), admin: user === ADMIN, puede: Object.fromEntries(PERFILES.map((p) => [p, puede(user, p)])) });
 const okData = (d) => d && typeof d === 'object' && !Array.isArray(d) && JSON.stringify(d).length <= MAXDATA;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const hashPass = (pass, salt) => new Promise((res, rej) => crypto.scrypt(pass, salt, 64, (e, k) => (e ? rej(e) : res(k.toString('hex')))));
@@ -161,7 +242,7 @@ export default async function handler(req, res) {
         const nrec = { display: raw, salt, hash: await hashPass(pass, salt), data, updated: Date.now(), created: Date.now() };
         await save(user, nrec);
         try { await avisoNueva(req, user, raw, b.perfil, b.data); } catch {}
-        return res.status(200).json({ token: makeToken(user), user, nombre: raw, data: await efectivas(user, nrec), ...extra(user), updated: nrec.updated });
+        return res.status(200).json({ token: makeToken(user), user, nombre: raw, data: await efectivas(user, nrec), ...(await extra(user, nrec)), updated: nrec.updated });
       }
       if (!rec) { await sleep(400); return res.status(401).json({ error: 'credenciales' }); }
       if (rec.llock && rec.llock > Date.now()) return res.status(429).json({ error: 'bloqueo' });
@@ -174,7 +255,7 @@ export default async function handler(req, res) {
         return res.status(401).json({ error: 'credenciales' });
       }
       if (rec.lf || rec.llock) { rec.lf = 0; rec.llock = 0; await save(user, rec); }
-      return res.status(200).json({ token: makeToken(user, rec.epoch || 0), user, nombre: rec.display || user, data: await efectivas(user, rec), ...extra(user), updated: rec.updated || 0 });
+      return res.status(200).json({ token: makeToken(user, rec.epoch || 0), user, nombre: rec.display || user, data: await efectivas(user, rec), ...(await extra(user, rec)), updated: rec.updated || 0 });
     }
     if (req.method === 'POST' && a === 'perfil') {
       const tk = readToken(String(req.headers.authorization || '').replace(/^Bearer\s+/i, ''));
@@ -297,6 +378,76 @@ export default async function handler(req, res) {
       await save(u, rec);
       return res.status(200).json({ ok: true });
     }
+    if (req.method === 'GET' && a === 'roles') {
+      res.setHeader('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=300');
+      return res.status(200).json({ roles: await loadRoles() });
+    }
+    if (a === 'admin_usuarios' || a === 'admin_rol' || a === 'admin_roles') {
+      const tk = readToken(String(req.headers.authorization || '').replace(/^Bearer\s+/i, ''));
+      if (!tk || tk.user !== ADMIN) return res.status(403).json({ error: 'permiso' });
+      const yo = await load(tk.user);
+      if (!yo || (yo.epoch || 0) !== tk.ep) return res.status(401).json({ error: 'sesion' });
+      if (req.method === 'GET' && a === 'admin_usuarios') {
+        const roles = await loadRoles(true);
+        const us = await todosLosUsuarios();
+        const users = us
+          .map(([u, rec]) => {
+            const sl = slots(rec.data);
+            const r = sl.rafa || {};
+            const n = sl.novia || {};
+            return {
+              user: u,
+              nombre: rec.display || u,
+              rol: rolDe(u, rec, roles).id,
+              creada: rec.created || 0,
+              actividad: rec.updated || 0,
+              correo: maskMail(rec.email),
+              pregunta: !!rec.q,
+              avatar: r['juegos-switch-avatar'] || n['juegos-switch-avatar-novia'] || '',
+              tengo: { rafa: cuenta(r, 'juegos-switch-tengo'), novia: cuenta(n, 'juegos-switch-tengo-novia') },
+              horas: horasDe(r),
+            };
+          })
+          .sort((x, y) => (x.user === ADMIN ? -1 : y.user === ADMIN ? 1 : y.creada - x.creada));
+        return res.status(200).json({ roles, users, admin: ADMIN });
+      }
+      if (req.method === 'POST' && a === 'admin_rol') {
+        const b = await body(req);
+        const u = String(b.user || '').toLowerCase();
+        const roles = await loadRoles(true);
+        if (!okUser(u) || u === ADMIN) return res.status(400).json({ error: 'usuario' });
+        if (typeof b.role !== 'string' || NO_ASIGNABLES.includes(b.role) || !roles.some((r) => r.id === b.role)) return res.status(400).json({ error: 'rol' });
+        const rec = await load(u);
+        if (!rec) return res.status(404).json({ error: 'no_existe' });
+        rec.role = b.role;
+        await save(u, rec);
+        return res.status(200).json({ ok: true, user: u, rol: b.role });
+      }
+      if (req.method === 'POST' && a === 'admin_roles') {
+        const b = await body(req);
+        const nuevos = okRoleList(b.roles);
+        if (!nuevos) return res.status(400).json({ error: 'roles' });
+        const antes = await loadRoles(true);
+        const quitados = antes.filter((r) => !nuevos.some((n) => n.id === r.id)).map((r) => r.id);
+        await saveRoles(nuevos);
+        let movidos = 0;
+        if (quitados.length) {
+          for (const [u, rec] of await todosLosUsuarios()) {
+            if (rec.role && quitados.includes(rec.role)) {
+              rec.role = 'usuario';
+              await save(u, rec);
+              movidos++;
+            } else if (!rec.role && MODS[u] && quitados.includes('mod')) {
+              rec.role = 'usuario';
+              await save(u, rec);
+              movidos++;
+            }
+          }
+        }
+        return res.status(200).json({ ok: true, roles: nuevos, movidos });
+      }
+      return res.status(404).json({ error: 'ruta' });
+    }
     if (req.method === 'GET' && a === 'publico') {
       const p = okPerfil(req.query.perfil) ? req.query.perfil : 'rafa';
       const m = await load(DUENOS[p]);
@@ -308,7 +459,7 @@ export default async function handler(req, res) {
       const user = tk.user;
       const rec = await load(user);
       if (!rec || (rec.epoch || 0) !== tk.ep) return res.status(401).json({ error: 'sesion' });
-      if (req.method === 'GET') return res.status(200).json({ user, nombre: rec.display || user, pregunta: rec.q || '', correo: maskMail(rec.email), data: await efectivas(user, rec), ...extra(user), updated: rec.updated || 0 });
+      if (req.method === 'GET') return res.status(200).json({ user, nombre: rec.display || user, pregunta: rec.q || '', correo: maskMail(rec.email), data: await efectivas(user, rec), ...(await extra(user, rec)), updated: rec.updated || 0 });
       if (req.method === 'PUT') {
         const b = await body(req);
         if (!okPerfil(b.perfil) || !okData(b.data)) return res.status(400).json({ error: 'datos' });
