@@ -1110,3 +1110,4 @@ dialog .chips,dialog .chips *,dialog .actions,dialog .actions *,dialog .pk-tags,
 @media(prefers-reduced-motion:reduce){.adm-title,.adm-crown,.adm-r,.adm-u,.adm-pill.on,.adm-spin,.apartados.drawer #badm,.apartados.drawer #badm::after,.apartados.drawer #badm svg.i{animation:none!important}}
 .adm-q{flex:1;min-width:0;background:none;border:0;outline:0;color:#fff;font:inherit;font-size:1rem;font-weight:700}.adm-q::placeholder{color:#7d8190}
 .perfil-btn.is-r .pb-face{background:radial-gradient(circle at 32% 26%,#ff5a68,#e60012 55%,#a8000d);box-shadow:inset 0 0 0 2px rgba(255,255,255,.35),inset 0 -6px 12px rgba(0,0,0,.28),0 4px 12px rgba(0,0,0,.45)}.perfil-btn.is-r .pb-face img{width:100%;height:100%;object-fit:contain;padding:12px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.4))}@media(max-width:640px){.perfil-btn.is-r .pb-face img{padding:10px}}
+html.solo-lectura #badd,html.solo-lectura #badd2{display:none!important}
