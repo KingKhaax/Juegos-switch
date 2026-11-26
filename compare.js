@@ -51,7 +51,7 @@ const hf=a=>a.map(x=>x!=null?`${j.nf(x,1)} h`:"—");
 const meta=I.map(i=>i.meta);
 const size=I.map(i=>i.playable?i.mbEff:null);
 const price=I.map(i=>i.playable?i.cost:null);
-const head=`<tr><th></th>${gs.map(g=>`<th scope="col" class="ch"><button type="button" class="rm" data-rm="${g.slug}" aria-label="Quitar ${esc(g.title)} de la comparación">×</button><img src="img/t/${g.slug}.jpg" width="120" height="120" alt=""><span>${esc(g.title)}</span></th>`).join("")}</tr>`;
+const head=`<tr><th></th>${gs.map(g=>`<th scope="col" class="ch"><button type="button" class="rm" data-rm="${g.slug}" aria-label="Quitar ${esc(g.title)} de la comparación">×</button><img src="${(window.JS.AD()[g.slug]||{c:{}}).c.sq||`img/t/${g.slug}.jpg`}" width="120" height="120" alt=""><span>${esc(g.title)}</span></th>`).join("")}</tr>`;
 const rows=[
 row("Metascore",meta.map(m=>m!=null?`<b class="metab ${j.metaCls(m)}">${m}</b>`:"—"),best(meta,"max")),
 row("Consola",I.map((i,k)=>esc(j.L[gs[k].k]))),

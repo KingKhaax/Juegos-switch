@@ -16,6 +16,7 @@ const STKEY="juegos-switch-estado";
 const MKEY="juegos-switch-mio";
 const OKEY="juegos-switch-orden";
 const EKEY="juegos-switch-extra";
+const XKEY="juegos-switch-anadidos";
 const PROF=window.PERFIL==="novia"?"novia":"rafa";
 const PK=k=>PROF==="rafa"||/-(ajustes|token|perfil|cuenta)$/.test(k)?k:k+"-novia";
 const saved=()=>document.dispatchEvent(new Event("js-guardado"));
@@ -29,10 +30,17 @@ const jget=(k,f)=>{try{const v=JSON.parse(store.get(k,""));return v&&typeof v===
 const LIST=(window.LISTS||{})[PROF];
 const BASE=LIST?LIST.map(x=>window.GAMES.find(g=>g.slug===x)).filter(Boolean):window.GAMES;
 const UPC=window.UPCOMING||[];
+let AD=jget(XKEY,{});
 const D=Object.assign({},window.DETAILS||{},Object.fromEntries(UPC.filter(u=>u.detail).map(u=>[u.slug,u.detail])));
+Object.entries(AD).forEach(([k,a])=>{if(a&&a.det)D[k]=a.det});
+const covT=g=>g.cus&&AD[g.slug]?AD[g.slug].c.sq:`img/t/${g.slug}.jpg`;
+const covH=g=>g.cus&&AD[g.slug]?AD[g.slug].c.h:`img/hd/${g.slug}.jpg`;
+const topN=v=>{const m=/(\d+)\s*$/.exec(v||"");return m?+m[1]:0};
+const modesOf=det=>{const m=["sp"];if(topN(det&&det.local)>1)m.push("ml");if(topN(det&&det.online)>1)m.push("mo");return m};
+const futuro=iso=>!!iso&&iso>new Date().toISOString().slice(0,10);
 const $=s=>document.querySelector(s);
-const SAGAS=[["pokemon","Pokémon"],["zelda","Zelda"],["mario","Mario"],["dk","Donkey Kong"],["smash","Super Smash Bros."],["ac","Animal Crossing"],["kirby","Kirby"],["otros","Próximos lanzamientos"]];
-let extra=jget(EKEY,[]).filter(s=>UPC.some(u=>u.slug===s));
+const SAGAS=[["pokemon","Pokémon"],["zelda","Zelda"],["mario","Mario"],["dk","Donkey Kong"],["smash","Super Smash Bros."],["ac","Animal Crossing"],["kirby","Kirby"],["otros","Otros juegos"]];
+let extra=jget(EKEY,[]).filter(s=>UPC.some(u=>u.slug===s)||AD[s]);
 let order=jget(OKEY,[]);
 let GAMES=[];
 let bySlug={};
@@ -50,7 +58,7 @@ rs.add(s);
 return res;
 };
 function buildGames(){
-const ex=extra.map(s=>UPC.find(u=>u.slug===s)).filter(Boolean).map(u=>({slug:u.slug,s:"otros",title:u.title,k:u.k,m:[],ex:true}));
+const ex=extra.map(s=>{const u=UPC.find(x=>x.slug===s);if(u)return{slug:u.slug,s:"otros",title:u.title,k:u.k,m:[],ex:true};const a=AD[s];return a?{slug:s,s:"otros",title:a.t,k:a.k,m:modesOf(a.det),ex:futuro(a.d),cus:true}:null}).filter(Boolean);
 const def=[...BASE,...ex];
 const defSlugs=def.map(g=>g.slug);
 const pub=PROF==="rafa"&&window.ORDEN&&window.ORDEN.order||[];
@@ -210,7 +218,7 @@ const facts=g.ex?`<span class="facts soon">Sale: ${(i.d.date||"próximamente")}<
 const prog=owned&&i.horasJ&&i.hours?`<span class="prog" style="--w:${Math.min(100,i.horasJ/i.hours*100).toFixed(0)}%" title="${nf(i.horasJ,1)} de ${nf(i.hours,1)} h"></span>`:"";
 const modes=g.m.length?g.m.map(x=>`<i>${T[x]}</i>`).join(""):"<i>Modos sin confirmar</i>";
 const cm=cmp.includes(g.slug);
-return `<article class="card${owned?" owned":""}${cm?" cmp":""}" data-slug="${g.slug}" data-k="${g.k}" data-tags="${g.m.join(" ")}" data-name="${norm(g.title)}" data-saga="${g.s}" data-genres="${(i.d.genres||[]).join("|")}" data-status="${owned?stOf(g.slug):""}"><button class="open" type="button" aria-label="Ver la ficha de ${g.title}"><span class="media"><img class="cover" src="img/t/${g.slug}.jpg" width="240" height="240" decoding="async" loading="${!owned&&n<=6?"eager":"lazy"}" alt=""><span class="num">${owned?"✓":n}</span>${meta}${cornerOf(g.k)}${prog}</span><span class="info"><span class="name">${g.title}</span>${facts}<span class="modes">${modes}</span></span></button>${owned?`<div class="fmtrow">${fb}</div><button class="st s-${stOf(g.slug)}" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Estado de ${g.title}: ${stLabel(stOf(g.slug))}. Cambiar"><span class="stdot" aria-hidden="true"></span>${stLabel(stOf(g.slug))}<span class="stchev" aria-hidden="true"></span></button><button class="pay" type="button">Cambiar precio</button>`:""}<div class="act"><button class="own" type="button" aria-pressed="${owned}">${owned?"Quitar de «ya lo tengo»":"Ya lo tengo"}</button><button class="cmpb" type="button" aria-pressed="${cm}" aria-label="Comparar ${g.title}" title="Comparar">${svg.cmp}</button></div>${owned?"":`<div class="mvbar"><span class="grip" data-grip aria-hidden="true" title="Arrastrar">${svg.grip}</span><button type="button" data-mv="-1" aria-label="Mover ${g.title} antes">‹</button><button type="button" data-mv="1" aria-label="Mover ${g.title} después">›</button></div>`}</article>`;
+return `<article class="card${owned?" owned":""}${cm?" cmp":""}" data-slug="${g.slug}" data-k="${g.k}" data-tags="${g.m.join(" ")}" data-name="${norm(g.title)}" data-saga="${g.s}" data-genres="${(i.d.genres||[]).join("|")}" data-status="${owned?stOf(g.slug):""}"><button class="open" type="button" aria-label="Ver la ficha de ${g.title}"><span class="media"><img class="cover" src="${covT(g)}" width="240" height="240" decoding="async" loading="${!owned&&n<=6?"eager":"lazy"}" alt=""><span class="num">${owned?"✓":n}</span>${meta}${cornerOf(g.k)}${prog}</span><span class="info"><span class="name">${g.title}</span>${facts}<span class="modes">${modes}</span></span></button>${owned?`<div class="fmtrow">${fb}</div><button class="st s-${stOf(g.slug)}" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Estado de ${g.title}: ${stLabel(stOf(g.slug))}. Cambiar"><span class="stdot" aria-hidden="true"></span>${stLabel(stOf(g.slug))}<span class="stchev" aria-hidden="true"></span></button><button class="pay" type="button">Cambiar precio</button>`:""}<div class="act"><button class="own" type="button" aria-pressed="${owned}">${owned?"Quitar de «ya lo tengo»":"Ya lo tengo"}</button><button class="cmpb" type="button" aria-pressed="${cm}" aria-label="Comparar ${g.title}" title="Comparar">${svg.cmp}</button></div>${owned?"":`<div class="mvbar"><span class="grip" data-grip aria-hidden="true" title="Arrastrar">${svg.grip}</span><button type="button" data-mv="-1" aria-label="Mover ${g.title} antes">‹</button><button type="button" data-mv="1" aria-label="Mover ${g.title} después">›</button></div>`}</article>`;
 }
 
 function tone(img){
@@ -419,6 +427,32 @@ buildGames();
 render(false);
 document.dispatchEvent(new CustomEvent("juegos:games"));
 }
+function addCustom(a){
+if(!a||!a.id)return null;
+const slug="n"+a.id;
+AD[slug]={id:a.id,t:a.t,k:a.k,d:a.d,c:a.c,det:a.det};
+D[slug]=a.det;
+store.set(XKEY,JSON.stringify(AD));
+if(!extra.includes(slug)){extra.push(slug);store.set(EKEY,JSON.stringify(extra))}
+buildGames();
+render(false);
+document.dispatchEvent(new CustomEvent("juegos:games"));
+return slug;
+}
+function removeCustom(slug){
+if(!AD[slug])return;
+if(isOwn(slug)){own.splice(own.indexOf(slug),1);delete paid[slug];savePaid();delete status[slug];saveSt();setMi(slug,{nota:"",com:"",compra:"",horas:"",fin:""});store.set(KEY,JSON.stringify(own))}
+delete AD[slug];delete D[slug];
+store.set(XKEY,JSON.stringify(AD));
+extra=extra.filter(x=>x!==slug);
+store.set(EKEY,JSON.stringify(extra));
+order=order.filter(x=>x!==slug);
+store.set(OKEY,JSON.stringify(order));
+cmp=cmp.filter(x=>x!==slug);
+buildGames();
+render(false);
+document.dispatchEvent(new CustomEvent("juegos:games"));
+}
 function removeExtra(slug){
 if(!extra.includes(slug)||isOwn(slug))return;
 extra=extra.filter(s=>s!==slug);
@@ -504,7 +538,7 @@ return `<div class="sheet">
 <form method="dialog"><button class="x" aria-label="Cerrar la ficha">×</button></form>
 <button class="nav prev" type="button" aria-label="Juego anterior">‹</button><button class="nav next" type="button" aria-label="Juego siguiente">›</button>
 <div class="scroll">
-<div class="hero"><img src="img/hd/${g.slug}.jpg" width="1660" height="832" decoding="async" alt="Carcasa de ${g.title}"><i class="sheen"></i>${cornerOf(g.k)}
+<div class="hero"><img src="${covH(g)}" width="1660" height="832" decoding="async" alt="Carcasa de ${g.title}"><i class="sheen"></i>${cornerOf(g.k)}
 <div class="htitle"><h2>${g.title}</h2><p>${[d.dev,d.date].filter(Boolean).join(" · ")}</p></div>
 ${i.meta?`<div class="ring ${metaCls(i.meta)}" style="--v:${i.meta}" title="Metascore"><span data-to="${i.meta}" data-dec="0">${i.meta}</span></div>`:""}</div>
 <div class="body">
@@ -647,7 +681,7 @@ document.addEventListener("pointerover",e=>{
 const c=e.target.closest&&e.target.closest(".card");
 if(!c||warmed.has(c.dataset.slug))return;
 warmed.add(c.dataset.slug);
-new Image().src=`img/hd/${c.dataset.slug}.jpg`;
+{const gg=bySlug[c.dataset.slug];new Image().src=gg?covH(gg):`img/hd/${c.dataset.slug}.jpg`}
 },{passive:true});
 
 document.addEventListener("click",e=>{
@@ -891,7 +925,7 @@ get cmp(){return cmp},
 get cons(){return cons},
 get order(){return GAMES.map(g=>g.slug)},
 get hasLocalOrder(){return order.length>0},
-D,UPC,bySlug:()=>bySlug,mio:()=>mio,paid:()=>paid,setMi,redraw:()=>render(false),
+D,UPC,bySlug:()=>bySlug,mio:()=>mio,paid:()=>paid,setMi,redraw:()=>render(false),AD:()=>AD,addCustom,removeCustom,toggleOwn,
 info,mi,stOf,stLabel,STATES,SAGAS,T,FT,L,nf,gb,eur,num,norm,metaCls,svg,cornerOf,
 openDlg,toggleCmp,addExtra,removeExtra,watchDialogs,
 isExtra:s=>extra.includes(s),

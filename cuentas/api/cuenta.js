@@ -5,7 +5,7 @@ import nodemailer from 'nodemailer';
 const ORIGINS = ['https://kingkhaax.github.io'];
 const SECRET = process.env.CUENTAS_SECRET || '';
 const DAY = 86400000;
-const MAXDATA = 300000;
+const MAXDATA = 900000;
 
 const okUser = (u) => typeof u === 'string' && /^[a-z0-9._-]{3,24}$/.test(u);
 const okPass = (p) => typeof p === 'string' && p.length >= 6 && p.length <= 100;

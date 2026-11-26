@@ -14,8 +14,10 @@ Eres el responsable de mantener al día el apartado «Próximos lanzamientos» d
    - Si N es 0 o el script falla, la web de origen ha cambiado: restaura con `git checkout upcoming.js img/next` y sigue en «Si falla».
 4. Compara con `/tmp/upcoming.antes.js` (por ejemplo con un script de Node que cargue las dos listas): anota qué juegos son nuevos, cuáles han desaparecido (normalmente porque ya han salido) y a cuáles les ha cambiado la fecha (`fecha`).
 5. En `README.md`, en la frase del apartado «Próximos lanzamientos» que dice «N juegos con fecha» y «a fecha dd/mm/aaaa», pon el número y la fecha de hoy (formato dd/mm/aaaa). No toques nada más del README.
+5b. Actualiza también el catálogo de fichas de nswitchex.com que usa el buscador de «Añadir juego»: ejecuta `node tools/scrape-catalogo.mjs .` (tarda un par de minutos; escribe `nsw-catalogo.json`). Si termina con «demasiados fallos» o error, NO lo subas y sigue sin él, avisando en el correo de fallo solo si tampoco funcionó el paso 2.
+
 6. Sube los cambios a `main`:
-   - `git add upcoming.js img/next README.md`
+   - `git add upcoming.js img/next README.md nsw-catalogo.json`
    - Un solo commit con identidad `sr.kitkat <180756772+KingKhaax@users.noreply.github.com>` (`git -c user.name=sr.kitkat -c user.email=180756772+KingKhaax@users.noreply.github.com commit`).
    - Mensaje corto y sencillo en castellano, por ejemplo: «Próximos lanzamientos actualizados (dd/mm/aaaa)». Si hay novedades de juegos o fechas, añádelas en la segunda línea.
    - NUNCA menciones a Claude, a ningún asistente ni herramienta de IA en el commit, ni añadas `Co-Authored-By`.
@@ -24,7 +26,7 @@ Eres el responsable de mantener al día el apartado «Próximos lanzamientos» d
 
 ## Reglas
 
-- No cambies código, estilos ni otras listas. Solo `upcoming.js`, `img/next/` y la frase del README.
+- No cambies código, estilos ni otras listas. Solo `upcoming.js`, `img/next/`, `nsw-catalogo.json` y la frase del README.
 - Nunca inventes datos: lo que no salga de nswitchex.com no se escribe.
 - No toques `games.js` ni las listas de Rafael ni de Nicky: «Lo quiero» las guarda cada usuario en su navegador.
 
