@@ -21,6 +21,23 @@ const collect=()=>Object.fromEntries(keys().sort().map(k=>[k,localStorage.getIte
 const apply=d=>{keys().forEach(k=>localStorage.removeItem(k));Object.entries(d||{}).forEach(([k,v])=>{if(mine(k)&&typeof v==="string")localStorage.setItem(k,v)})};
 const same=(a,b)=>JSON.stringify(a)===JSON.stringify(Object.fromEntries(Object.entries(b||{}).sort()));
 const slot=d=>(d&&d[PROF])||{};
+const PERS=/^juegos-switch-(avatar|nintendo)(-novia)?$/;
+const hk=d=>{const t=JSON.stringify(Object.entries(d||{}).sort());let h=0;for(let i=0;i<t.length;i++)h=(h*31+t.charCodeAt(i))|0;return String(h)};
+const shared=()=>Object.fromEntries(Object.entries(collect()).filter(([k])=>!PERS.test(k)));
+async function publico(){
+try{
+const r=await call("publico&perfil="+PROF,{});
+if(!r.ok||!r.j.data)return;
+const d=Object.fromEntries(Object.entries(r.j.data).filter(([k,v])=>mine(k)&&!PERS.test(k)&&typeof v==="string"));
+if(!Object.keys(d).length||same(shared(),d))return;
+let done="";try{done=sessionStorage.getItem("js-pub-"+PROF)||""}catch(e){}
+if(done===hk(d))return;
+try{sessionStorage.setItem("js-pub-"+PROF,hk(d))}catch(e){}
+keys().filter(k=>!PERS.test(k)).forEach(k=>localStorage.removeItem(k));
+Object.entries(d).forEach(([k,v])=>localStorage.setItem(k,v));
+location.reload();
+}catch(e){}
+}
 async function call(a,opt){
 const r=await fetch(API+"?a="+a,opt);
 let j={};try{j=await r.json()}catch(e){}
@@ -71,7 +88,7 @@ const d=slot(r.j.data);
 if(!Object.keys(d).length&&Object.keys(collect()).length){push();return}
 if(!same(collect(),d)){
 let done="";try{done=sessionStorage.getItem("js-sync-"+PROF)||""}catch(e){}
-if(done!==String(r.j.updated)){try{sessionStorage.setItem("js-sync-"+PROF,String(r.j.updated))}catch(e){}apply(d);s.synced=r.j.updated;setSes(s);location.reload();return}
+if(done!==hk(d)){try{sessionStorage.setItem("js-sync-"+PROF,hk(d))}catch(e){}apply(d);s.synced=r.j.updated;setSes(s);location.reload();return}
 }
 mark("ok");
 }catch(e){mark("err")}
@@ -86,7 +103,7 @@ setSes({user:r.j.user,nombre:r.j.nombre||r.j.user,token:r.j.token,synced:r.j.upd
 if(mode==="entrar"){
 const d=slot(r.j.data);
 if(!Object.keys(d).length){if(Object.keys(collect()).length)await push()}
-else if(!same(collect(),d)){apply(d);try{sessionStorage.setItem("js-sync-"+PROF,String(r.j.updated))}catch(e){}location.reload();return ""}
+else if(!same(collect(),d)){apply(d);try{sessionStorage.setItem("js-sync-"+PROF,hk(d))}catch(e){}location.reload();return ""}
 }
 return "";
 }
@@ -131,13 +148,13 @@ renderGate();
 setTimeout(()=>(gate.querySelector("input")||gate.querySelector("button"))?.focus(),50);
 gate.addEventListener("click",e=>{
 const m=e.target.closest("[data-mode]");if(m){gmode=m.dataset.mode;gmsg="";renderGate();gate.querySelector("input")?.focus();return}
-if(e.target.closest("[data-guest]")){setGuest(true);closeGate();label()}
+if(e.target.closest("[data-guest]")){setGuest(true);closeGate();label();publico()}
 if(e.target.closest("[data-back]")){gstep="lista";gmsg="";renderGate();return}
 const l=e.target.closest("[data-lista]");
 if(l){setChosen();const p=l.dataset.lista;
 if(p!==PROF){try{localStorage.setItem("juegos-switch-perfil",p);sessionStorage.setItem("js-cambio",p)}catch(x){}gate.classList.add("bye");setTimeout(()=>location.reload(),250);return}
 if(ses()){closeGate();sync();return}
-if(guest()){closeGate();label();return}
+if(guest()){closeGate();label();publico();return}
 gstep="login";gmsg="";renderGate();gate.querySelector("input")?.focus();return}
 });
 gate.addEventListener("submit",async e=>{
@@ -288,5 +305,5 @@ label();
 if(!chosen())openGate("lista");
 else if(ses())sync();
 else if(!guest())openGate("login");
-else root.classList.remove("gate");
+else{root.classList.remove("gate");publico()}
 })();

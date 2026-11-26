@@ -61,6 +61,17 @@ La web tiene dos perfiles. Se cambia con el **botón redondo de arriba a la dere
 - **`games.js`** tiene todos los juegos de las dos listas (`window.GAMES`) y qué juegos van en cada una (`window.LISTS`). Un juego nuevo para una lista se añade a `GAMES` y a esa lista.
 - **Imagen del botón:** en Jueguitos Switch el botón lleva la cara de Hello Kitty (`img/kitty.png`, recortada sin el texto y con fondo transparente a partir de la imagen que pasó Rafael), que se balancea al pasar el ratón. También sale grande en la animación al cambiar a Jueguitos Switch. En la lista de Rafael el botón lleva un Joy-Con.
 
+## La cuenta de Rafael manda (26/11/2026)
+
+La cuenta `kingkhaax` es la **cuenta maestra** (`CUENTAS_MAESTRA` en Vercel; si no está, `kingkhaax`):
+
+- **Invitados:** al entrar como invitado se carga lo que tiene guardado la cuenta maestra en esa lista (orden, lo que tiene, estados, precios, notas…), con `GET ?a=publico&perfil=rafa|novia`. Lo que cambie un invitado se queda en su navegador mientras siga en esa pestaña.
+- **Otras cuentas:** empiezan viendo lo de la cuenta maestra. Lo que cambien se guarda solo en su cuenta y solo lo ven ellas.
+- **La maestra manda:** el servidor guarda la fecha de cada cambio por clave (`times` en el archivo de cada cuenta). Para otra cuenta, cada clave sale de lo suyo si lo cambió después que la maestra, y de la maestra si la maestra la cambió después. Si Rafael cambia algo, ese cambio les llega a todos aunque lo hubieran cambiado antes.
+- **Personal de cada uno:** el avatar y los datos de Nintendo (`juegos-switch-avatar`, `juegos-switch-nintendo`) no pasan de la maestra a nadie.
+- **Cuándo se ve:** los demás ven los cambios de Rafael la próxima vez que abren o recargan la web.
+- La regla está en `efectiva()` de `cuentas/api/cuenta.js`.
+
 ## Cuentas: entrada obligatoria y una sesión por lista (23/11/2026)
 
 **Primero, qué lista quieres ver:** cada vez que se abre la web (una vez por pestaña, `sessionStorage` `js-elegida`) sale «¿Qué lista quieres ver?» con dos tarjetas grandes, Jueguitos Switch de Rafita (rojo y azul, logo de Switch) y Jueguitos Switch de Nicky (rosa, Hello Kitty). Si eliges la otra lista, la web cambia a ella; si ya tienes sesión en la elegida, entra directamente. Desde la pantalla de usuario, «‹ Elegir otra lista» vuelve a las tarjetas.

@@ -21,6 +21,27 @@ function slots(d) {
   }
   return d;
 }
+const MAESTRA = process.env.CUENTAS_MAESTRA || 'kingkhaax';
+const PERSONAL = /^juegos-switch-(avatar|nintendo)(-novia)?$/;
+function efectiva(urec, mrec, p) {
+  const u = slots(urec && urec.data)[p] || {};
+  if (!mrec || mrec === urec) return u;
+  const ut = (urec.times || {})[p] || {};
+  const m = slots(mrec.data)[p] || {};
+  const mt = (mrec.times || {})[p] || {};
+  const base = mrec.updated || 0;
+  const out = {};
+  for (const k of new Set([...Object.keys(u), ...Object.keys(m), ...Object.keys(ut), ...Object.keys(mt)])) {
+    if (PERSONAL.test(k)) { if (typeof u[k] === 'string') out[k] = u[k]; continue; }
+    const tm = mt[k] ?? (k in m ? base : 0);
+    const tu = ut[k] || 0;
+    const v = tu > tm ? u[k] : (tm ? m[k] : u[k]);
+    if (typeof v === 'string') out[k] = v;
+  }
+  return out;
+}
+const efectivas = (urec, mrec) => Object.fromEntries(PERFILES.map((p) => [p, efectiva(urec, mrec, p)]));
+const maestra = async (user, rec) => (user === MAESTRA ? rec : await load(MAESTRA));
 const okData = (d) => d && typeof d === 'object' && !Array.isArray(d) && JSON.stringify(d).length <= MAXDATA;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const hashPass = (pass, salt) => new Promise((res, rej) => crypto.scrypt(pass, salt, 64, (e, k) => (e ? rej(e) : res(k.toString('hex')))));
@@ -113,7 +134,7 @@ export default async function handler(req, res) {
         return res.status(401).json({ error: 'credenciales' });
       }
       if (rec.lf || rec.llock) { rec.lf = 0; rec.llock = 0; await save(user, rec); }
-      return res.status(200).json({ token: makeToken(user, rec.epoch || 0), user, nombre: rec.display || user, data: slots(rec.data), updated: rec.updated || 0 });
+      return res.status(200).json({ token: makeToken(user, rec.epoch || 0), user, nombre: rec.display || user, data: efectivas(rec, await maestra(user, rec)), maestra: user === MAESTRA, updated: rec.updated || 0 });
     }
     if (req.method === 'POST' && a === 'perfil') {
       const tk = readToken(String(req.headers.authorization || '').replace(/^Bearer\s+/i, ''));
@@ -236,19 +257,31 @@ export default async function handler(req, res) {
       await save(u, rec);
       return res.status(200).json({ ok: true });
     }
+    if (req.method === 'GET' && a === 'publico') {
+      const p = okPerfil(req.query.perfil) ? req.query.perfil : 'rafa';
+      const m = await load(MAESTRA);
+      const d = efectiva(m, m, p);
+      for (const k of Object.keys(d)) if (PERSONAL.test(k)) delete d[k];
+      return res.status(200).json({ data: d, updated: (m && m.updated) || 0 });
+    }
     if (a === 'datos') {
       const tk = readToken(String(req.headers.authorization || '').replace(/^Bearer\s+/i, ''));
       if (!tk) return res.status(401).json({ error: 'sesion' });
       const user = tk.user;
       const rec = await load(user);
       if (!rec || (rec.epoch || 0) !== tk.ep) return res.status(401).json({ error: 'sesion' });
-      if (req.method === 'GET') return res.status(200).json({ user, nombre: rec.display || user, pregunta: rec.q || '', correo: maskMail(rec.email), data: slots(rec.data), updated: rec.updated || 0 });
+      if (req.method === 'GET') return res.status(200).json({ user, nombre: rec.display || user, pregunta: rec.q || '', correo: maskMail(rec.email), data: efectivas(rec, await maestra(user, rec)), maestra: user === MAESTRA, updated: rec.updated || 0 });
       if (req.method === 'PUT') {
         const b = await body(req);
         if (!okPerfil(b.perfil) || !okData(b.data)) return res.status(400).json({ error: 'datos' });
         rec.data = slots(rec.data);
+        const antes = rec.data[b.perfil] || {};
+        const now = Date.now();
+        rec.times = rec.times || {};
+        const t = (rec.times[b.perfil] = rec.times[b.perfil] || {});
+        for (const k of new Set([...Object.keys(antes), ...Object.keys(b.data)])) if (antes[k] !== b.data[k]) t[k] = now;
         rec.data[b.perfil] = b.data;
-        rec.updated = Date.now();
+        rec.updated = now;
         await save(user, rec);
         return res.status(200).json({ updated: rec.updated });
       }
