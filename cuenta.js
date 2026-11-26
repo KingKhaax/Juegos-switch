@@ -64,7 +64,7 @@ const nav=document.querySelector(".apartados");
 if(nav)nav.insertBefore(btn,nav.firstElementChild);
 let state="";
 const navAv=s=>{let a="";try{a=localStorage.getItem("juegos-switch-avatar"+(NV?"-novia":""))||""}catch(e){}return a?`<img src="img/${esc(a)}" alt="">`:`<b>${esc((s.nombre||s.user).slice(0,1).toUpperCase())}</b>`};
-const label=()=>{const s=ses();btn.innerHTML=s?`<span class="cu-nav-av" aria-hidden="true">${navAv(s)}<i class="cu-dot ${state}"></i></span>${esc(s.nombre||s.user)}`:`<span class="cu-dot" aria-hidden="true"></span>Invitado`;btn.setAttribute("aria-label",s?`Mi cuenta: ${s.user}`:"Estás como invitado. Iniciar sesión")};
+const label=()=>{const s=ses();btn.innerHTML=s?`<span class="cu-nav-av" aria-hidden="true">${navAv(s)}<i class="cu-dot ${state}"></i></span><span class="cu-nav-tx"><strong class="cu-nav-n">${esc(s.nombre||s.user)}</strong>${rolHTML(rolDe(s))}</span>`:`<span class="cu-dot" aria-hidden="true"></span><span class="cu-nav-tx"><strong class="cu-nav-n">Iniciar sesión</strong>${rolHTML(ROLI.invitado)}</span>`;btn.setAttribute("aria-label",s?`Mi cuenta: ${s.user}`:"Estás como invitado. Iniciar sesión")};
 let toast=null,retryT=0;
 const showToast=on=>{clearTimeout(retryT);if(!on){if(toast){toast.remove();toast=null}return}
 if(!toast){toast=document.createElement("div");toast.id="cu-toast";toast.setAttribute("role","alert");toast.innerHTML='<span>No se ha podido guardar en tu cuenta. Tus cambios siguen en este navegador y se reintentará solo.</span><button type="button" class="nb2" data-retry>Reintentar</button>';toast.addEventListener("click",e=>{if(e.target.closest("[data-retry]"))push()});document.body.appendChild(toast)}
@@ -192,7 +192,7 @@ const REG=["España","Resto de Europa","México","Estados Unidos","Japón","Otra
 const lget=k=>{try{return localStorage.getItem(k)||""}catch(e){return""}};
 const nin=()=>{try{return JSON.parse(lget(NK))||{}}catch(e){return{}}};
 const setNin=o=>{try{localStorage.setItem(NK,JSON.stringify(o))}catch(e){}document.dispatchEvent(new Event("js-guardado"))};
-const openS=new Set(["perfil"]);
+const openS=new Set();
 function resumen(){
 try{const j=window.JS,g=j.games.map(x=>({g:x,i:j.info(x),own:j.isOwn(x.slug)})),h=g.filter(x=>x.own),mio=j.mio();
 return {n:h.length,t:g.length,gb:h.filter(x=>x.i.playable).reduce((t,x)=>t+(x.i.mbEff||0),0)/1024,eur:h.reduce((t,x)=>t+(x.i.cost||0),0),hrs:h.reduce((t,x)=>t+((mio[x.g.slug]||{}).horas||0),0),done:h.filter(x=>j.stOf(x.g.slug)==="done").length}}catch(e){return null}
@@ -209,7 +209,7 @@ const tile=(l,b)=>'<div class="cu-tile"><small>'+l+'</small><b>'+b+'</b></div>';
 body='<div class="cu-me">'+avatarHTML(s)+'<div><b>'+esc(s.nombre||s.user)+'</b>'+rolHTML(rolDe(s))+'<small class="cu-st '+state+'">'+st+'</small></div></div>'
 +'<p class="adesc">Sesión de <b>'+NAME+'</b>. '+(!puedeEditar()?(NV?'Esta lista es de Nicky: puedes verla, pero solo ella y el administrador pueden cambiarla.':'Esta lista es de Rafita: puedes verla, pero solo él puede cambiarla.'):(NV&&rolDe(s).id==="admin"?'Lo que cambies aquí se guarda en la lista de Nicky y lo ve ella.':'Lo que cambies aquí lo ven todos los que entran en esta lista.'))+' La otra lista tiene su propia sesión.</p>'
 +sec("perfil","Perfil","<svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"#fff\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"8\" r=\"4\"/><path d=\"M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7\"/></svg>",
-'<div class="cu-lbl">Avatar</div><div class="cu-avg-w">'+AVG.map(([n,l])=>'<details class="cu-avg" data-g="'+esc(n)+'"'+(openS.has("g:"+n)||l.includes(av)?" open":"")+'><summary><b>'+esc(n)+'</b><small>'+l.length+'</small></summary><div class="cu-avs">'+l.map(f=>'<button type="button" class="cu-avb'+(av===f?" on":"")+'" data-av="'+f+'" aria-label="Elegir avatar de '+esc(n)+'" aria-pressed="'+(av===f)+'"><img src="img/'+f+'" alt="" loading="lazy"></button>').join("")+'</div></details>').join("")+'</div>'
+'<div class="cu-lbl">Avatar</div><div class="cu-avg-w">'+AVG.map(([n,l])=>'<details class="cu-avg" data-g="'+esc(n)+'"'+(openS.has("g:"+n)?" open":"")+'><summary><b>'+esc(n)+'</b><small>'+l.length+'</small></summary><div class="cu-avs">'+l.map(f=>'<button type="button" class="cu-avb'+(av===f?" on":"")+'" data-av="'+f+'" aria-label="Elegir avatar de '+esc(n)+'" aria-pressed="'+(av===f)+'"><img src="img/'+f+'" alt="" loading="lazy"></button>').join("")+'</div></details>').join("")+'</div>'
 +(av?'<button type="button" class="nb2 cu-mini" data-av="">Quitar avatar</button>':"")
 +'<form class="cu-form" data-ed novalidate><label>Nombre de usuario<input name="nombre" maxlength="24" autocapitalize="none" spellcheck="false" value="'+esc(s.nombre||s.user)+'"></label><small class="cu-h">Solo puedes cambiar mayúsculas y minúsculas: sigues entrando con el mismo usuario.</small><button type="submit" class="nb2">Guardar nombre</button></form>'
 +'<div class="cu-form"><label>Nombre en Nintendo<input data-nin="nombre" maxlength="30" autocomplete="off" value="'+esc(n.nombre||"")+'" placeholder="Tu nombre de usuario de Nintendo"></label><label>Región de la eShop<select data-nin="region"><option value="">Sin indicar</option>'+REG.map(x=>'<option'+(n.region===x?" selected":"")+'>'+x+'</option>').join("")+'</select></label></div>')
@@ -272,7 +272,7 @@ document.addEventListener("click",e=>{if(e.target.closest("[data-forgot]")){e.pr
 async function perfilCall0(){const se=ses();const r=await call("cerrar",{method:"POST",headers:{Authorization:"Bearer "+se.token}});if(r.ok&&r.j.token){se.token=r.j.token;setSes(se);return true}return false}
 async function perfilCall(body){const se=ses();return call("perfil",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+se.token},body:JSON.stringify(body)})}
 function open(){
-openS.clear();["perfil","amigo","resumen","seg"].forEach(k=>openS.add(k));AVG.forEach(g=>openS.add("g:"+g[0]));
+openS.clear();
 if(!dlg){dlg=document.createElement("dialog");dlg.id="cuentaDlg";dlg.setAttribute("aria-label","Mi cuenta");document.body.appendChild(dlg);if(window.JS&&window.JS.watchDialogs)window.JS.watchDialogs();
 dlg.addEventListener("click",async e=>{
 if(e.target===dlg||e.target.closest("[data-close]")){dlg.close();return}

@@ -958,3 +958,8 @@ h4.nso-h{font-size:.9rem;color:#fff;margin:6px 0 8px}
 html.solo-lectura .card .own,html.solo-lectura .card .st,html.solo-lectura .card .pay,html.solo-lectura .card .fmtrow,html.solo-lectura .card .mvbar,html.solo-lectura #reorder,html.solo-lectura #reorderhint,html.solo-lectura .own.big,html.solo-lectura [data-setst],html.solo-lectura [data-pay],html.solo-lectura [data-fmt],html.solo-lectura .paidtag em{display:none!important}
 html.solo-lectura .panel.mio input,html.solo-lectura .panel.mio textarea,html.solo-lectura .panel.mio select,html.solo-lectura .panel.mio button,html.solo-lectura [data-nota],html.solo-lectura [data-dec],html.solo-lectura [data-clr]{pointer-events:none;opacity:.6}
 @media(prefers-reduced-motion:reduce){.rol,.rol::after,.rol i{animation:none}}
+#bcuenta .cu-nav-tx{grid-area:n;display:flex;flex-direction:column;align-items:flex-start;gap:4px;line-height:1.15;min-width:0}
+#bcuenta .cu-nav-n{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+#bcuenta .rol{font-size:.6rem;margin:0;padding:2px 9px 2px 6px}
+#bcuenta .rol i{width:6px;height:6px}
+#bcuenta .cu-nav-av>b{all:unset;font-weight:800;font-size:1.3rem;color:#fff}
