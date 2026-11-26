@@ -4,7 +4,6 @@ const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",
 const KNOWN=["admin","mod","usuario","invitado"];
 const DEF={admin:"#ffb800",mod:"#ff5fa8",usuario:"#1f8fff",invitado:"#8a90a0"};
 const PALETA=["#ffb800","#ff5fa8","#1f8fff","#3ddc84","#a678ff","#ff6a00","#00c3e3","#e60012"];
-const FIJOS=["admin","usuario","invitado"];
 const CROWN='<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z"/><path d="M5 19h14"/></svg>';
 const ses=()=>{for(const k of ["juegos-switch-cuenta","juegos-switch-cuenta-novia"]){try{const v=JSON.parse(localStorage.getItem(k));if(v&&v.admin&&v.token)return v}catch(e){}}return null};
 const badge=r=>{const c=(r.color||"").toLowerCase();const cls=KNOWN.includes(r.id)&&(!c||c===DEF[r.id])?"rol-"+r.id:"rol-x";return `<span class="rol ${cls}" style="--rc:${esc(r.color||"#8a90a0")}"><i aria-hidden="true"></i><span>${esc(r.nombre)}</span></span>`};
@@ -35,7 +34,7 @@ const t=(l,v,k)=>`<div class="adm-t" style="--k:${k}"><small>${l}</small><b data
 return `<div class="adm-stats">${t("Miembros",n,"#ffd96a")}${t("Con correo",conMail,"#4fe3ff")}${t("Juegos «ya los tengo»",tot,"#5df09e")}${t("Roles",RS.length,"#ff8ec2")}</div>`;
 }
 function rolesHtml(){
-const fila=r=>`<li class="adm-r" data-rid="${esc(r.id)}" style="--rc:${esc(r.color)}"><label class="adm-sw" title="Color del rol"><input type="color" value="${esc(r.color)}" data-rc="${esc(r.id)}" aria-label="Color del rol ${esc(r.nombre)}"><span></span></label><input class="adm-rn" type="text" maxlength="24" value="${esc(r.nombre)}" data-rn="${esc(r.id)}" aria-label="Nombre del rol" spellcheck="false"><span class="adm-rv">${badge(r)}</span><small class="adm-rc">${cuentaRol(r.id)} ${cuentaRol(r.id)===1?"miembro":"miembros"}</small>${FIJOS.includes(r.id)?`<span class="adm-fijo" title="Rol del sistema: se puede renombrar pero no borrar">Fijo</span>`:`<button type="button" class="adm-x" data-rdel="${esc(r.id)}" aria-label="Borrar el rol ${esc(r.nombre)}">Borrar</button>`}</li>`;
+const fila=r=>`<li class="adm-r" data-rid="${esc(r.id)}" style="--rc:${esc(r.color)}"><label class="adm-sw" title="Color del rol"><input type="color" value="${esc(r.color)}" data-rc="${esc(r.id)}" aria-label="Color del rol ${esc(r.nombre)}"><span></span></label><input class="adm-hex" type="text" value="${esc(r.color)}" maxlength="7" spellcheck="false" autocomplete="off" data-rhex="${esc(r.id)}" aria-label="Código de color del rol ${esc(r.nombre)} (por ejemplo #ffb800)" placeholder="#rrggbb"><input class="adm-rn" type="text" maxlength="24" value="${esc(r.nombre)}" data-rn="${esc(r.id)}" aria-label="Nombre del rol" spellcheck="false"><span class="adm-rv">${badge(r)}</span><small class="adm-rc">${cuentaRol(r.id)} ${cuentaRol(r.id)===1?"miembro":"miembros"}</small>${r.id==="admin"?`<span class="adm-fijo" title="El rol de administrador no se puede borrar">Fijo</span>`:`<span class="adm-mode" role="group" aria-label="Protección del rol ${esc(r.nombre)}"><button type="button" class="${r.fijo?"on":""}" data-rfijo="${esc(r.id)}" data-v="1" aria-pressed="${!!r.fijo}">Fijo</button><button type="button" class="${r.fijo?"":"on"}" data-rfijo="${esc(r.id)}" data-v="0" aria-pressed="${!r.fijo}">Borrable</button></span>${r.fijo?"":`<button type="button" class="adm-x" data-rdel="${esc(r.id)}" aria-label="Borrar el rol ${esc(r.nombre)}">Borrar</button>`}`}</li>`;
 return `<ul class="adm-roles">${RS.map(fila).join("")}</ul><div class="adm-acts"><button type="button" class="nb2" data-rnew>＋ Nuevo rol</button><button type="button" class="pri adm-save" data-rsave${dirty?"":" disabled"}>Guardar roles</button></div>`;
 }
 function usersHtml(){
@@ -52,7 +51,7 @@ function conteo(){
 dlg.querySelectorAll(".adm-t b[data-n]").forEach(b=>{const to=+b.dataset.n,t0=performance.now();const st=t=>{const k=Math.min(1,(t-t0)/800),e=1-Math.pow(1-k,3);b.textContent=Math.round(to*e);if(k<1)requestAnimationFrame(st)};requestAnimationFrame(st)});
 }
 function render(parcial){
-const cuerpo=busy&&!D?`<p class="adm-vacio"><span class="adm-spin"></span>Cargando miembros…</p>`:D?`${stats()}<section class="adm-sec"><h4>Roles</h4><p class="adesc">Cambia el <mark class="m-go">nombre</mark> o el <mark class="m-pk">color</mark> de cada rol y pulsa «Guardar roles». Los roles fijos no se pueden borrar. Si borras uno, sus miembros pasan a «Usuario».</p>${rolesHtml()}</section><section class="adm-sec"><h4>Miembros</h4><label class="add-s adm-s"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input class="adm-q" type="search" placeholder="Buscar un miembro" autocomplete="off" value="${esc(q)}" aria-label="Buscar un miembro"></label><div id="admu">${usersHtml()}</div></section>`:`<p class="adm-vacio bad">${esc(msg)}</p>`;
+const cuerpo=busy&&!D?`<p class="adm-vacio"><span class="adm-spin"></span>Cargando miembros…</p>`:D?`${stats()}<section class="adm-sec"><h4>Roles</h4><p class="adesc">Cambia el <mark class="m-go">nombre</mark> o el <mark class="m-pk">color</mark> de cada rol y pulsa «Guardar roles». Marca cada rol como <mark class="m-go">Fijo</mark> (protegido) o <mark class="m-or">Borrable</mark>; solo los borrables se pueden borrar, y el de administrador es siempre fijo. Si borras uno, sus miembros pasan al rol «Usuario».</p>${rolesHtml()}</section><section class="adm-sec"><h4>Miembros</h4><label class="add-s adm-s"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input class="adm-q" type="search" placeholder="Buscar un miembro" autocomplete="off" value="${esc(q)}" aria-label="Buscar un miembro"></label><div id="admu">${usersHtml()}</div></section>`:`<p class="adm-vacio bad">${esc(msg)}</p>`;
 if(parcial&&dlg.querySelector(".adm-win")){
 const keep=dlg.querySelector(".adm-q");const val=keep?keep.value:"";
 dlg.querySelector(".adm-body").innerHTML=cuerpo;
@@ -79,8 +78,8 @@ try{
 const x=await call("admin_roles",{method:"POST",body:JSON.stringify({roles:RS})});
 if(!x.ok)throw new Error(x.status);
 D.roles=x.j.roles;RS=x.j.roles.map(r=>Object.assign({},r));dirty=false;
-D.users.forEach(u=>{if(!RS.some(r=>r.id===u.rol))u.rol="usuario"});
-busy=false;render(true);aviso(x.j.movidos?`Roles guardados. ${x.j.movidos} miembros han pasado a Usuario.`:"Roles guardados.","ok");
+{const dest=(RS.find(r=>r.id==="usuario")||RS.find(r=>r.id!=="admin"&&r.id!=="invitado")||RS[0]).id;D.users.forEach(u=>{if(!RS.some(r=>r.id===u.rol))u.rol=dest})}
+busy=false;render(true);aviso(x.j.movidos?`Roles guardados. ${x.j.movidos} ${x.j.movidos===1?"miembro ha pasado":"miembros han pasado"} a ${x.j.destino||"Usuario"}.`:"Roles guardados.","ok");
 }catch(e){busy=false;render(true);aviso("No se han podido guardar los roles. Revisa que ningún nombre esté vacío.","bad")}
 }
 function ensure(){
@@ -93,7 +92,8 @@ window.JS&&window.JS.watchDialogs&&window.JS.watchDialogs();
 dlg.addEventListener("click",e=>{
 if(e.target===dlg||e.target.closest("[data-close]")){dlg.close();return}
 const p=e.target.closest("[data-set]");if(p){asignar(p.dataset.u,p.dataset.set);return}
-if(e.target.closest("[data-rnew]")){if(RS.length>=14){aviso("Ya hay 14 roles, que es el máximo.","bad");return}const n="rol"+Math.random().toString(36).slice(2,6);RS.push({id:n,nombre:"Nuevo rol",color:PALETA[RS.length%PALETA.length]});dirty=true;render(true);return}
+if(e.target.closest("[data-rnew]")){if(RS.length>=14){aviso("Ya hay 14 roles, que es el máximo.","bad");return}const n="rol"+Math.random().toString(36).slice(2,6);RS.push({id:n,nombre:"Nuevo rol",color:PALETA[RS.length%PALETA.length],fijo:false});dirty=true;render(true);return}
+const fj=e.target.closest("[data-rfijo]");if(fj){const r=RS.find(x=>x.id===fj.dataset.rfijo);if(r&&r.id!=="admin"){r.fijo=fj.dataset.v==="1";dirty=true;render(true)}return}
 const d=e.target.closest("[data-rdel]");if(d){RS=RS.filter(r=>r.id!==d.dataset.rdel);dirty=true;render(true);return}
 if(e.target.closest("[data-rsave]")){guardarRoles()}
 });
@@ -101,7 +101,8 @@ dlg.addEventListener("input",e=>{
 const t=e.target;
 if(t.classList.contains("adm-q")){q=t.value;const u=dlg.querySelector("#admu");if(u)u.innerHTML=usersHtml();return}
 if(t.dataset.rn){const r=RS.find(x=>x.id===t.dataset.rn);if(r){r.nombre=t.value;dirty=true;const b=dlg.querySelector(".adm-save");if(b)b.disabled=false;const v=t.closest(".adm-r").querySelector(".adm-rv");if(v)v.innerHTML=badge(r)}return}
-if(t.dataset.rc){const r=RS.find(x=>x.id===t.dataset.rc);if(r){r.color=t.value;dirty=true;const b=dlg.querySelector(".adm-save");if(b)b.disabled=false;const li=t.closest(".adm-r");li.style.setProperty("--rc",r.color);li.querySelector(".adm-rv").innerHTML=badge(r)}}
+if(t.dataset.rc){const r=RS.find(x=>x.id===t.dataset.rc);if(r){r.color=t.value;dirty=true;const b=dlg.querySelector(".adm-save");if(b)b.disabled=false;const li=t.closest(".adm-r");li.style.setProperty("--rc",r.color);li.querySelector(".adm-rv").innerHTML=badge(r);const hx=li.querySelector(".adm-hex");if(hx){hx.value=r.color;hx.classList.remove("bad")}}return}
+if(t.dataset.rhex){const r=RS.find(x=>x.id===t.dataset.rhex);if(!r)return;let v=t.value.trim();if(v&&v[0]!=="#")v="#"+v;if(/^#[0-9a-fA-F]{6}$/.test(v)){r.color=v.toLowerCase();dirty=true;t.classList.remove("bad");const b=dlg.querySelector(".adm-save");if(b)b.disabled=false;const li=t.closest(".adm-r");li.style.setProperty("--rc",r.color);li.querySelector(".adm-rv").innerHTML=badge(r);const sw=li.querySelector(".adm-sw input");if(sw)sw.value=r.color}else{t.classList.toggle("bad",v.length>=7||/[^#0-9a-fA-F]/.test(v))}}
 });
 }
 function open(){

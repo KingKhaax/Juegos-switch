@@ -27,10 +27,10 @@ const DUENOS = { rafa: ADMIN, novia: 'zya' };
 const PERSONAL = /^juegos-switch-(avatar|nintendo|amigo)(-novia)?$/;
 const ROLES_RUTA = 'config/roles.json';
 const ROLES_BASE = [
-  { id: 'admin', nombre: 'Administrador', color: '#ffb800' },
-  { id: 'mod', nombre: 'Moderadora', color: '#ff5fa8' },
-  { id: 'usuario', nombre: 'Usuario', color: '#1f8fff' },
-  { id: 'invitado', nombre: 'Invitado', color: '#8a90a0' },
+  { id: 'admin', nombre: 'Administrador', color: '#ffb800', fijo: true },
+  { id: 'mod', nombre: 'Moderadora', color: '#ff5fa8', fijo: false },
+  { id: 'usuario', nombre: 'Usuario', color: '#1f8fff', fijo: true },
+  { id: 'invitado', nombre: 'Invitado', color: '#8a90a0', fijo: true },
 ];
 const ROLES_FIJOS = ['admin', 'usuario', 'invitado'];
 const NO_ASIGNABLES = ['admin', 'invitado'];
@@ -46,7 +46,7 @@ async function loadRoles(force) {
       if (Array.isArray(j.roles) && j.roles.length) r = j.roles;
     }
   } catch {}
-  rolesMem = r || ROLES_BASE;
+  rolesMem = (r || ROLES_BASE).map((x) => ({ ...x, fijo: x.id === 'admin' ? true : typeof x.fijo === 'boolean' ? x.fijo : ROLES_FIJOS.includes(x.id) }));
   rolesT = Date.now();
   return rolesMem;
 }
@@ -55,13 +55,14 @@ const saveRoles = (roles) => {
   rolesT = Date.now();
   return put(ROLES_RUTA, JSON.stringify({ roles }), { access: 'private', allowOverwrite: true, addRandomSuffix: false, contentType: 'application/json' });
 };
+const porDefecto = (roles) => roles.find((r) => r.id === 'usuario') || roles.find((r) => !NO_ASIGNABLES.includes(r.id)) || ROLES_BASE[2];
 const rolDe = (u, rec, roles) => {
   if (u === ADMIN) return roles.find((r) => r.id === 'admin') || ROLES_BASE[0];
   const id = rec && rec.role ? rec.role : MODS[u] ? 'mod' : 'usuario';
-  return roles.find((r) => r.id === id) || roles.find((r) => r.id === 'usuario') || ROLES_BASE[2];
+  return roles.find((r) => r.id === id) || porDefecto(roles);
 };
 const okRoleList = (l) => {
-  if (!Array.isArray(l) || l.length < 3 || l.length > 14) return null;
+  if (!Array.isArray(l) || l.length < 2 || l.length > 14) return null;
   const ids = new Set();
   const out = [];
   for (const r of l) {
@@ -70,9 +71,9 @@ const okRoleList = (l) => {
     if (nombre.length < 1 || nombre.length > 24) return null;
     const color = /^#[0-9a-fA-F]{6}$/.test(r.color || '') ? r.color : '#8a90a0';
     ids.add(r.id);
-    out.push({ id: r.id, nombre, color });
+    out.push({ id: r.id, nombre, color, fijo: r.id === 'admin' ? true : !!r.fijo });
   }
-  return ROLES_FIJOS.every((f) => ids.has(f)) ? out : null;
+  return ids.has('admin') && out.some((r) => !NO_ASIGNABLES.includes(r.id)) ? out : null;
 };
 async function todosLosUsuarios() {
   const names = [];
@@ -434,17 +435,17 @@ export default async function handler(req, res) {
         if (quitados.length) {
           for (const [u, rec] of await todosLosUsuarios()) {
             if (rec.role && quitados.includes(rec.role)) {
-              rec.role = 'usuario';
+              rec.role = porDefecto(nuevos).id;
               await save(u, rec);
               movidos++;
             } else if (!rec.role && MODS[u] && quitados.includes('mod')) {
-              rec.role = 'usuario';
+              rec.role = porDefecto(nuevos).id;
               await save(u, rec);
               movidos++;
             }
           }
         }
-        return res.status(200).json({ ok: true, roles: nuevos, movidos });
+        return res.status(200).json({ ok: true, roles: nuevos, movidos, destino: porDefecto(nuevos).nombre });
       }
       return res.status(404).json({ error: 'ruta' });
     }
