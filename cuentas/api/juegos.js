@@ -84,13 +84,36 @@ export default async function handler(req, res) {
   const q = req.query || {};
   try {
     if (q.q !== undefined) {
-      const tokens = String(q.q).replace(/[+\-&|!(){}\[\]^"~*?:\\/]/g, ' ').trim().split(/\s+/).filter(Boolean).slice(0, 8);
+      const raw = String(q.q).slice(0, 80);
+      const tokens = raw.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^\p{L}\p{N}]+/gu, ' ').trim().split(/\s+/).filter(Boolean).slice(0, 8);
       if (!tokens.length) return res.status(400).json({ error: 'busqueda' });
-      const keep = tokens.filter((t, i) => t.length >= 3 || i === tokens.length - 1);
-      const query = keep.map((t) => '(' + t + ' OR ' + t + '*)').join(' ');
-      const r = await solr({ q: query, fq: FQ, rows: 14, fl: FL, defType: 'edismax', qf: 'title^4 title_extras_txt', 'q.op': 'AND' });
+      const term = (t) => { const f = t.length >= 7 ? 2 : t.length >= 4 ? 1 : 0; return '(' + t + ' OR ' + t + '*' + (f ? ' OR ' + t + '~' + f : '') + ')'; };
+      const base = { fq: FQ, rows: 40, fl: FL + ',score', defType: 'edismax', qf: 'title^4 title_extras_txt', pf: 'title^8' };
+      let r = await solr({ ...base, q: tokens.map(term).join(' '), 'q.op': 'AND' });
+      let aprox = false;
+      if (!r.numFound && tokens.length > 1) { r = await solr({ ...base, q: tokens.map(term).join(' '), 'q.op': 'OR' }); aprox = true; }
+      const norm = (x) => slugify(x).replace(/-/g, ' ');
+      const qn = norm(raw);
+      const tri = (x) => { const t = '  ' + x + ' '; const o = new Set(); for (let k = 0; k < t.length - 2; k++) o.add(t.slice(k, k + 3)); return o; };
+      const qt = tri(qn);
+      const sim = (x) => { const a = tri(x); let c = 0; for (const g of a) if (qt.has(g)) c++; return (2 * c) / (a.size + qt.size || 1); };
+      const qw = qn.split(' ');
+      const rank = (d) => {
+        const tn = norm(d.title);
+        const words = tn.split(' ');
+        let p = 0;
+        if (tn === qn) p += 120;
+        else if (tn.startsWith(qn)) p += 70;
+        else if (tn.includes(qn)) p += 45;
+        for (const w of qw) { if (words.includes(w)) p += 12; else if (words.some((x) => x.startsWith(w))) p += 7; }
+        p += sim(tn) * 40;
+        p += Math.min(10, (d.score || 0) / 5);
+        if (/\b(pack|bundle|lote|dlc|expansion|pase)\b/i.test(d.title)) p -= 15;
+        return p;
+      };
+      const docs = r.docs.map((d) => [rank(d), d]).sort((a, b) => b[0] - a[0]).slice(0, 20).map((x) => x[1]);
       res.setHeader('Cache-Control', 'public, s-maxage=600, stale-while-revalidate=3600');
-      return res.status(200).json({ total: r.numFound, items: r.docs.map(short) });
+      return res.status(200).json({ total: r.numFound, aprox, items: docs.map(short) });
     }
     if (q.id !== undefined) {
       const id = String(q.id).replace(/\D/g, '');
