@@ -43,7 +43,7 @@ const FEAT=[
 ];
 const COL=["#e60012","#00c3e3","#ffd96a","#ff6fae","#3ddc84","#ff9f43","#a678ff","#4d8dff"];
 const S={plan:"base",type:"ind",months:12,people:2,prev:null,fx:{feat:true,dot:-1,price:true}};
-let dlg=null,raf=0;S.pt=null;
+let dlg=null,raf=0,downOn=null,pressing=false,later=false;S.pt=null;
 const PKEY="juegos-switch-nso";
 const mio=()=>{try{const o=JSON.parse(J().store.get(PKEY,"{}"));return o&&typeof o==="object"?o:{}}catch(e){return{}}};
 const pago=(p,t)=>{const v=+mio()[p+"-"+t];return v>0?v:null};
@@ -102,7 +102,7 @@ dlg.setAttribute("aria-label","Nintendo Switch Online");
 document.body.appendChild(dlg);
 J().watchDialogs();
 dlg.addEventListener("click",e=>{
-if(e.target===dlg||e.target.closest("[data-close]")){dlg.close();return}
+if((e.target===dlg&&downOn===dlg)||e.target.closest("[data-close]")){dlg.close();return}
 const pl=e.target.closest("[data-plan]");if(pl){if(S.plan!==pl.dataset.plan)S.fx.feat=true;S.plan=pl.dataset.plan;render();return}
 const t=e.target.closest("button[data-t]");if(t){S.pt=S.type;S.type=t.dataset.t;render();return}
 const m=e.target.closest("[data-m]");if(m&&!m.disabled){S.months=+m.dataset.m;render();return}
@@ -114,9 +114,12 @@ if(e.target.id!=="nsoPago")return;
 const raw=e.target.value.trim().replace(/[€\s]/g,"");
 const v=raw?Number(raw.includes(",")?raw.replace(/\./g,"").replace(",","."):raw):0;
 if(raw&&!(v>0&&v<1000)){e.target.setCustomValidity("Escribe un precio, por ejemplo 15,99");e.target.reportValidity();return}
-e.target.setCustomValidity("");setPago(S.plan,S.type,v);S.months=12;render();
+e.target.setCustomValidity("");setPago(S.plan,S.type,v);S.months=12;if(pressing)later=true;else render();
 });
 dlg.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.id==="nsoPago"){e.preventDefault();e.target.blur()}});
+dlg.addEventListener("pointerdown",e=>{downOn=e.target;pressing=true});
+addEventListener("pointerup",()=>{if(!pressing)return;pressing=false;if(later){later=false;setTimeout(()=>{if(dlg.open)render()},0)}});
+addEventListener("pointercancel",()=>{pressing=false;if(later){later=false;render()}});
 dlg.addEventListener("pointermove",e=>{
 const c=e.target.closest(".nso-plan");if(!c||REDUCE)return;
 const r=c.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;
