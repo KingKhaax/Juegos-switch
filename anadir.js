@@ -56,7 +56,7 @@ return `<ul class="add-list">${items.map(row).join("")}</ul>`;
 function render(keep){
 const inp=dlg.querySelector(".add-q");
 if(!inp||!keep){
-dlg.innerHTML=`<div class="awin add-win"><div class="nso-aur" aria-hidden="true"></div><div class="fhead"><h3>Añadir un juego</h3><button class="x2" type="button" data-close aria-label="Cerrar">×</button></div>
+dlg.innerHTML=`<div class="awin add-win"><div class="nso-aur" aria-hidden="true"></div><div class="fhead"><h3>Añadir un juego</h3><button class="x2" type="button" data-close aria-label="Cerrar">×</button></div>${document.documentElement.classList.contains("solo-lectura")?'<p class="add-hint add-ro"><b>Solo lectura:</b> puedes buscar y añadir juegos, pero en esta lista no tienes permiso, así que lo que añadas no se guardará y desaparecerá al recargar.</p>':""}
 <label class="add-s"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input class="add-q" type="search" autocomplete="off" spellcheck="false" placeholder="Escribe el nombre de un juego" aria-label="Buscar un juego para añadir" value="${esc(qtxt)}"></label>
 <div id="addres">${body()}</div><div id="addmine">${mine()}</div></div>`;
 }else{
