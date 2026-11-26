@@ -1121,3 +1121,37 @@ html.solo-lectura #badd,html.solo-lectura #badd2{display:none!important}
 .adm-mode{display:inline-flex;padding:3px;border-radius:99px;background:rgba(0,0,0,.35);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}.adm-mode button{min-height:32px;padding:0 12px;border-radius:99px;font-weight:800;font-size:.76rem;color:#a8abb8;transition:background .2s,color .2s,box-shadow .2s}.adm-mode button.on{background:linear-gradient(135deg,#ffd96a,#e1a000);color:#241a00;box-shadow:0 0 14px rgba(255,217,106,.4)}.adm-mode button:last-child.on{background:linear-gradient(135deg,#ff9f43,#e60012);color:#fff;box-shadow:0 0 14px rgba(255,100,60,.45)}.adm-r{grid-template-columns:auto minmax(110px,1fr) auto auto auto auto}@media(max-width:620px){.adm-r{grid-template-columns:auto 1fr}.adm-rn{grid-column:2}.adm-rv,.adm-rc,.adm-mode,.adm-x,.adm-fijo{grid-column:1/-1;justify-self:start}}
 .adm-hex{width:92px;min-height:42px;padding:0 10px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.3);color:#fff;font:700 .85rem ui-monospace,Consolas,monospace;text-transform:lowercase}.adm-hex:focus{outline:0;border-color:var(--rc);box-shadow:0 0 0 3px color-mix(in srgb,var(--rc) 30%,transparent)}.adm-hex.bad{border-color:#ff7b7b;box-shadow:0 0 0 3px rgba(255,123,123,.25)}.adm-r{grid-template-columns:auto 92px minmax(100px,1fr) auto auto auto auto}@media(max-width:620px){.adm-r{grid-template-columns:auto 1fr}.adm-hex{grid-column:2}.adm-rn{grid-column:1/-1}}
 #addlg .awin.add-win,#admdlg .awin.adm-win{align-content:start}
+#addlg .awin.add-win{overflow-x:hidden}
+@media(max-width:620px){
+.adm-r{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;padding:10px 12px}
+.adm-r .adm-sw{flex:none}
+.adm-r .adm-hex{flex:none;width:96px}
+.adm-r .adm-rn{flex:1 1 100%;order:3;min-width:0}
+.adm-r .adm-rv{order:4}
+.adm-r .adm-rc{order:5;font-size:.78rem}
+.adm-r .adm-mode,.adm-r .adm-fijo{order:6;margin-left:auto}
+.adm-r .adm-x{order:7}
+.add-want,.add-own,.add-del{min-height:44px}
+.adm-pill{min-height:40px}
+.adm-mode button{min-height:38px}
+}
+.perfil-btn.is-r .pb-face{background:radial-gradient(circle at 34% 28%,#555b6e,#222633 62%,#12141b);box-shadow:inset 0 0 0 2px rgba(255,255,255,.14),inset 0 -8px 14px rgba(0,0,0,.4),0 4px 12px rgba(0,0,0,.5);overflow:hidden}
+.perfil-btn.is-r .pb-face::before{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 28% 24%,rgba(255,255,255,.22),transparent 42%),conic-gradient(from 200deg,rgba(230,0,18,.22),transparent 30%,rgba(0,195,227,.22) 55%,transparent 80%,rgba(230,0,18,.22));animation:pbspin 9s linear infinite;pointer-events:none}
+.perfil-btn.is-r .pb-face svg{position:relative;width:32px;height:40px;filter:drop-shadow(0 3px 4px rgba(0,0,0,.5));animation:jcbob 3.4s ease-in-out infinite}
+.perfil-btn.is-r .pb-face svg .jl,.perfil-btn.is-r .pb-face svg .jr{transition:transform .45s cubic-bezier(.2,.9,.3,1.4)}
+.perfil-btn.is-r:hover .pb-face svg .jl,.perfil-btn.is-r:focus-visible .pb-face svg .jl{transform:translateX(-36px) rotate(-3deg);transform-origin:center}
+.perfil-btn.is-r:hover .pb-face svg .jr,.perfil-btn.is-r:focus-visible .pb-face svg .jr{transform:translateX(36px) rotate(3deg);transform-origin:center}
+@keyframes jcbob{50%{transform:translateY(-2px) rotate(2deg)}}
+@media(max-width:640px){.perfil-btn.is-r .pb-face svg{width:28px;height:35px}}
+@media(prefers-reduced-motion:reduce){.perfil-btn.is-r .pb-face::before,.perfil-btn.is-r .pb-face svg{animation:none}}
+.perfil-btn.is-n .pb-face{overflow:hidden;box-shadow:inset 0 0 0 2px rgba(255,255,255,.4),inset 0 -8px 14px rgba(150,40,100,.35),0 4px 12px rgba(0,0,0,.45)}
+.perfil-btn.is-n .pb-face::before{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 28% 24%,rgba(255,255,255,.45),transparent 42%),conic-gradient(from 200deg,rgba(255,79,154,.3),transparent 30%,rgba(185,140,255,.3) 55%,transparent 80%,rgba(255,79,154,.3));animation:pbspin 9s linear infinite;pointer-events:none}
+.perfil-btn.is-n .pb-face svg{position:relative;width:34px;height:42px;filter:drop-shadow(0 3px 4px rgba(120,20,70,.5));animation:jcbob 3.4s ease-in-out infinite}
+.perfil-btn.is-n .pb-face svg .jl,.perfil-btn.is-n .pb-face svg .jr{transition:transform .45s cubic-bezier(.2,.9,.3,1.4)}
+.perfil-btn.is-n:hover .pb-face svg .jl,.perfil-btn.is-n:focus-visible .pb-face svg .jl{transform:translateX(-36px) rotate(-3deg);transform-origin:center}
+.perfil-btn.is-n:hover .pb-face svg .jr,.perfil-btn.is-n:focus-visible .pb-face svg .jr{transform:translateX(36px) rotate(3deg);transform-origin:center}
+@media(max-width:640px){.perfil-btn.is-n .pb-face svg{width:30px;height:37px}}
+@media(prefers-reduced-motion:reduce){.perfil-btn.is-n .pb-face::before,.perfil-btn.is-n .pb-face svg{animation:none}}
+.gopt-r .gopt-ico img{width:70px;height:87px;filter:drop-shadow(0 3px 6px rgba(0,0,0,.55))}
+.gopt-n .gopt-ico img{width:70px;height:87px;object-fit:contain;filter:drop-shadow(0 3px 6px rgba(140,20,80,.45))}
+.gate-ico img{height:auto}

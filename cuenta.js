@@ -136,12 +136,12 @@ function renderGate(){
 gate.classList.toggle("g-lista",gstep==="lista");
 if(gstep==="lista"){gate.innerHTML=`<div class="gate-pick" role="dialog" aria-modal="true" aria-labelledby="gateT">
 <h2 id="gateT">¿Qué lista quieres ver?</h2>
-<div class="gate-opts"><button type="button" class="gopt gopt-r" data-lista="rafa"><span class="gopt-ico" aria-hidden="true"><img src="img/switch-logo.png" width="150" height="150" alt=""></span><b>Jueguitos Switch de Rafita</b></button>
-<button type="button" class="gopt gopt-n" data-lista="novia"><span class="gopt-ico" aria-hidden="true"><img src="img/kitty.png?v=20261123f" width="256" height="256" alt=""></span><b>Jueguitos Switch de Nicky</b></button></div>
+<div class="gate-opts"><button type="button" class="gopt gopt-r" data-lista="rafa"><span class="gopt-ico" aria-hidden="true"><img src="img/joycon-rafa.svg?v=20261126a" width="150" height="186" alt=""></span><b>Jueguitos Switch de Rafita</b></button>
+<button type="button" class="gopt gopt-n" data-lista="novia"><span class="gopt-ico" aria-hidden="true"><img src="img/joycon-nicky.svg?v=20261126a" width="150" height="186" alt=""></span><b>Jueguitos Switch de Nicky</b></button></div>
 </div>`;return}
 gate.innerHTML=`<div class="gate-card" role="dialog" aria-modal="true" aria-labelledby="gateT">
 <button type="button" class="gate-back" data-back>‹ Elegir otra lista</button>
-<div class="gate-ico" aria-hidden="true">${NV?'<img src="img/kitty.png?v=20261123d" width="256" height="256" alt="">':'<img src="img/switch-logo.png" width="150" height="150" alt="">'}</div>
+<div class="gate-ico" aria-hidden="true">${NV?'<img src="img/joycon-nicky.svg?v=20261126a" width="150" height="186" alt="">':'<img src="img/joycon-rafa.svg?v=20261126a" width="150" height="186" alt="">'}</div>
 <h2 id="gateT">${NAME}</h2>
 <p class="gate-sub">Entra con tu cuenta para guardar tu lista en la nube, o sigue como invitado.</p>
 ${formHTML(gmode,"gate")}
