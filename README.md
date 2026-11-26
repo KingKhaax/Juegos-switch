@@ -115,6 +115,10 @@ Cada cuenta tiene un **rol**. Sale como título con efectos justo debajo del nom
 - **Publicar el servidor:** `cd cuentas && npm install && npx vercel deploy --prod --yes`. `cuentas/.vercel` y `.env.local` no van a git; se recrean con `npx vercel link --yes --project juegos-switch-cuentas`.
 - **Recuperación de contraseña:** solo si la cuenta tiene pregunta de recuperación (se pone en «Mi cuenta», Seguridad). Si no la tiene y se olvida, se borra el archivo del usuario (`npx vercel blob delete cuentas/<usuario>.json --rw-token <BLOB_READ_WRITE_TOKEN>`) y se crea la cuenta de nuevo.
 
+## Texto que no se puede seleccionar
+
+En la ficha, las etiquetas (consola y modos de juego), los botones («Ya lo tengo», precio, eShop, comparar…) y las pastillas de Pokémon no se pueden seleccionar ni copiar con el ratón (`user-select:none`), igual que la cabecera.
+
 ## Región y generaciones en los juegos de Pokémon (26/11/2026)
 
 En la ficha de los juegos de Pokémon, junto al título «Resumen», salen unas pastillas con efectos (`pokemon.js`; estilos `.pk-*` en `styles.css`):
@@ -130,6 +134,7 @@ En la ficha de los juegos de Pokémon, junto al título «Resumen», salen unas 
   - Leyendas Z-A: Kalos, I a VI.
   - Pokkén Tournament DX: Ferrum, I a VII (luchadores).
   - Viento y Oleaje: región nueva, X, por confirmar.
+- **Generación principal** (`m` en `P`): la de los Pokémon nuevos que presenta el juego. Lleva estrella giratoria, borde de colores en movimiento, brillo y la etiqueta «Principal».
 - **Juego de Pokémon nuevo:** se añade su fila en `P` de `pokemon.js`.
 - **Ojo:** las variables de color se llaman `--pa`/`--pb` porque `--a` ya está registrada como ángulo (`@property`) para otra animación.
 
