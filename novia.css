@@ -1155,3 +1155,7 @@ html.solo-lectura #badd,html.solo-lectura #badd2{display:none!important}
 .gopt-r .gopt-ico img{width:70px;height:87px;filter:drop-shadow(0 3px 6px rgba(0,0,0,.55))}
 .gopt-n .gopt-ico img{width:70px;height:87px;object-fit:contain;filter:drop-shadow(0 3px 6px rgba(140,20,80,.45))}
 .gate-ico img{height:auto}
+.perfil-ov .pov-c{transition:clip-path .7s cubic-bezier(.4,0,.2,1)}
+.perfil-ov.out.gone .pov-c{transition-duration:.8s}
+.perfil-ov.to-novia .pov-c{background:radial-gradient(circle at 12% 0%,#d6478a,transparent 55%),radial-gradient(circle at 100% 100%,#7a54b4,transparent 58%),#3a2147}
+.perfil-ov.to-rafa .pov-c{background:radial-gradient(circle at 12% 0%,#b00d1c,transparent 55%),radial-gradient(circle at 100% 100%,#0a6e80,transparent 58%),#141926}

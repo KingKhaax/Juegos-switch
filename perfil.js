@@ -60,12 +60,12 @@ ov.style.setProperty("--x",r.left+r.width/2+"px");
 ov.style.setProperty("--y",r.top+r.height/2+"px");
 let parts="";
 const G=next==="novia"?["♥","✦","♡","✿","★"]:["A","B","X","Y","+"];
-for(let i=0;i<26;i++){const a=Math.random()*6.283,d=120+Math.random()*420;parts+=`<i style="--dx:${Math.cos(a)*d}px;--dy:${Math.sin(a)*d}px;--d:${(Math.random()*.25).toFixed(2)}s;--s:${(.7+Math.random()*1.2).toFixed(2)}">${G[i%G.length]}</i>`}
-ov.innerHTML=`<span class="pov-c"></span><span class="pov-p">${parts}</span><span class="pov-t">${next==="novia"?'<img class="pov-k" src="img/kitty.png?v=20261123c" alt="">Jueguitos Switch de Nicky':"Jueguitos Switch de Rafita"}</span>`;
+for(let i=0;i<0;i++){const a=Math.random()*6.283,d=120+Math.random()*420;parts+=`<i style="--dx:${Math.cos(a)*d}px;--dy:${Math.sin(a)*d}px;--d:${(Math.random()*.25).toFixed(2)}s;--s:${(.7+Math.random()*1.2).toFixed(2)}">${G[i%G.length]}</i>`}
+ov.innerHTML=`<span class="pov-c"></span><span class="pov-p">${parts}</span>`;
 document.body.appendChild(ov);
 b.classList.add("go");
 requestAnimationFrame(()=>ov.classList.add("on"));
-setTimeout(()=>location.reload(),1050);
+setTimeout(()=>location.reload(),760);
 };
 b.addEventListener("click",go);
 let came="";
@@ -75,7 +75,7 @@ const ov=document.createElement("div");
 ov.className="perfil-ov to-"+(NV?"novia":"rafa")+" on out";
 ov.style.setProperty("--x","calc(100vw - 52px)");
 ov.style.setProperty("--y","52px");
-ov.innerHTML=`<span class="pov-c"></span><span class="pov-t">${NV?'<img class="pov-k" src="img/kitty.png?v=20261123c" alt="">Jueguitos Switch de Nicky':"Jueguitos Switch de Rafita"}</span>`;
+ov.innerHTML=`<span class="pov-c"></span>`;
 document.body.appendChild(ov);
 root.classList.add("perfil-in");
 requestAnimationFrame(()=>requestAnimationFrame(()=>ov.classList.add("gone")));
