@@ -793,6 +793,16 @@ h4.nso-h{font-size:.9rem;color:#fff;margin:6px 0 8px}
 .nso-f b{display:block;font-size:.92rem}
 .nso-f small{display:block;color:#dcbfd0;font-size:.78rem;line-height:1.4;margin-top:2px}
 .nso-f.lock{opacity:.55}.nso-f.lock .nso-fi{background:rgba(255,255,255,.08)}
+.nso-pago{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.nso-in{position:relative;display:inline-flex;align-items:center}
+.nso-in input{width:9.5em;padding:10px 30px 10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:inherit;font:inherit;font-weight:800;font-size:1rem;font-variant-numeric:tabular-nums}
+.nso-in input:focus-visible{outline:2px solid #ffd96a;outline-offset:2px}
+.nso-in input:invalid{border-color:#ff6b6b}
+.nso-in i{position:absolute;right:12px;font-style:normal;color:var(--mute);pointer-events:none}
+.nso-mine.on .nso-in input{border-color:rgba(61,220,132,.6);background:rgba(61,220,132,.08)}
+.nso-reset{padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:transparent;color:inherit;font:inherit;font-size:.82rem;cursor:pointer}
+.nso-reset:hover{background:rgba(255,255,255,.08)}
+.nso-mine s{color:var(--mute)}
 .nso-note{color:var(--mute);font-size:.78rem;line-height:1.45}
 @media(max-width:520px){.nso-price{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){.nso-plan,.nso-chip,.nso-dots i{transition:none}}

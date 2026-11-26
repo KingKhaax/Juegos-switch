@@ -24,7 +24,7 @@ function slots(d) {
 const ADMIN = 'kingkhaax';
 const MODS = { zya: 'Moderadora' };
 const DUENOS = { rafa: ADMIN, novia: 'zya' };
-const PERSONAL = /^juegos-switch-(avatar|nintendo|amigo)(-novia)?$/;
+const PERSONAL = /^juegos-switch-(avatar|nintendo|amigo|nso)(-novia)?$/;
 const ROLES_RUTA = 'config/roles.json';
 const ROLES_BASE = [
   { id: 'admin', nombre: 'Administrador', color: '#ffb800', fijo: true },

@@ -44,13 +44,19 @@ const FEAT=[
 const COL=["#e60012","#00c3e3","#ffd96a","#ff6fae","#3ddc84","#ff9f43","#a678ff","#4d8dff"];
 const S={plan:"base",type:"ind",months:12,people:2,prev:null,fx:{feat:true,dot:-1,price:true}};
 let dlg=null,raf=0;S.pt=null;
+const PKEY="juegos-switch-nso";
+const mio=()=>{try{const o=JSON.parse(J().store.get(PKEY,"{}"));return o&&typeof o==="object"?o:{}}catch(e){return{}}};
+const pago=(p,t)=>{const v=+mio()[p+"-"+t];return v>0?v:null};
+const anual=(p,t)=>pago(p,t)||PRICE[p][t][12];
+const precio=(p,t,m)=>m===12?anual(p,t):PRICE[p][t][m];
+function setPago(p,t,v){const o=mio();if(v>0)o[p+"-"+t]=Math.round(v*100)/100;else delete o[p+"-"+t];Object.keys(o).length?J().store.set(PKEY,JSON.stringify(o)):J().store.del(PKEY)}
 const avail=()=>Object.keys(PRICE[S.plan][S.type]).map(Number);
 function fix(){const a=avail();if(!a.includes(S.months))S.months=a[a.length-1];if(S.type==="ind")S.people=1;else if(S.people<2)S.people=2}
 function calc(){
-const total=PRICE[S.plan][S.type][S.months];
+const total=precio(S.plan,S.type,S.months);
 const n=S.type==="fam"?S.people:1;
 const mes=up(total/S.months);
-const ind12=PRICE[S.plan].ind[12];
+const ind12=anual(S.plan,"ind");
 return{total,n,mes,pp:up(total/S.months/n),ppy:total/n*(12/S.months),ahorro:S.type==="fam"?Math.max(0,ind12*n*(S.months/12)-total):0,ind12}
 }
 function planCard(k){
@@ -70,13 +76,15 @@ fix();
 const c=calc(),a=avail();
 const conf=CONF.has(`${S.plan}-${S.type}-${S.months}`);
 const people=S.type==="fam"?`<div class="nso-row"><span class="nso-lbl">¿Cuántas personas sois?</span><div class="nso-step"><button type="button" data-p="-1" aria-label="Una persona menos"${S.people<=2?" disabled":""}>${I.minus}</button><b aria-live="polite">${S.people}</b><button type="button" data-p="1" aria-label="Una persona más"${S.people>=8?" disabled":""}>${I.plus}</button></div><div class="nso-dots" aria-hidden="true">${Array.from({length:8},(_,i)=>`<i class="${i<S.people?"on":""}${S.fx.dot===i?" pop":""}" style="--c:${COL[i]}">${I.user}</i>`).join("")}</div><small class="nso-h">Hasta <mark class="m-cy">8 cuentas Nintendo</mark> del mismo grupo familiar.</small></div>`:"";
-const dur=`<div class="nso-row"><span class="nso-lbl">Duración</span><div class="nso-chips" role="group" aria-label="Duración">${[1,3,12].map(m=>{const ok=a.includes(m);return `<button type="button" class="nso-chip${S.months===m?" on":""}" data-m="${m}"${ok?"":" disabled"} aria-pressed="${S.months===m}">${m===12?"12 meses":m+(m===1?" mes":" meses")}${ok?`<small>${eur(PRICE[S.plan][S.type][m])}</small>`:`<small>No se vende</small>`}</button>`}).join("")}</div>${a.length===1?`<small class="nso-h">Nintendo solo vende ${S.type==="fam"?"la suscripción familiar":"esta suscripción"} por <mark class="m-go">12 meses</mark>.</small>`:""}</div>`;
+const dur=`<div class="nso-row"><span class="nso-lbl">Duración</span><div class="nso-chips" role="group" aria-label="Duración">${[1,3,12].map(m=>{const ok=a.includes(m);return `<button type="button" class="nso-chip${S.months===m?" on":""}" data-m="${m}"${ok?"":" disabled"} aria-pressed="${S.months===m}">${m===12?"12 meses":m+(m===1?" mes":" meses")}${ok?`<small>${eur(precio(S.plan,S.type,m))}</small>`:`<small>No se vende</small>`}</button>`}).join("")}</div>${a.length===1?`<small class="nso-h">Nintendo solo vende ${S.type==="fam"?"la suscripción familiar":"esta suscripción"} por <mark class="m-go">12 meses</mark>.</small>`:""}</div>`;
+const mp=pago(S.plan,S.type),of=PRICE[S.plan][S.type][12];
+const mine=`<div class="nso-row nso-mine${mp?" on":""}"><label class="nso-lbl" for="nsoPago">Lo que pagas al año</label><div class="nso-pago"><span class="nso-in"><input id="nsoPago" type="text" inputmode="decimal" autocomplete="off" placeholder="${eur(of).replace(/\s?€/,"")}" value="${mp?String(mp).replace(".",","):""}" aria-describedby="nsoPagoH"><i>€</i></span>${mp?`<button type="button" class="nso-reset" data-reset>Volver al precio oficial</button>`:""}</div><small class="nso-h" id="nsoPagoH">${mp?`Precio oficial: <s>${eur(of)}</s>. Ahorras <mark class="m-gr">${eur(Math.max(0,of-mp))}</mark> al año.`:`Si lo compras más barato en otra tienda, escribe lo que pagas por 12 meses de ${S.plan==="exp"?"Paquete de expansión":"la básica"} ${S.type==="fam"?"familiar":"individual"}. Se guarda para cada versión.`}</small></div>`;
 const money=`<div class="nso-price${S.plan==="exp"?" xp":""}"><span class="nso-spark s1"></span><span class="nso-spark s2"></span><span class="nso-spark s3"></span><div class="nso-big"><small>${S.type==="fam"?"Cada persona paga al mes":"Pagas al mes"}</small><b id="nsoBig">${eur(c.pp)}</b></div><dl><div><dt>Total ${S.months===12?"del año":"de "+S.months+(S.months===1?" mes":" meses")}</dt><dd>${eur(c.total)}</dd></div>${S.type==="fam"?`<div><dt>Todo el grupo al mes</dt><dd>${eur(c.mes)}</dd></div><div><dt>Cada persona al año</dt><dd>${eur(c.ppy)}</dd></div>${c.ahorro>0.005?`<div class="ok"><dt>Ahorráis frente a suscripciones individuales</dt><dd>${eur(c.ahorro)}</dd></div>`:`<div class="warn"><dt>Con ${S.people} personas no compensa más que la individual</dt><dd></dd></div>`}`:`<div><dt>Al año equivale a</dt><dd>${eur(c.total*(12/S.months))}</dd></div>`}</dl></div>`;
 dlg.innerHTML=`<div class="awin nso-win"><div class="nso-aur" aria-hidden="true"></div><div class="fhead"><h3 class="nso-title">Nintendo Switch Online</h3><button class="x2" type="button" data-close aria-label="Cerrar">×</button></div>
 <p class="adesc">Precios en España con IVA y qué trae cada suscripción. Datos de nintendo.com/es-es a 25/11/2026.</p>
 <div class="nso-plans">${planCard("base")}${planCard("exp")}</div>
 <div class="nso-row"><span class="nso-lbl">Tipo</span><div class="nso-seg" data-on="${S.pt||S.type}" role="group" aria-label="Tipo de suscripción"><i class="nso-thumb"></i><button type="button" data-t="ind" class="${S.type==="ind"?"on":""}" aria-pressed="${S.type==="ind"}">${I.user}Individual</button><button type="button" data-t="fam" class="${S.type==="fam"?"on":""}" aria-pressed="${S.type==="fam"}">${I.online}Familiar</button></div></div>
-${people}${dur}${money}
+${people}${dur}${mine}${money}
 ${conf?"":`<p class="nso-note">Los precios de 1 y 3 meses salen de la eShop según Eurogamer e inLobby; no aparecen en la página oficial. Compruébalos al comprar.</p>`}
 <div class="nso-feat">${featHtml()}</div>
 <div class="nso-trial"><span class="nso-fi">${I.gift}</span><p><b>Prueba gratuita de 7 días</b>, una por cuenta Nintendo. Si ya tienes una suscripción, tienes <mark class="m-gr">descuento</mark> para pasar al Paquete de expansión.</p></div>
@@ -98,8 +106,17 @@ if(e.target===dlg||e.target.closest("[data-close]")){dlg.close();return}
 const pl=e.target.closest("[data-plan]");if(pl){if(S.plan!==pl.dataset.plan)S.fx.feat=true;S.plan=pl.dataset.plan;render();return}
 const t=e.target.closest("button[data-t]");if(t){S.pt=S.type;S.type=t.dataset.t;render();return}
 const m=e.target.closest("[data-m]");if(m&&!m.disabled){S.months=+m.dataset.m;render();return}
+if(e.target.closest("[data-reset]")){setPago(S.plan,S.type,0);render();return}
 const p=e.target.closest("[data-p]");if(p&&!p.disabled){const d=+p.dataset.p;S.people=Math.max(2,Math.min(8,S.people+d));if(d>0)S.fx.dot=S.people-1;render()}
 });
+dlg.addEventListener("change",e=>{
+if(e.target.id!=="nsoPago")return;
+const raw=e.target.value.trim().replace(/[€\s]/g,"");
+const v=raw?Number(raw.includes(",")?raw.replace(/\./g,"").replace(",","."):raw):0;
+if(raw&&!(v>0&&v<1000)){e.target.setCustomValidity("Escribe un precio, por ejemplo 15,99");e.target.reportValidity();return}
+e.target.setCustomValidity("");setPago(S.plan,S.type,v);S.months=12;render();
+});
+dlg.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.id==="nsoPago"){e.preventDefault();e.target.blur()}});
 dlg.addEventListener("pointermove",e=>{
 const c=e.target.closest(".nso-plan");if(!c||REDUCE)return;
 const r=c.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;
