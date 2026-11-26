@@ -79,6 +79,7 @@ Cada cuenta tiene un **rol**. Sale como título con efectos justo debajo del nom
   - la de Nicky, Nicky y el administrador. Si la cambia el administrador, el cambio se guarda en la cuenta de Nicky y lo ve ella.
 - **Los demás, en solo lectura:** la web pone la clase `solo-lectura` en `<html>`, oculta los botones de cambiar («Ya lo tengo», estado, precio, formato, reordenar…) y muestra un aviso encima de las herramientas. El servidor también ignora sus cambios de la lista.
 - **Lo personal de cada uno** (avatar, datos de Nintendo y código de amigo) se guarda siempre en su propia cuenta y no pasa a nadie.
+- **Aviso de cuentas nuevas:** cada vez que alguien crea una cuenta, el servidor manda al momento un correo («Nueva cuenta en Jueguitos Switch: <usuario>») a la dirección de recuperación de la cuenta del administrador, con usuario, nombre, lista desde la que se creó, fecha, dispositivo y navegador, ubicación aproximada, IP y lo que traía guardado en el navegador. Nunca la contraseña. Usa `GMAIL_USER` y `GMAIL_APP_PASSWORD` de Vercel (`avisoNueva()` en `cuentas/api/cuenta.js`).
 - **Cómo cambiar roles o dueños:** se editan `ADMIN`, `MODS` (con el nombre del título, por ejemplo `'Moderador'`) y `DUENOS` en `cuentas/api/cuenta.js`, y se publica el servidor.
 
 ## Cuentas: entrada obligatoria y una sesión por lista (23/11/2026)

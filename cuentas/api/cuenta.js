@@ -75,6 +75,47 @@ async function sendCode(to, code) {
     text: 'Tu código es ' + code + '. Caduca en 15 minutos. Si no lo has pedido tú, ignora este correo y no pasa nada.\n\nJueguitos Switch',
   });
 }
+async function avisoNueva(req, user, raw, perfil, datos) {
+  if (!MAIL_USER || !MAIL_PASS) return;
+  const adm = await load(ADMIN);
+  const to = (adm && adm.email) || MAIL_USER;
+  const lista = perfil === 'novia' ? 'Jueguitos Switch de Nicky' : perfil === 'rafa' ? 'Jueguitos Switch de Rafita' : 'sin indicar';
+  const hora = new Date().toLocaleString('es-ES', { timeZone: 'Europe/Madrid' });
+  const h = (k) => { const v = req.headers[k]; return v ? decodeURIComponent(String(v)) : ''; };
+  const lugar = [h('x-vercel-ip-city'), h('x-vercel-ip-country-region'), h('x-vercel-ip-country')].filter(Boolean).join(', ') || 'desconocido';
+  const ip = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'desconocida';
+  const ua = String(req.headers['user-agent'] || 'desconocido');
+  const disp = /iPhone|iPad/i.test(ua) ? 'iPhone/iPad' : /Android/i.test(ua) ? 'Android' : /Windows/i.test(ua) ? 'Windows' : /Mac OS/i.test(ua) ? 'Mac' : /Linux/i.test(ua) ? 'Linux' : 'otro';
+  const nav = /OPR|Opera/i.test(ua) ? 'Opera' : /Edg\//i.test(ua) ? 'Edge' : /Chrome\//i.test(ua) ? 'Chrome' : /Firefox\//i.test(ua) ? 'Firefox' : /Safari\//i.test(ua) ? 'Safari' : 'otro';
+  const d = datos && typeof datos === 'object' ? datos : {};
+  const arr = (k) => { try { const v = JSON.parse(d[k] || '[]'); return Array.isArray(v) ? v : Object.keys(v || {}); } catch { return []; } };
+  const suf = perfil === 'novia' ? '-novia' : '';
+  const tengo = arr('juegos-switch-tengo' + suf);
+  const claves = Object.keys(d).map((k) => k.replace('juegos-switch-', '')).join(', ') || 'nada';
+  const lineas = [
+    'Alguien acaba de crear una cuenta en tu web Jueguitos Switch.',
+    '',
+    'Usuario para entrar: ' + user,
+    'Nombre que se muestra: ' + raw,
+    'Rol: Usuario (solo puede ver las listas)',
+    'Creada desde: ' + lista,
+    'Fecha: ' + hora + ' (hora de España)',
+    '',
+    'Dispositivo: ' + disp + ' · navegador ' + nav,
+    'Ubicación aproximada: ' + lugar,
+    'IP: ' + ip,
+    'Datos completos del navegador: ' + ua,
+    '',
+    'Lo que tenía guardado en el navegador al crearla: ' + claves,
+    'Juegos marcados como «ya lo tengo»: ' + (tengo.length ? tengo.join(', ') : 'ninguno'),
+    '',
+    'La contraseña no se envía nunca: se guarda cifrada.',
+    '',
+    'https://kingkhaax.github.io/Juegos-switch/',
+  ];
+  const tr = nodemailer.createTransport({ service: 'gmail', auth: { user: MAIL_USER, pass: MAIL_PASS } });
+  await tr.sendMail({ from: '"Jueguitos Switch" <' + MAIL_USER + '>', to, subject: 'Nueva cuenta en Jueguitos Switch: ' + raw, text: lineas.join('\n') });
+}
 const normAns = (s) => String(s || '').trim().toLowerCase().replace(/s+/g, ' ');
 const okAns = (s) => normAns(s).length >= 3 && normAns(s).length <= 60;
 async function load(user) {
@@ -119,6 +160,7 @@ export default async function handler(req, res) {
         if (okPerfil(b.perfil) && okData(b.data)) data[b.perfil] = b.data;
         const nrec = { display: raw, salt, hash: await hashPass(pass, salt), data, updated: Date.now(), created: Date.now() };
         await save(user, nrec);
+        try { await avisoNueva(req, user, raw, b.perfil, b.data); } catch {}
         return res.status(200).json({ token: makeToken(user), user, nombre: raw, data: await efectivas(user, nrec), ...extra(user), updated: nrec.updated });
       }
       if (!rec) { await sleep(400); return res.status(401).json({ error: 'credenciales' }); }
