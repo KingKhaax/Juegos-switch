@@ -21,6 +21,18 @@ const collect=()=>Object.fromEntries(keys().sort().map(k=>[k,localStorage.getIte
 const apply=d=>{keys().forEach(k=>localStorage.removeItem(k));Object.entries(d||{}).forEach(([k,v])=>{if(mine(k)&&typeof v==="string")localStorage.setItem(k,v)})};
 const same=(a,b)=>JSON.stringify(a)===JSON.stringify(Object.fromEntries(Object.entries(b||{}).sort()));
 const slot=d=>(d&&d[PROF])||{};
+const ROLI={invitado:{id:"invitado",nombre:"Invitado"}};
+const rolDe=s=>(s&&s.rol)||ROLI.invitado;
+const rolHTML=r=>'<span class="rol rol-'+esc(r.id)+'"><i aria-hidden="true"></i><span>'+esc(r.nombre)+'</span></span>';
+const puedeEditar=()=>{const s=ses();if(!s)return false;if(!s.puede)return true;return !!s.puede[PROF]};
+function lectura(){
+const ro=!puedeEditar();
+root.classList.toggle("solo-lectura",ro);
+let b=document.getElementById("slBanner");
+if(ro&&!b){b=document.createElement("p");b.id="slBanner";b.className="sl-banner";b.setAttribute("role","note");const t=document.querySelector(".tools");if(t)t.parentNode.insertBefore(b,t)}
+if(b)b.innerHTML=ro?'<b>Solo lectura.</b> '+(NV?"Estás viendo la lista de Nicky: solo Nicky y el administrador pueden cambiarla.":"Estás viendo la lista de Rafita: solo él puede cambiarla."):"";
+if(b)b.hidden=!ro;
+}
 const PERS=/^juegos-switch-(avatar|nintendo)(-novia)?$/;
 const hk=d=>{const t=JSON.stringify(Object.entries(d||{}).sort());let h=0;for(let i=0;i<t.length;i++)h=(h*31+t.charCodeAt(i))|0;return String(h)};
 const shared=()=>Object.fromEntries(Object.entries(collect()).filter(([k])=>!PERS.test(k)));
@@ -83,7 +95,7 @@ try{
 const r=await call("datos",{headers:{Authorization:"Bearer "+s.token}});
 if(r.status===401){setSes(null);location.reload();return}
 if(!r.ok){mark("err");return}
-{const se=ses();if(se&&(se.q||"")!==(r.j.pregunta||"")){se.q=r.j.pregunta||"";if(r.j.nombre)se.nombre=r.j.nombre;setSes(se)}if(se&&(se.correo||"")!==(r.j.correo||"")){se.correo=r.j.correo||"";if(!se.correo)se.correoFull="";setSes(se)}}
+{const se=ses();if(se&&r.j.rol&&JSON.stringify([se.rol,se.puede])!==JSON.stringify([r.j.rol,r.j.puede])){se.rol=r.j.rol;se.puede=r.j.puede;setSes(se);lectura()}if(se&&(se.q||"")!==(r.j.pregunta||"")){se.q=r.j.pregunta||"";if(r.j.nombre)se.nombre=r.j.nombre;setSes(se)}if(se&&(se.correo||"")!==(r.j.correo||"")){se.correo=r.j.correo||"";if(!se.correo)se.correoFull="";setSes(se)}}
 const d=slot(r.j.data);
 if(!Object.keys(d).length&&Object.keys(collect()).length){push();return}
 if(!same(collect(),d)){
@@ -99,7 +111,7 @@ if(mode==="registro"){body.perfil=PROF;body.data=collect()}
 const r=await call(mode,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
 if(!r.ok)return ERR[r.j.error]||"No se ha podido conectar. Inténtalo de nuevo.";
 setGuest(false);
-setSes({user:r.j.user,nombre:r.j.nombre||r.j.user,token:r.j.token,synced:r.j.updated,dirty:0});
+setSes({user:r.j.user,nombre:r.j.nombre||r.j.user,token:r.j.token,synced:r.j.updated,dirty:0,rol:r.j.rol,puede:r.j.puede});lectura();
 if(mode==="entrar"){
 const d=slot(r.j.data);
 if(!Object.keys(d).length){if(Object.keys(collect()).length)await push()}
@@ -194,8 +206,8 @@ let body;
 if(s){
 const n=nin(),r=resumen(),fc=getFc(),av=lget(AK);
 const tile=(l,b)=>'<div class="cu-tile"><small>'+l+'</small><b>'+b+'</b></div>';
-body='<div class="cu-me">'+avatarHTML(s)+'<div><b>'+esc(s.nombre||s.user)+'</b><small class="cu-st '+state+'">'+st+'</small></div></div>'
-+'<p class="adesc">Sesión de <b>'+NAME+'</b>. Lo que cambias aquí se guarda solo en esta cuenta; la otra lista tiene su propia sesión.</p>'
+body='<div class="cu-me">'+avatarHTML(s)+'<div><b>'+esc(s.nombre||s.user)+'</b>'+rolHTML(rolDe(s))+'<small class="cu-st '+state+'">'+st+'</small></div></div>'
++'<p class="adesc">Sesión de <b>'+NAME+'</b>. '+(!puedeEditar()?(NV?'Esta lista es de Nicky: puedes verla, pero solo ella y el administrador pueden cambiarla.':'Esta lista es de Rafita: puedes verla, pero solo él puede cambiarla.'):(NV&&rolDe(s).id==="admin"?'Lo que cambies aquí se guarda en la lista de Nicky y lo ve ella.':'Lo que cambies aquí lo ven todos los que entran en esta lista.'))+' La otra lista tiene su propia sesión.</p>'
 +sec("perfil","Perfil","<svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"#fff\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"8\" r=\"4\"/><path d=\"M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7\"/></svg>",
 '<div class="cu-lbl">Avatar</div><div class="cu-avg-w">'+AVG.map(([n,l])=>'<details class="cu-avg" data-g="'+esc(n)+'"'+(openS.has("g:"+n)||l.includes(av)?" open":"")+'><summary><b>'+esc(n)+'</b><small>'+l.length+'</small></summary><div class="cu-avs">'+l.map(f=>'<button type="button" class="cu-avb'+(av===f?" on":"")+'" data-av="'+f+'" aria-label="Elegir avatar de '+esc(n)+'" aria-pressed="'+(av===f)+'"><img src="img/'+f+'" alt="" loading="lazy"></button>').join("")+'</div></details>').join("")+'</div>'
 +(av?'<button type="button" class="nb2 cu-mini" data-av="">Quitar avatar</button>':"")
@@ -210,7 +222,7 @@ body='<div class="cu-me">'+avatarHTML(s)+'<div><b>'+esc(s.nombre||s.user)+'</b><
 +'<form class="cu-form" data-q novalidate autocomplete="off"><div class="cu-lbl">Pregunta de recuperación</div><small class="cu-h">'+(s.q?"Ahora tienes puesta: «"+esc(s.q)+"». Puedes cambiarla.":"Sin ella, si olvidas la contraseña no se puede recuperar la cuenta.")+'</small><label>Pregunta<input name="pregunta" data-exp="'+esc(s.q||"")+'" maxlength="80" autocomplete="off" placeholder="Ej.: ¿Cómo se llamaba mi primera consola?" value="'+esc(s.q||"")+'"></label><label>Respuesta<input name="respuesta" data-exp="" maxlength="60" autocomplete="off"></label><label>Contraseña actual<input name="actual" type="password" autocomplete="new-password"></label><button type="submit" class="nb2">Guardar pregunta</button></form>'
 +'<div class="cu-lbl">Otros dispositivos</div><button type="button" class="nb2" data-others>Cerrar sesión en los demás dispositivos</button>')
 +'<div class="cu-acts"><button type="button" class="pri" data-sync>Guardar ahora</button><button type="button" class="nb2" data-out>Cerrar sesión</button></div>';
-}else body='<p class="adesc">Estás como invitado en <b>'+NAME+'</b>. Entra para guardar esta lista en tu cuenta.</p>'+formHTML(mode,"dlg");
+}else body='<div class="cu-me"><span class="cu-av" aria-hidden="true">?</span><div><b>Invitado</b>'+rolHTML(ROLI.invitado)+'</div></div><p class="adesc">Estás como invitado en <b>'+NAME+'</b>. Entra para guardar esta lista en tu cuenta.</p>'+formHTML(mode,"dlg");
 dlg.innerHTML='<div class="awin cu-win"><div class="fhead"><h3>'+(s?"Mi cuenta":"Iniciar sesión")+'</h3><button class="x2" type="button" data-close aria-label="Cerrar">×</button></div>'+body+'<p class="amsg '+msgk+'" role="status">'+esc(msg)+'</p></div>';
 cleanAuto();
 }
@@ -302,6 +314,7 @@ dlg.querySelector("input")?.focus();
 }
 btn.addEventListener("click",open);
 label();
+lectura();
 if(!chosen())openGate("lista");
 else if(ses())sync();
 else if(!guest())openGate("login");

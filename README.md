@@ -43,7 +43,7 @@ Títulos: la de Rafael se llama **«Jueguitos Switch de Rafita»** y la de su no
 La web tiene dos perfiles. Se cambia con el **botón redondo de arriba a la derecha** (`perfil.js`): tiene un anillo de colores girando, un brillo que late, chispas y un tooltip. Al pulsarlo, un círculo de color sale del botón y cubre la pantalla con una explosión de símbolos (corazones y estrellas hacia Jueguitos Switch; A, B, X, Y y + hacia la de Rafael). La página se recarga con el otro perfil y se destapa con las tarjetas apareciendo una a una. Con `prefers-reduced-motion` solo cambia, sin animación.
 
 - **Perfil `rafa`**: «Mi colección de Nintendo Switch», con el tema rojo y azul de siempre. Usa la lista `window.LISTS.rafa` de `games.js` en el orden de `orden.js`.
-- **Perfil `novia`**: **«Jueguitos Switch»**, la lista de la novia de Rafael, con tema rosa (`novia.css`) y fondo animado con corazones, estrellas y flores (`bg.js`). Su orden de base es `window.LISTS.novia`:
+- **Perfil `novia`**: **«Jueguitos Switch»** (15 juegos desde el 26/11/2026; se añadieron Pokémon Oleaje y Pokémon Viento como próximos lanzamientos, The Legend of Zelda: Ocarina of Time, Pokémon Leyendas Z-A, Pokémon Escarlata y Pokémon Perla Reluciente), la lista de la novia de Rafael, con tema rosa (`novia.css`) y fondo animado con corazones, estrellas y flores (`bg.js`). Su orden de base es `window.LISTS.novia`:
   1. Mario & Luigi: Conexión Fraternal
   2. Leyendas Pokémon: Arceus
   3. Pokémon Espada
@@ -61,16 +61,25 @@ La web tiene dos perfiles. Se cambia con el **botón redondo de arriba a la dere
 - **`games.js`** tiene todos los juegos de las dos listas (`window.GAMES`) y qué juegos van en cada una (`window.LISTS`). Un juego nuevo para una lista se añade a `GAMES` y a esa lista.
 - **Imagen del botón:** en Jueguitos Switch el botón lleva la cara de Hello Kitty (`img/kitty.png`, recortada sin el texto y con fondo transparente a partir de la imagen que pasó Rafael), que se balancea al pasar el ratón. También sale grande en la animación al cambiar a Jueguitos Switch. En la lista de Rafael el botón lleva un Joy-Con.
 
-## La cuenta de Rafael manda (26/11/2026)
+## Roles y dueños de cada lista (26/11/2026)
 
-La cuenta `kingkhaax` es la **cuenta maestra** (`CUENTAS_MAESTRA` en Vercel; si no está, `kingkhaax`):
+Cada cuenta tiene un **rol**. Sale como título con efectos justo debajo del nombre, en «Mi cuenta» (`.rol-admin`, `.rol-mod`, `.rol-usuario`, `.rol-invitado` en `styles.css`):
 
-- **Invitados:** al entrar como invitado se carga lo que tiene guardado la cuenta maestra en esa lista (orden, lo que tiene, estados, precios, notas…), con `GET ?a=publico&perfil=rafa|novia`. Lo que cambie un invitado se queda en su navegador mientras siga en esa pestaña.
-- **Otras cuentas:** empiezan viendo lo de la cuenta maestra. Lo que cambien se guarda solo en su cuenta y solo lo ven ellas.
-- **La maestra manda:** el servidor guarda la fecha de cada cambio por clave (`times` en el archivo de cada cuenta). Para otra cuenta, cada clave sale de lo suyo si lo cambió después que la maestra, y de la maestra si la maestra la cambió después. Si Rafael cambia algo, ese cambio les llega a todos aunque lo hubieran cambiado antes.
-- **Personal de cada uno:** el avatar y los datos de Nintendo (`juegos-switch-avatar`, `juegos-switch-nintendo`) no pasan de la maestra a nadie.
-- **Cuándo se ve:** los demás ven los cambios de Rafael la próxima vez que abren o recargan la web.
-- La regla está en `efectiva()` de `cuentas/api/cuenta.js`.
+| Rol | Quién | Título |
+|---|---|---|
+| Administrador | `kingkhaax` (Rafael) | dorado, naranja y rojo, con brillo |
+| Moderador / Moderadora | `zya` (Nicky) | rosa, lila y celeste, con brillo |
+| Usuario | cualquier otra cuenta | azul |
+| Invitado | sin cuenta | gris |
+
+- **Cada lista tiene una dueña:** la de Rafita es de `kingkhaax` y la de Nicky es de `zya` (`DUENOS` en `cuentas/api/cuenta.js`).
+- **Todos ven lo de la dueña:** invitados, usuarios, la moderadora y el administrador ven en cada lista lo que tiene guardado su dueña (orden, lo que tiene, estados, precios, notas…).
+- **Quién puede cambiar cada lista:**
+  - la lista de Rafita, solo el administrador;
+  - la de Nicky, Nicky y el administrador. Si la cambia el administrador, el cambio se guarda en la cuenta de Nicky y lo ve ella.
+- **Los demás, en solo lectura:** la web pone la clase `solo-lectura` en `<html>`, oculta los botones de cambiar («Ya lo tengo», estado, precio, formato, reordenar…) y muestra un aviso encima de las herramientas. El servidor también ignora sus cambios de la lista.
+- **Lo personal de cada uno** (avatar, datos de Nintendo y código de amigo) se guarda siempre en su propia cuenta y no pasa a nadie.
+- **Cómo cambiar roles o dueños:** se editan `ADMIN`, `MODS` (con el nombre del título, por ejemplo `'Moderador'`) y `DUENOS` en `cuentas/api/cuenta.js`, y se publica el servidor.
 
 ## Cuentas: entrada obligatoria y una sesión por lista (23/11/2026)
 

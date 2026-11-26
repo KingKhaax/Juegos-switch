@@ -21,27 +21,25 @@ function slots(d) {
   }
   return d;
 }
-const MAESTRA = process.env.CUENTAS_MAESTRA || 'kingkhaax';
-const PERSONAL = /^juegos-switch-(avatar|nintendo)(-novia)?$/;
-function efectiva(urec, mrec, p) {
-  const u = slots(urec && urec.data)[p] || {};
-  if (!mrec || mrec === urec) return u;
-  const ut = (urec.times || {})[p] || {};
-  const m = slots(mrec.data)[p] || {};
-  const mt = (mrec.times || {})[p] || {};
-  const base = mrec.updated || 0;
+const ADMIN = 'kingkhaax';
+const MODS = { zya: 'Moderadora' };
+const DUENOS = { rafa: ADMIN, novia: 'zya' };
+const PERSONAL = /^juegos-switch-(avatar|nintendo|amigo)(-novia)?$/;
+const rol = (u) => (u === ADMIN ? { id: 'admin', nombre: 'Administrador' } : MODS[u] ? { id: 'mod', nombre: MODS[u] } : { id: 'usuario', nombre: 'Usuario' });
+const puede = (u, p) => u === ADMIN || u === DUENOS[p];
+const sinPersonal = (d) => Object.fromEntries(Object.entries(d || {}).filter(([k]) => !PERSONAL.test(k)));
+const soloPersonal = (d) => Object.fromEntries(Object.entries(d || {}).filter(([k]) => PERSONAL.test(k)));
+async function efectivas(user, rec) {
   const out = {};
-  for (const k of new Set([...Object.keys(u), ...Object.keys(m), ...Object.keys(ut), ...Object.keys(mt)])) {
-    if (PERSONAL.test(k)) { if (typeof u[k] === 'string') out[k] = u[k]; continue; }
-    const tm = mt[k] ?? (k in m ? base : 0);
-    const tu = ut[k] || 0;
-    const v = tu > tm ? u[k] : (tm ? m[k] : u[k]);
-    if (typeof v === 'string') out[k] = v;
+  for (const p of PERFILES) {
+    const dueno = DUENOS[p];
+    const drec = dueno === user ? rec : await load(dueno);
+    const mio = slots(rec.data)[p] || {};
+    out[p] = dueno === user ? mio : { ...sinPersonal(drec && slots(drec.data)[p]), ...soloPersonal(mio) };
   }
   return out;
 }
-const efectivas = (urec, mrec) => Object.fromEntries(PERFILES.map((p) => [p, efectiva(urec, mrec, p)]));
-const maestra = async (user, rec) => (user === MAESTRA ? rec : await load(MAESTRA));
+const extra = (user) => ({ rol: rol(user), puede: Object.fromEntries(PERFILES.map((p) => [p, puede(user, p)])) });
 const okData = (d) => d && typeof d === 'object' && !Array.isArray(d) && JSON.stringify(d).length <= MAXDATA;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const hashPass = (pass, salt) => new Promise((res, rej) => crypto.scrypt(pass, salt, 64, (e, k) => (e ? rej(e) : res(k.toString('hex')))));
@@ -121,7 +119,7 @@ export default async function handler(req, res) {
         if (okPerfil(b.perfil) && okData(b.data)) data[b.perfil] = b.data;
         const nrec = { display: raw, salt, hash: await hashPass(pass, salt), data, updated: Date.now(), created: Date.now() };
         await save(user, nrec);
-        return res.status(200).json({ token: makeToken(user), user, nombre: raw, data: nrec.data, updated: nrec.updated });
+        return res.status(200).json({ token: makeToken(user), user, nombre: raw, data: await efectivas(user, nrec), ...extra(user), updated: nrec.updated });
       }
       if (!rec) { await sleep(400); return res.status(401).json({ error: 'credenciales' }); }
       if (rec.llock && rec.llock > Date.now()) return res.status(429).json({ error: 'bloqueo' });
@@ -134,7 +132,7 @@ export default async function handler(req, res) {
         return res.status(401).json({ error: 'credenciales' });
       }
       if (rec.lf || rec.llock) { rec.lf = 0; rec.llock = 0; await save(user, rec); }
-      return res.status(200).json({ token: makeToken(user, rec.epoch || 0), user, nombre: rec.display || user, data: efectivas(rec, await maestra(user, rec)), maestra: user === MAESTRA, updated: rec.updated || 0 });
+      return res.status(200).json({ token: makeToken(user, rec.epoch || 0), user, nombre: rec.display || user, data: await efectivas(user, rec), ...extra(user), updated: rec.updated || 0 });
     }
     if (req.method === 'POST' && a === 'perfil') {
       const tk = readToken(String(req.headers.authorization || '').replace(/^Bearer\s+/i, ''));
@@ -259,10 +257,8 @@ export default async function handler(req, res) {
     }
     if (req.method === 'GET' && a === 'publico') {
       const p = okPerfil(req.query.perfil) ? req.query.perfil : 'rafa';
-      const m = await load(MAESTRA);
-      const d = efectiva(m, m, p);
-      for (const k of Object.keys(d)) if (PERSONAL.test(k)) delete d[k];
-      return res.status(200).json({ data: d, updated: (m && m.updated) || 0 });
+      const m = await load(DUENOS[p]);
+      return res.status(200).json({ data: sinPersonal(m && slots(m.data)[p]), updated: (m && m.updated) || 0 });
     }
     if (a === 'datos') {
       const tk = readToken(String(req.headers.authorization || '').replace(/^Bearer\s+/i, ''));
@@ -270,20 +266,30 @@ export default async function handler(req, res) {
       const user = tk.user;
       const rec = await load(user);
       if (!rec || (rec.epoch || 0) !== tk.ep) return res.status(401).json({ error: 'sesion' });
-      if (req.method === 'GET') return res.status(200).json({ user, nombre: rec.display || user, pregunta: rec.q || '', correo: maskMail(rec.email), data: efectivas(rec, await maestra(user, rec)), maestra: user === MAESTRA, updated: rec.updated || 0 });
+      if (req.method === 'GET') return res.status(200).json({ user, nombre: rec.display || user, pregunta: rec.q || '', correo: maskMail(rec.email), data: await efectivas(user, rec), ...extra(user), updated: rec.updated || 0 });
       if (req.method === 'PUT') {
         const b = await body(req);
         if (!okPerfil(b.perfil) || !okData(b.data)) return res.status(400).json({ error: 'datos' });
-        rec.data = slots(rec.data);
-        const antes = rec.data[b.perfil] || {};
         const now = Date.now();
-        rec.times = rec.times || {};
-        const t = (rec.times[b.perfil] = rec.times[b.perfil] || {});
-        for (const k of new Set([...Object.keys(antes), ...Object.keys(b.data)])) if (antes[k] !== b.data[k]) t[k] = now;
-        rec.data[b.perfil] = b.data;
+        const dueno = DUENOS[b.perfil];
+        rec.data = slots(rec.data);
+        if (dueno === user) {
+          rec.data[b.perfil] = b.data;
+        } else {
+          rec.data[b.perfil] = soloPersonal(b.data);
+          if (puede(user, b.perfil)) {
+            const drec = await load(dueno);
+            if (drec) {
+              drec.data = slots(drec.data);
+              drec.data[b.perfil] = { ...soloPersonal(drec.data[b.perfil]), ...sinPersonal(b.data) };
+              drec.updated = now;
+              await save(dueno, drec);
+            }
+          }
+        }
         rec.updated = now;
         await save(user, rec);
-        return res.status(200).json({ updated: rec.updated });
+        return res.status(200).json({ updated: rec.updated, soloLectura: !puede(user, b.perfil) });
       }
     }
     return res.status(404).json({ error: 'ruta' });
