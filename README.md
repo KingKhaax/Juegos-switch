@@ -61,6 +61,14 @@ La web tiene dos perfiles. Se cambia con el **botón redondo de arriba a la dere
 - **`games.js`** tiene todos los juegos de las dos listas (`window.GAMES`) y qué juegos van en cada una (`window.LISTS`). Un juego nuevo para una lista se añade a `GAMES` y a esa lista.
 - **Imagen del botón:** en Jueguitos Switch el botón lleva la cara de Hello Kitty (`img/kitty.png`, recortada sin el texto y con fondo transparente a partir de la imagen que pasó Rafael), que se balancea al pasar el ratón. También sale grande en la animación al cambiar a Jueguitos Switch. En la lista de Rafael el botón lleva un Joy-Con.
 
+## Pagos Switch Online, solo administrador (27/11/2026)
+
+Apartado del panel lateral, debajo de «Gestión de usuarios», visible solo para la cuenta administradora. Lleva quién ha pagado su parte del plan familiar de Nintendo Switch Online.
+
+- Cliente: `pagos.js`. Servidor: endpoints `pagos_get`, `pagos_set`, `pagos_xlsx` y `pagos_mail` en `cuentas/api/cuenta.js`, y el generador del Excel en `cuentas/lib/pagos.js`. Los datos están en el Blob privado `config/pagos.json`.
+- Se guarda solo en la cuenta (sin pulsar nada), se puede descargar como Excel o mandar al Gmail vinculado.
+- El Excel de referencia y las notas completas están en el repositorio **privado** `KingKhaax/Pagos-Switch-Online`. No se sube a este repositorio porque es público y el Excel lleva nombres reales de personas y quién ha pagado.
+
 ## Roles y dueños de cada lista (26/11/2026)
 
 Cada cuenta tiene un **rol**. Sale como título con efectos justo debajo del nombre, en «Mi cuenta» (`.rol-admin`, `.rol-mod`, `.rol-usuario`, `.rol-invitado` en `styles.css`):
