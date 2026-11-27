@@ -20,6 +20,7 @@ else if(e.target.closest("#cmpclr"))J().setCmp([]);
 });
 dlg.addEventListener("click",e=>{
 if(e.target===dlg||e.target.closest("[data-close]")){dlg.close();return}
+if(e.target.closest("[data-copy]")){copiar(e.target.closest("[data-copy]"));return}
 const r=e.target.closest("[data-rm]");
 if(r){J().setCmp(J().cmp.filter(s=>s!==r.dataset.rm));if(J().cmp.length<2)dlg.close();else render()}
 });
@@ -72,8 +73,32 @@ row("Fecha",I.map(i=>esc(i.d.date||"—")),null,"#b9c7d6")
 ].join("");
 return `<thead>${head}</thead><tbody>${rows}</tbody>`;
 }
+function textoComparacion(){
+const nombres=[...dlg.querySelectorAll("thead .ch span")].map(x=>x.textContent.trim());
+const out=["Comparación de juegos: "+nombres.join(" vs "),""];
+dlg.querySelectorAll("tbody tr.rw").forEach(tr=>{
+const lab=tr.querySelector("th").textContent.trim();
+const cs=[...tr.querySelectorAll("td")].map(td=>td.textContent.replace(/\s+/g," ").trim()+(td.classList.contains("best")?" ★":""));
+out.push(lab+": "+cs.map((c,i)=>nombres[i]+" = "+c).join(" | "));
+});
+out.push("","★ = el mejor de esa fila");
+return out.join(String.fromCharCode(10));
+}
+async function copiar(b){
+const t=textoComparacion();
+let ok=false;
+try{await navigator.clipboard.writeText(t);ok=true}catch(e){
+try{const a=document.createElement("textarea");a.value=t;a.style.cssText="position:fixed;opacity:0";document.body.appendChild(a);a.select();ok=document.execCommand("copy");a.remove()}catch(x){}
+}
+const old=b.dataset.t||(b.dataset.t=b.textContent);
+b.textContent=ok?"¡Copiado!":"No se ha podido copiar";
+b.classList.toggle("ok",ok);
+const live=dlg.querySelector("#cmpLive");if(live)live.textContent=ok?"Comparación copiada":"No se ha podido copiar";
+clearTimeout(b._t);
+b._t=setTimeout(()=>{b.textContent=old;b.classList.remove("ok")},1900);
+}
 function render(){
-dlg.innerHTML=`<div class="cwin"><div class="fhead"><h3>Comparar juegos</h3><button class="x2" type="button" data-close aria-label="Cerrar">×</button></div><div class="ctw"><table class="ct">${table()}</table></div><p class="fdesc">En verde, el que más tiene de lo bueno en cada fila: más Metascore, más horas de juego, más jugadores y modos, menos tamaño y menos precio. Los tamaños y precios son los de tu consola y tu formato.</p></div>`;
+dlg.innerHTML=`<div class="cwin"><div class="fhead"><h3>Comparar juegos</h3><button class="x2" type="button" data-close aria-label="Cerrar">×</button></div><div class="ctw"><table class="ct">${table()}</table></div><div class="cmp-foot"><p class="fdesc">En verde, el mejor de cada fila: más Metascore, más horas, más jugadores y modos, menos tamaño y menos precio. Tamaños y precios de tu consola y formato.</p><button type="button" class="cmp-copy" data-copy>Copiar comparación</button></div><span class="sr" id="cmpLive" aria-live="polite"></span></div>`;
 }
 function open(){
 ensure();
