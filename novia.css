@@ -1355,6 +1355,25 @@ section.pl-closed{padding-bottom:4px}
 .ct .ch img{transition:transform .3s,box-shadow .3s;box-shadow:0 8px 22px rgba(0,0,0,.45)}
 .ct .ch:hover img{transform:translateY(-3px) scale(1.04)}
 @media(prefers-reduced-motion:reduce){#cmpdlg[open] .ct tr.rw,.ct td.best{animation:none!important}}
+.prest-f{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.prest-f label{display:grid;gap:3px}
+.prest-f span{font-size:.72rem;font-weight:800;color:#ffe08a}
+.prest-f input{min-height:44px;padding:0 12px;border-radius:12px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.32);color:#fff;font:600 .92rem inherit;font-family:inherit;width:100%;min-width:0}
+.prest-f input:focus{outline:0;border-color:#ffd96a;box-shadow:0 0 0 3px rgba(255,217,106,.28)}
+.pr-who{display:block;font-weight:600;font-size:.76rem;color:#ffe08a}
+.pr-hist{max-width:760px;border-radius:16px;background:rgba(34,37,46,.6);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);margin-bottom:24px}
+.pr-hist summary{list-style:none;cursor:pointer;min-height:48px;display:flex;align-items:center;gap:10px;padding:0 16px;font-weight:800;color:#d3d6e2}
+.pr-hist summary::-webkit-details-marker{display:none}
+.pr-hist summary:focus-visible{outline:3px solid #ffd96a;outline-offset:-3px}
+.pr-hist summary b{background:rgba(255,184,0,.22);color:#ffe08a;border-radius:99px;padding:1px 10px;font-size:.85rem}
+.pr-hist[open] summary{color:#fff}
+.pr-hist ul{list-style:none;padding:0 16px 14px;display:grid;gap:8px;animation:prIn .35s ease both}
+.pr-hist li{display:grid;grid-template-columns:1fr auto;gap:2px 12px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.05)}
+.pr-hist li span{color:#b9c7d6;font-size:.82rem;grid-column:1}
+.pr-hist li em{font-style:normal;font-weight:800;font-size:.76rem;grid-row:1/3;grid-column:2;align-self:center;padding:3px 10px;border-radius:99px}
+.pr-hist li em.ok{background:rgba(61,220,132,.2);color:#6dffae}
+.pr-hist li em.late{background:rgba(255,184,0,.2);color:#ffd96a}
+.pr-hist li small{grid-column:1/-1;color:#d3d6e2}
 body{background:radial-gradient(1200px 700px at 15% -10%,rgba(255,79,154,.18),transparent 60%),radial-gradient(1000px 700px at 110% 110%,rgba(185,140,255,.16),transparent 60%),var(--bg)}
 .title{background-image:linear-gradient(100deg,#fff 0,#ffe3f1 30%,#ff8cc0 46%,#d9b6ff 58%,#fff 72%,#fff 100%)}
 .sub{color:#f3c6dc}

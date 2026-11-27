@@ -1,8 +1,8 @@
 import { put, get, list } from '@vercel/blob';
 import crypto from 'node:crypto';
 import nodemailer from 'nodemailer';
-import { mandarAviso, HORA, DIAS14 } from '../lib/prestamos.js';
-import { POR_DEFECTO, limpiar, construir } from '../lib/pagos.js';
+import { mandarAviso, mandarRenovacion, HORA, DIAS14 } from '../lib/prestamos.js';
+import { POR_DEFECTO, limpiar, construir, ahoraMadrid } from '../lib/pagos.js';
 
 const ORIGINS = ['https://kingkhaax.github.io'];
 const SECRET = process.env.CUENTAS_SECRET || '';
@@ -26,7 +26,7 @@ function slots(d) {
 const ADMIN = 'kingkhaax';
 const MODS = { zya: 'Moderador' };
 const DUENOS = { rafa: ADMIN, novia: 'zya' };
-const PERSONAL = /^juegos-switch-(avatar|nintendo|amigo|nso|prestados|plegables)(-novia)?$/;
+const PERSONAL = /^juegos-switch-(avatar|nintendo|amigo|nso|prestados|plegables|prestamos-hist)(-novia)?$/;
 const ROLES_RUTA = 'config/roles.json';
 const PAGOS_RUTA = 'config/pagos.json';
 const PREST_RUTA = 'config/prestamos.json';
@@ -46,7 +46,7 @@ const okSlug = (s) => typeof s === 'string' && /^[a-z0-9-]{1,90}$/.test(s);
 async function avisarSiToca(user, k, it, rec) {
   if (it.avisado || it.fin <= Date.now() || it.fin - Date.now() > HORA + 120000) return false;
   if (!rec || !rec.email || !MAIL_USER || !MAIL_PASS) return false;
-  await mandarAviso(MAIL_USER, MAIL_PASS, rec.email, it.titulo, it.fin);
+  await mandarAviso(MAIL_USER, MAIL_PASS, rec.email, it.titulo, it.fin, it.a, it.n);
   it.avisado = true;
   return true;
 }
@@ -59,6 +59,26 @@ async function loadPagos() {
     }
   } catch {}
   return POR_DEFECTO;
+}
+const AVISO_RUTA = 'config/pagos-aviso.json';
+async function avisoRenovacion() {
+  if (!MAIL_USER || !MAIL_PASS) return false;
+  const p = await loadPagos();
+  const reno = p.renovacion;
+  const ventana = new Date(Date.parse(reno + ':00Z') - 15 * DAY).toISOString().slice(0, 16);
+  const ahora = ahoraMadrid();
+  if (!(ahora >= ventana && ahora < reno)) return false;
+  let ult = '';
+  try {
+    const g = await get(AVISO_RUTA, { access: 'private', useCache: false });
+    if (g && g.statusCode === 200) ult = JSON.parse(await new Response(g.stream).text()).reno || '';
+  } catch {}
+  if (ult === reno) return false;
+  const adm = await load(ADMIN);
+  if (!adm || !adm.email) return false;
+  await mandarRenovacion(MAIL_USER, MAIL_PASS, adm.email, p, reno);
+  await put(AVISO_RUTA, JSON.stringify({ reno }), { access: 'private', allowOverwrite: true, addRandomSuffix: false, contentType: 'application/json' });
+  return true;
 }
 const savePagos = (p) => put(PAGOS_RUTA, JSON.stringify(p), { access: 'private', allowOverwrite: true, addRandomSuffix: false, contentType: 'application/json' });
 async function mandarPagos(to, p) {
@@ -538,7 +558,9 @@ export default async function handler(req, res) {
         if (!Object.keys(items).length) { delete todo[u]; cambios = true; }
       }
       if (cambios) await savePrest(todo);
-      return res.status(200).json({ ok: true, enviados });
+      let renovacion = false;
+      try { renovacion = await avisoRenovacion(); } catch {}
+      return res.status(200).json({ ok: true, enviados, renovacion });
     }
     if (a === 'prestamo_lista' || a === 'prestamo_set' || a === 'prestamo_aviso') {
       const tk = readToken(String(req.headers.authorization || '').replace(/^Bearer\s+/i, ''));
@@ -562,7 +584,7 @@ export default async function handler(req, res) {
         else {
           if (!(fin > Date.now() && fin <= Date.now() + DIAS14 + HORA)) return res.status(400).json({ error: 'fecha' });
           const prev = mios[k];
-          mios[k] = { titulo: String(b.titulo || b.slug).slice(0, 90), fin, avisado: prev && prev.fin === fin ? !!prev.avisado : false };
+          mios[k] = { titulo: String(b.titulo || b.slug).slice(0, 90), a: String(b.a || '').slice(0, 40), n: String(b.n || '').slice(0, 120), fin, avisado: prev && prev.fin === fin ? !!prev.avisado : false };
         }
         if (Object.keys(mios).length) todo[tk.user] = mios; else delete todo[tk.user];
         await savePrest(todo);

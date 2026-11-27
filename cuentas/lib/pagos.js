@@ -10,7 +10,7 @@ export const POR_DEFECTO = {
   })),
 };
 
-const ahoraMadrid = () => new Date().toLocaleString('sv-SE', { timeZone: 'Europe/Madrid' }).replace(' ', 'T').slice(0, 16);
+export const ahoraMadrid = () => new Date().toLocaleString('sv-SE', { timeZone: 'Europe/Madrid' }).replace(' ', 'T').slice(0, 16);
 function avanzar(s) {
   if (s.length === 10) s += 'T00:00';
   let y = +s.slice(0, 4);
