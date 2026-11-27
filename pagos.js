@@ -45,7 +45,7 @@ if(JSON.stringify(P)===mia){dirty=false;const sb=dlg&&dlg.querySelector("[data-s
 sav=false;
 }
 function aviso(t,k){msg=t;mk=k||"ok";const e=dlg&&dlg.querySelector("#pagmsg");if(e){e.textContent=t;e.className="amsg "+mk}}
-function marcar(){dirty=true;prog();const b=dlg.querySelector("[data-save]");if(b)b.disabled=false;aviso("","")}
+function marcar(){dirty=true;prog(0);const b=dlg.querySelector("[data-save]");if(b)b.disabled=false;aviso("","")}
 function totales(){
 const n=P.miembros.length,pg=P.miembros.filter(m=>m.pagado).length,pct=n?Math.round(pg/n*100):0;
 const q=s=>dlg.querySelector(s);

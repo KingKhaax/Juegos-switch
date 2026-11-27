@@ -76,9 +76,6 @@ export async function construir(p) {
   Object.assign(ws.getCell('D7'), { value: { formula: `REPT("█",ROUND(COUNTIF($E$${f0}:$E$${f1},"${PAG}")/${n}*40,0))&REPT("░",40-ROUND(COUNTIF($E$${f0}:$E$${f1},"${PAG}")/${n}*40,0))`, result: '█'.repeat(lleno) + '░'.repeat(40 - lleno) }, font: { name: 'Consolas', color: { argb: 'FF3DDC84' } } });
   Object.assign(ws.getCell('K7'), { value: { formula: `TEXT(COUNTIF($E$${f0}:$E$${f1},"${PAG}")/${n},"0%")&" cobrado"`, result: Math.round((pagados / n) * 100) + '% cobrado' }, font: { bold: true, color: { argb: 'FF3DDC84' } } });
 
-  ws.mergeCells('B9:K9');
-  Object.assign(ws.getCell('B9'), { value: `Elige en la columna ESTADO:  ${PAG}  /  ${PEN}   (la fila se pinta sola y los importes se calculan solos)`, font: { italic: true, color: { argb: 'FFB9B3CC' } }, alignment: { horizontal: 'center' } });
-
   ['Nº', 'NOMBRE', 'ROL', 'ESTADO', 'FECHA DE PAGO', 'METODO', 'IMPORTE PAGADO', 'PENDIENTE', 'CONTACTO', 'NOTAS'].forEach((h, i) => {
     Object.assign(ws.getCell(11, 2 + i), { value: h, font: { bold: true, color: { argb: 'FF1B1500' } }, fill: fill('FFFFB800'), alignment: { horizontal: 'center', vertical: 'middle' }, border: marco });
   });
