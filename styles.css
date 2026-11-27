@@ -1223,3 +1223,7 @@ dialog .chips,dialog .chips *,dialog .actions,dialog .actions *,dialog .pk-tags,
 .pg-body>.pg-stats,.pg-body>.pg-bar,.pg-body>.pg-list{animation:pgIn .45s cubic-bezier(.2,.9,.3,1.1) both}
 @keyframes pgIn{from{opacity:0;transform:translateY(8px)}}
 @media(prefers-reduced-motion:reduce){.pg-load i,.pg-body>*{animation:none!important}}
+.pg-fs .pg-w{grid-column:1/-1}
+.pg-win textarea{min-height:44px;padding:11px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.16);background:rgba(0,0,0,.32);color:#fff;font:600 .92rem/1.35 inherit;font-family:inherit;width:100%;resize:none;overflow:hidden;color-scheme:dark;display:block}
+.pg-win textarea:focus{outline:0;border-color:#ffd96a;box-shadow:0 0 0 3px rgba(255,217,106,.28)}
+.pg-stats .pg-st:nth-child(2){grid-column:span 2}.pg-date{min-width:0}

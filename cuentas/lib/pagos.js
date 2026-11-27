@@ -33,8 +33,8 @@ export function limpiar(b) {
       pagado: !!m.pagado,
       fecha: /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2})?$/.test(String(m.fecha || '')) ? m.fecha : '',
       metodo: METODOS.includes(m.metodo) ? m.metodo : '',
-      contacto: txt(m.contacto, 60),
-      notas: txt(m.notas, 120),
+      contacto: txt(m.contacto, 120),
+      notas: txt(m.notas, 500),
     })),
   };
 }
@@ -49,7 +49,7 @@ export async function construir(p) {
   const wb = new ExcelJS.Workbook();
   const ws = wb.addWorksheet('Pagos Switch Online', { views: [{ showGridLines: false }] });
   const n = p.miembros.length, f0 = 12, f1 = 11 + n, ft = f1 + 2;
-  ws.columns = [{ width: 2 }, { width: 6 }, { width: 18 }, { width: 18 }, { width: 16 }, { width: 19 }, { width: 16 }, { width: 17 }, { width: 14 }, { width: 22 }, { width: 30 }];
+  ws.columns = [{ width: 2 }, { width: 6 }, { width: 18 }, { width: 18 }, { width: 16 }, { width: 19 }, { width: 16 }, { width: 17 }, { width: 14 }, { width: 24 }, { width: 44 }];
   const pagados = p.miembros.filter((m) => m.pagado).length;
   const rec = pagados * p.cuota, falta = (n - pagados) * p.cuota;
   const base = { font: { name: 'Calibri', color: { argb: 'FFFFFFFF' } }, fill: fill('FF17141F') };
@@ -90,14 +90,14 @@ export async function construir(p) {
       { formula: `IF(E${r}="${PAG}",$B$5,0)`, result: m.pagado ? p.cuota : 0 }, { formula: `$B$5-H${r}`, result: m.pagado ? 0 : p.cuota }, m.contacto || null, m.notas || null];
     celdas.forEach((v, j) => {
       const c = ws.getCell(r, 2 + j);
-      c.value = v; c.border = marco; c.alignment = { horizontal: j === 1 || j >= 8 ? 'left' : 'center', vertical: 'middle' };
+      c.value = v; c.border = marco; c.alignment = { horizontal: j === 1 || j >= 8 ? 'left' : 'center', vertical: 'middle', wrapText: j >= 8 };
       if (j === 4) c.numFmt = 'dd/mm/yyyy hh:mm';
       if (j === 6 || j === 7) c.numFmt = '#,##0.00 "€"';
     });
     ws.getCell(r, 5).dataValidation = { type: 'list', allowBlank: false, formulae: [`"${PAG},${PEN}"`] };
     ws.getCell(r, 7).dataValidation = { type: 'list', allowBlank: true, formulae: [`"${METODOS.join(',')}"`] };
     ws.getCell(r, 4).dataValidation = { type: 'list', allowBlank: false, formulae: ['"Administrador,Miembro"'] };
-    ws.getRow(r).height = 22;
+    ws.getRow(r).height = Math.max(22, 16 * Math.max(Math.ceil((m.notas || '').length / 48), Math.ceil((m.contacto || '').length / 26), 1) + 6);
   });
   const rango = `B${f0}:K${f1}`;
   ws.addConditionalFormatting({ ref: `D${f0}:D${f1}`, rules: [
