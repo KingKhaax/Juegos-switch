@@ -656,7 +656,10 @@ updateMioUi(slug);
 }else return;
 render(false);
 });
+let teclado=false;
+addEventListener("click",e=>{if(e.target.closest&&e.target.closest(".card .open"))teclado=e.detail===0},true);
 dlg.addEventListener("close",()=>{
+if(!teclado)setTimeout(()=>{const f=document.activeElement;if(f&&f!==document.body&&f.closest&&f.closest(".card"))f.blur()},0);
 dlg.innerHTML="";
 if(bySlug[location.hash.slice(1)])history.replaceState(null,"",location.pathname+location.search);
 });
