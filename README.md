@@ -76,7 +76,7 @@ Cada cuenta tiene un **rol**. Sale como título con efectos justo debajo del nom
 | Rol | Quién | Título |
 |---|---|---|
 | Administrador | `kingkhaax` (Rafael) | dorado, naranja y rojo, con brillo |
-| Moderador / Moderadora | `zya` (Nicky) | rosa, lila y celeste, con brillo |
+| Moderador | `zya` (Nicky) | rosa, lila y celeste, con brillo |
 | Usuario | cualquier otra cuenta | azul |
 | Invitado | sin cuenta | gris |
 

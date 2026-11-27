@@ -23,7 +23,7 @@ function slots(d) {
   return d;
 }
 const ADMIN = 'kingkhaax';
-const MODS = { zya: 'Moderadora' };
+const MODS = { zya: 'Moderador' };
 const DUENOS = { rafa: ADMIN, novia: 'zya' };
 const PERSONAL = /^juegos-switch-(avatar|nintendo|amigo|nso)(-novia)?$/;
 const ROLES_RUTA = 'config/roles.json';
@@ -53,7 +53,7 @@ async function mandarPagos(to, p) {
 }
 const ROLES_BASE = [
   { id: 'admin', nombre: 'Administrador', color: '#ffb800', fijo: true },
-  { id: 'mod', nombre: 'Moderadora', color: '#ff5fa8', fijo: false },
+  { id: 'mod', nombre: 'Moderador', color: '#ff5fa8', fijo: false },
   { id: 'usuario', nombre: 'Usuario', color: '#1f8fff', fijo: true },
   { id: 'invitado', nombre: 'Invitado', color: '#8a90a0', fijo: true },
 ];
@@ -71,7 +71,7 @@ async function loadRoles(force) {
       if (Array.isArray(j.roles) && j.roles.length) r = j.roles;
     }
   } catch {}
-  rolesMem = (r || ROLES_BASE).map((x) => ({ ...x, fijo: x.id === 'admin' ? true : typeof x.fijo === 'boolean' ? x.fijo : ROLES_FIJOS.includes(x.id) }));
+  rolesMem = (r || ROLES_BASE).map((x) => ({ ...x, nombre: x.nombre === 'Moderadora' ? 'Moderador' : x.nombre, fijo: x.id === 'admin' ? true : typeof x.fijo === 'boolean' ? x.fijo : ROLES_FIJOS.includes(x.id) }));
   rolesT = Date.now();
   return rolesMem;
 }

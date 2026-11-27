@@ -1236,3 +1236,7 @@ dialog .chips,dialog .chips *,dialog .actions,dialog .actions *,dialog .pk-tags,
 .pg-r:has(.pg-menu){z-index:30;position:relative}
 @media(max-width:620px){.pg-rw{grid-column:2;grid-row:2;justify-self:start}.pg-rol{grid-column:auto;grid-row:auto}.pg-menu{min-width:min(260px,calc(100vw - 80px))}}
 .pg-stats{grid-template-columns:1fr 1.6fr 1fr 1fr 1.1fr}.pg-stats .pg-st:nth-child(2){grid-column:auto}@media(max-width:620px){.pg-stats{grid-template-columns:1fr 1fr}.pg-stats .pg-st:nth-child(2){grid-column:auto}}
+.pg-body>.pg-stats,.pg-body>.pg-bar,.pg-body>.pg-list{animation:none}
+.pg-body.pg-in>.pg-stats,.pg-body.pg-in>.pg-bar,.pg-body.pg-in>.pg-list{animation:pgIn .45s cubic-bezier(.2,.9,.3,1.1) both}
+.pg-r,.pg-est,.pg-bar i{transition:none}
+.pg-r:hover{transform:none}

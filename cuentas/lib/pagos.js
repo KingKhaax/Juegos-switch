@@ -21,6 +21,7 @@ function avanzar(s) {
 const HEX = /^#[0-9a-fA-F]{6}$/;
 function rolDe(m) {
   let n = String(m.rol == null ? '' : m.rol).slice(0, 40).trim();
+  if (n === 'Moderadora') n = 'Moderador';
   if (!n || n === 'Miembro') n = 'Usuario';
   const def = n === 'Administrador' ? '#ffb800' : '#1f8fff';
   return { nombre: n, color: HEX.test(String(m.rolColor || '')) ? m.rolColor.toLowerCase() : def };
@@ -91,7 +92,7 @@ export async function construir(p, roles) {
   ws.getRow(11).height = 24;
 
   const lista = (roles || []).map((r) => r.nombre).filter((x) => x && !x.includes(',')).slice(0, 12);
-  if (!lista.length) lista.push('Administrador', 'Moderadora', 'Usuario', 'Invitado');
+  if (!lista.length) lista.push('Administrador', 'Moderador', 'Usuario', 'Invitado');
   p.miembros.forEach((m, i) => {
     const r = f0 + i;
     const celdas = [i + 1, m.nombre, m.rol, m.pagado ? PAG : PEN, fecha(m.fecha), m.metodo || null,

@@ -6,7 +6,7 @@ const METODOS=["Bizum","Transferencia","Efectivo","PayPal","Otro"];
 const eur=n=>(Math.round(n*100)/100).toLocaleString("es-ES",{minimumFractionDigits:2,maximumFractionDigits:2})+" €";
 const ahora=()=>{const d=new Date(),z=n=>String(n).padStart(2,"0");return d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate())+"T"+z(d.getHours())+":"+z(d.getMinutes())};
 const ses=()=>{for(const k of ["juegos-switch-cuenta","juegos-switch-cuenta-novia"]){try{const v=JSON.parse(localStorage.getItem(k));if(v&&v.admin&&v.token)return v}catch(e){}}return null};
-let tm=0,sav=false,dlg=null,P=null,info={correo:false,correoMask:""},msg="",mk="",busy=false,dirty=false;
+let anim=false,tm=0,sav=false,dlg=null,P=null,info={correo:false,correoMask:""},msg="",mk="",busy=false,dirty=false;
 async function call(a,opt){
 const s=ses();if(!s)throw new Error("sin_sesion");
 const r=await fetch(API+"?a="+a,Object.assign({headers:{"Content-Type":"application/json",Authorization:"Bearer "+s.token}},opt||{}));
@@ -14,7 +14,7 @@ let j={};try{j=await r.json()}catch(e){}
 return {ok:r.ok,status:r.status,j};
 }
 const KN={admin:"#ffb800",mod:"#ff5fa8",usuario:"#1f8fff",invitado:"#8a90a0"};
-const RD=[{id:"admin",nombre:"Administrador",color:"#ffb800"},{id:"mod",nombre:"Moderadora",color:"#ff5fa8"},{id:"usuario",nombre:"Usuario",color:"#1f8fff"},{id:"invitado",nombre:"Invitado",color:"#8a90a0"}];
+const RD=[{id:"admin",nombre:"Administrador",color:"#ffb800"},{id:"mod",nombre:"Moderador",color:"#ff5fa8"},{id:"usuario",nombre:"Usuario",color:"#1f8fff"},{id:"invitado",nombre:"Invitado",color:"#8a90a0"}];
 let RL=[],ab=-1;
 const rolB=(n,c,id)=>{const k=KN[id];const cls=k&&(!c||c.toLowerCase()===k)?"rol-"+id:"rol-x";return '<span class="rol '+cls+'" style="--rc:'+esc(c||"#1f8fff")+'"><i aria-hidden="true"></i><span>'+esc(n)+'</span></span>'};
 const rol=m=>{const r=RL.find(x=>x.nombre===m.rol);return rolB(m.rol,m.rolColor||(r&&r.color),r&&r.id)};
@@ -31,7 +31,7 @@ if(!dlg)return;
 const cuerpo=busy&&!P?'<div class="pg-load" role="status" aria-label="Cargando los pagos"><i></i><i></i><i></i></div>':!P?"":`${resumen()}<ul class="pg-list">${P.miembros.map(fila).join("")}</ul><div class="pg-add"><button type="button" class="pg-addb" data-add${P.miembros.length>=16?" disabled":""}>+ Añadir miembro</button></div><label class="pg-auto"><input type="checkbox" data-auto${P.auto?" checked":""}><span><b>Enviarme el Excel a mi Gmail cada vez que guarde</b><small>${info.correo?"Se manda a "+esc(info.correoMask):"Aún no tienes un correo vinculado: añádelo en tu cuenta para poder recibirlo."}</small></span></label><div class="pg-acts"><button type="button" class="adm-save pg-save" data-save${dirty?"":" disabled"}>Guardar</button><button type="button" class="pg-b" data-dl>Descargar Excel</button><button type="button" class="pg-b" data-mail${info.correo?"":" disabled"}>Enviar a mi Gmail</button></div>`;
 const grow=()=>dlg.querySelectorAll(".pg-ta").forEach(t=>{t.style.height="auto";t.style.height=Math.max(44,t.scrollHeight+2)+"px"});
 const out=dlg.querySelector(".pg-body");
-if(out){out.innerHTML=cuerpo;const e=dlg.querySelector("#pagmsg");e.textContent=msg;e.className="amsg "+mk;grow();return}
+if(out){out.classList.toggle("pg-in",anim);out.innerHTML=cuerpo;const e=dlg.querySelector("#pagmsg");e.textContent=msg;e.className="amsg "+mk;grow();return}
 dlg.innerHTML=`<div class="awin adm-win pg-win"><div class="nso-aur adm-aur" aria-hidden="true"></div><div class="fhead"><h3 class="adm-title"><span class="adm-crown">${COIN}</span>Pagos Switch Online</h3><button class="x2" type="button" data-close aria-label="Cerrar">×</button></div><p class="adesc">Solo lo ves tú, porque eres <mark class="m-go">administrador</mark>. Aquí llevas quién ha pagado su parte del plan familiar y puedes pasarlo a Excel.</p><div class="pg-body">${cuerpo}</div><p class="amsg ${mk}" id="pagmsg" role="status">${esc(msg)}</p></div>`;
 grow();
 }
@@ -62,9 +62,9 @@ busy=true;P=null;render();
 try{
 const r=await call("pagos_get");
 if(!r.ok)throw new Error(r.status);
-P=r.j.pagos;RL=Array.isArray(r.j.roles)?r.j.roles:[];ab=-1;info={correo:!!r.j.correo,correoMask:r.j.correoMask||""};dirty=false;msg="";mk="";
+P=r.j.pagos;RL=Array.isArray(r.j.roles)?r.j.roles:[];ab=-1;info={correo:!!r.j.correo,correoMask:r.j.correoMask||""};dirty=false;msg="";mk="";anim=true;
 }catch(e){P=null;msg="No se han podido cargar los pagos. Comprueba que tienes la sesión iniciada y vuelve a intentarlo.";mk="bad"}
-busy=false;render();
+busy=false;render();anim=false;
 }
 async function guardar(){
 if(busy)return;busy=true;aviso("Guardando…","");
