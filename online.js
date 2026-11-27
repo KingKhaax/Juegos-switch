@@ -50,6 +50,7 @@ const pago=(p,t)=>{const v=+mio()[p+"-"+t];return v>0?v:null};
 const anual=(p,t)=>pago(p,t)||PRICE[p][t][12];
 const precio=(p,t,m)=>m===12?anual(p,t):PRICE[p][t][m];
 function setPago(p,t,v){const o=mio();if(v>0)o[p+"-"+t]=Math.round(v*100)/100;else delete o[p+"-"+t];Object.keys(o).length?J().store.set(PKEY,JSON.stringify(o)):J().store.del(PKEY)}
+function setPers(n){const o=mio();o.personas=n;J().store.set(PKEY,JSON.stringify(o))}
 const avail=()=>Object.keys(PRICE[S.plan][S.type]).map(Number);
 function fix(){const a=avail();if(!a.includes(S.months))S.months=a[a.length-1];if(S.type==="ind")S.people=1;else if(S.people<2)S.people=2}
 function calc(){
@@ -107,7 +108,7 @@ const pl=e.target.closest("[data-plan]");if(pl){if(S.plan!==pl.dataset.plan)S.fx
 const t=e.target.closest("button[data-t]");if(t){S.pt=S.type;S.type=t.dataset.t;render();return}
 const m=e.target.closest("[data-m]");if(m&&!m.disabled){S.months=+m.dataset.m;render();return}
 if(e.target.closest("[data-reset]")){setPago(S.plan,S.type,0);render();return}
-const p=e.target.closest("[data-p]");if(p&&!p.disabled){const d=+p.dataset.p;S.people=Math.max(2,Math.min(8,S.people+d));if(d>0)S.fx.dot=S.people-1;render()}
+const p=e.target.closest("[data-p]");if(p&&!p.disabled){const d=+p.dataset.p;S.people=Math.max(2,Math.min(8,S.people+d));if(d>0)S.fx.dot=S.people-1;setPers(S.people);render()}
 });
 dlg.addEventListener("change",e=>{
 if(e.target.id!=="nsoPago")return;
@@ -128,7 +129,7 @@ c.style.setProperty("--rx",((.5-y)*7)+"deg");c.style.setProperty("--ry",((x-.5)*
 });
 dlg.addEventListener("pointerout",e=>{const c=e.target.closest&&e.target.closest(".nso-plan");if(c&&!c.contains(e.relatedTarget)){c.style.removeProperty("--rx");c.style.removeProperty("--ry")}});
 }
-function open(){ensure();S.fx={feat:true,dot:-1,price:false};S.prev=null;render();if(!dlg.open)dlg.showModal()}
+function open(){ensure();{const q=+mio().personas;if(q>=2&&q<=8)S.people=q}S.fx={feat:true,dot:-1,price:false};S.prev=null;render();if(!dlg.open)dlg.showModal()}
 const nav=document.querySelector(".apartados");
 const b=document.createElement("button");
 b.type="button";b.id="bnso";b.className="ap";b.textContent="Nintendo Switch Online";
