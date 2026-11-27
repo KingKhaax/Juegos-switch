@@ -46,7 +46,7 @@ const okSlug = (s) => typeof s === 'string' && /^[a-z0-9-]{1,90}$/.test(s);
 async function avisarSiToca(user, k, it, rec) {
   if (it.avisado || it.fin <= Date.now() || it.fin - Date.now() > HORA + 120000) return false;
   if (!rec || !rec.email || !MAIL_USER || !MAIL_PASS) return false;
-  await mandarAviso(MAIL_USER, MAIL_PASS, rec.email, it.titulo, it.fin, it.a, it.n);
+  await mandarAviso(MAIL_USER, MAIL_PASS, rec.email, it.titulo, it.fin, it.a, it.n, it.d);
   it.avisado = true;
   return true;
 }
@@ -584,7 +584,7 @@ export default async function handler(req, res) {
         else {
           if (!(fin > Date.now() && fin <= Date.now() + DIAS14 + HORA)) return res.status(400).json({ error: 'fecha' });
           const prev = mios[k];
-          mios[k] = { titulo: String(b.titulo || b.slug).slice(0, 90), a: String(b.a || '').slice(0, 40), n: String(b.n || '').slice(0, 120), fin, avisado: prev && prev.fin === fin ? !!prev.avisado : false };
+          mios[k] = { titulo: String(b.titulo || b.slug).slice(0, 90), a: String(b.a || '').slice(0, 40), n: String(b.n || '').slice(0, 120), d: b.d === 'recibido' ? 'recibido' : 'dado', fin, avisado: prev && prev.fin === fin ? !!prev.avisado : false };
         }
         if (Object.keys(mios).length) todo[tk.user] = mios; else delete todo[tk.user];
         await savePrest(todo);

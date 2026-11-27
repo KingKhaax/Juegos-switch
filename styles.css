@@ -1392,3 +1392,8 @@ section.pl-closed{padding-bottom:4px}
 .cmp-copy.ok{background:linear-gradient(135deg,#6dffae,#1fbf75);box-shadow:0 6px 18px rgba(61,220,132,.45)}
 .cmp-copy:focus-visible{outline:3px solid #ffd96a;outline-offset:2px}
 @media(max-height:760px){.ct th,.ct td{padding:3px 10px;font-size:.78rem}.ct .ch img{width:44px;height:44px}.ct .ch{padding:5px 10px 4px}}
+.prest-duo{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.prest-go.rec{background:linear-gradient(135deg,#7defff,#00c3e3);color:#06242b;box-shadow:0 6px 18px rgba(0,195,227,.3)}
+.prest-go.rec:hover{box-shadow:0 10px 26px rgba(0,195,227,.5)}
+.prest-go:disabled{opacity:.45;cursor:default;transform:none;box-shadow:none}
+.prest.form{animation:prIn .35s cubic-bezier(.2,.9,.3,1.1) both}

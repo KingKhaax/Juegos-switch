@@ -20,7 +20,7 @@ if(j&&typeof j.correo==="boolean")correoOk=j.correo;
 return{ok:r.ok,j}
 }catch(e){return null}
 }
-const subir=(slug,it)=>call("prestamo_set",{method:"POST",body:JSON.stringify({perfil:PROF,slug,titulo:it?it.titulo:slug,fin:it?it.fin:0,a:it&&it.a||"",n:it&&it.n||""})});
+const subir=(slug,it)=>call("prestamo_set",{method:"POST",body:JSON.stringify({perfil:PROF,slug,titulo:it?it.titulo:slug,fin:it?it.fin:0,a:it&&it.a||"",n:it&&it.n||"",d:it&&it.d||"dado"})});
 const partes=ms=>{const t=Math.max(0,Math.floor(ms/1000));return{d:Math.floor(t/86400),h:Math.floor(t%86400/3600),m:Math.floor(t%3600/60),s:t%60}};
 const p2=n=>String(n).padStart(2,"0");
 const largo=ms=>{const p=partes(ms);return[["d",p.d],["h",p2(p.h)],["min",p2(p.m)],["s",p2(p.s)]].map(([u,v])=>`<span><i>${v}</i>${u}</span>`).join("")};
@@ -28,13 +28,13 @@ const corto=ms=>{const p=partes(ms);return p.d>0?`${p.d} d ${p.h} h`:p.h>0?`${p.
 const fechaTxt=ms=>new Date(ms).toLocaleString("es-ES",{weekday:"long",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"});
 const nota=()=>!ses()?"Entra con tu cuenta y vincula un correo para que te avise por Gmail cuando quede 1 hora.":correoOk===false?"Vincula un correo a tu cuenta para que te avise por Gmail cuando quede 1 hora.":"Te mando un Gmail al correo de tu cuenta cuando quede 1 hora.";
 const ICON='<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h13M13 7l5 5-5 5"/><path d="M20 4v16"/></svg>';
-const campos=it=>'<div class="prest-f"><label><span>¿A quién se lo has prestado?</span><input type="text" maxlength="40" value="'+esc(it.a||"")+'" data-pa autocomplete="off" placeholder="Nombre"></label><label><span>Nota</span><input type="text" maxlength="120" value="'+esc(it.n||"")+'" data-pn autocomplete="off" placeholder="Por ejemplo: me lo devuelve el sábado"></label></div>';
+const campos=it=>'<div class="prest-f"><label><span>'+(it.d==="recibido"?"¿Quién te lo ha prestado?":"¿A quién se lo has prestado?")+'</span><input type="text" maxlength="40" value="'+esc(it.a||"")+'" data-pa autocomplete="off" placeholder="Nombre"></label><label><span>Nota</span><input type="text" maxlength="120" value="'+esc(it.n||"")+'" data-pn autocomplete="off" placeholder="Por ejemplo: me lo devuelve el sábado"></label></div>';
 const HK="juegos-switch-prestamos-hist";
 const leerH=()=>{try{const a=JSON.parse(J().store.get(HK,"[]"));return Array.isArray(a)?a:[]}catch(e){return[]}};
 function archiva(slug,tipo){
 const it=M[slug];if(!it)return;
 const H=leerH();
-H.unshift({s:slug,t:it.titulo||slug,a:it.a||"",n:it.n||"",i:it.fin-DIAS,f:tipo==="vencido"?it.fin:Date.now(),k:tipo});
+H.unshift({s:slug,d:it.d||"dado",t:it.titulo||slug,a:it.a||"",n:it.n||"",i:it.fin-DIAS,f:tipo==="vencido"?it.fin:Date.now(),k:tipo});
 J().store.set(HK,JSON.stringify(H.slice(0,40)));
 }
 const dcorta=ms=>new Date(ms).toLocaleDateString("es-ES",{day:"numeric",month:"short",year:"numeric"});
@@ -46,12 +46,17 @@ box.hidden=!H.length;
 const cur=box.querySelector("summary b");
 if(cur)cur.textContent=H.length;
 const ul=box.querySelector("ul");
-if(ul){const k=H.map(h=>h.s+h.f).join("|");if(ul.dataset.k!==k){ul.dataset.k=k;ul.innerHTML=H.map(h=>'<li><b>'+esc(h.t)+'</b><span>'+(h.a?"Prestado a "+esc(h.a)+" · ":"")+dcorta(h.i)+" → "+dcorta(h.f)+'</span><em class="'+(h.k==="devuelto"?"ok":"late")+'">'+(h.k==="devuelto"?"Devuelto":"Plazo cumplido")+'</em>'+(h.n?'<small>'+esc(h.n)+'</small>':"")+'</li>').join("")}}
+if(ul){const k=H.map(h=>h.s+h.f).join("|");if(ul.dataset.k!==k){ul.dataset.k=k;ul.innerHTML=H.map(h=>'<li><b>'+esc(h.t)+'</b><span>'+(h.a?(h.d==="recibido"?"Prestado por ":"Prestado a ")+esc(h.a)+" · ":"")+dcorta(h.i)+" → "+dcorta(h.f)+'</span><em class="'+(h.k==="devuelto"?"ok":"late")+'">'+(h.k==="devuelto"?"Devuelto":"Plazo cumplido")+'</em>'+(h.n?'<small>'+esc(h.n)+'</small>':"")+'</li>').join("")}}
+}
+const pend={};
+function formHtml(slug){
+const rec=pend[slug]==="recibido";
+return'<div class="prest form" data-pslug="'+esc(slug)+'"><small class="prest-h">'+(rec?"Me han prestado su juego":"Presto mi juego")+'</small><div class="prest-f"><label><span>'+(rec?"¿Quién te lo ha prestado?":"¿A quién se lo prestas?")+' (obligatorio)</span><input type="text" maxlength="40" data-nn required autocomplete="off" placeholder="Nombre"></label><label><span>Nota (opcional)</span><input type="text" maxlength="120" data-nt autocomplete="off" placeholder="Si quieres, una nota"></label></div><div class="pr-acts"><button type="button" class="prest-go" data-prest="ok" disabled>Empezar la cuenta atrás de 14 días</button><button type="button" class="prest-back" data-prest="cancel">Cancelar</button></div></div>';
 }
 function bloque(slug){
 const it=M[slug];
-if(!it)return`<div class="prest" data-pslug="${esc(slug)}"><button type="button" class="prest-go" data-prest="1">${ICON}<span>Juego prestado</span></button><p class="prest-n">Cuenta 14 días exactos desde que lo pulses. ${esc(nota())}</p></div>`;
-return`<div class="prest on" data-pslug="${esc(slug)}"><small class="prest-h">Juego prestado · vuelve en</small><div class="prest-c" data-fin="${it.fin}" role="timer">${largo(it.fin-Date.now())}</div>${campos(it)}<p class="prest-n">Termina el ${esc(fechaTxt(it.fin))}. ${esc(nota())}</p><button type="button" class="prest-back" data-prest="0">Ya me lo han devuelto</button></div>`;
+if(!it){if(pend[slug])return formHtml(slug);return`<div class="prest" data-pslug="${esc(slug)}"><div class="prest-duo"><button type="button" class="prest-go" data-prest="dado">${ICON}<span>Prestar mi juego</span></button><button type="button" class="prest-go rec" data-prest="recibido">${ICON}<span>Me han prestado su juego</span></button></div><p class="prest-n">Cuenta 14 días exactos desde que lo pulses y te pido el nombre. ${esc(nota())}</p></div>`}
+return`<div class="prest on" data-pslug="${esc(slug)}"><small class="prest-h">${it.d==="recibido"?"Te lo han prestado · hay que devolverlo en":"Juego prestado · vuelve en"}</small><div class="prest-c" data-fin="${it.fin}" role="timer">${largo(it.fin-Date.now())}</div>${campos(it)}<p class="prest-n">Termina el ${esc(fechaTxt(it.fin))}. ${esc(nota())}</p><button type="button" class="prest-back" data-prest="0">${it.d==="recibido"?"Ya lo he devuelto":"Ya me lo han devuelto"}</button></div>`;
 }
 function pintaDialogo(){
 const dlg=document.getElementById("dlg");
@@ -73,9 +78,9 @@ b.textContent="Prestado · "+corto(M[slug].fin-Date.now());
 }
 }
 function quitaInsignia(slug){document.querySelectorAll('.card[data-slug="'+slug+'"] .prest-b').forEach(b=>b.remove())}
-function empezar(slug){
+function empezar(slug,tipo,quien,nota){
 const g=J().bySlug()[slug];
-const it={fin:Date.now()+DIAS,titulo:g?g.title:slug,av:false};
+const it={fin:Date.now()+DIAS,titulo:g?g.title:slug,av:false,d:tipo==="recibido"?"recibido":"dado",a:quien||"",n:nota||""};
 M[slug]=it;guardar();pub();subir(slug,it).then(()=>{pintaDialogo();refrescaBloque(slug)});
 refrescaBloque(slug);insignias();renderSeccion();
 }
@@ -98,7 +103,7 @@ const tg=document.getElementById("tengo");
 if(!tg)return;
 sec=document.createElement("section");
 sec.id="prestados";sec.className="loan";sec.setAttribute("aria-labelledby","hp");
-sec.innerHTML='<h2 id="hp">Juegos prestados</h2><div class="pr-list" id="prlist"></div><details class="pr-hist" id="prHist" hidden><summary>Historial de préstamos <b>0</b></summary><ul></ul></details><p class="empty" id="prEmpty" hidden>Ningún juego prestado ahora mismo. Abre un juego y pulsa «Juego prestado» para empezar la cuenta atrás de 14 días.</p>';
+sec.innerHTML='<h2 id="hp">Juegos prestados</h2><div class="pr-list" id="prlist"></div><details class="pr-hist" id="prHist" hidden><summary>Historial de préstamos <b>0</b></summary><ul></ul></details><p class="empty" id="prEmpty" hidden>Ningún juego prestado ahora mismo. Abre un juego y elige «Prestar mi juego» o «Me han prestado su juego» para empezar la cuenta atrás de 14 días.</p>';
 tg.insertAdjacentElement("afterend",sec);
 const nav=document.querySelector(".apartados");
 const lk=nav&&nav.querySelector('a[href="#tengo"]');
@@ -120,14 +125,14 @@ const claves=Object.keys(M).sort();
 const np=document.getElementById("np");
 if(np&&np.textContent!==String(claves.length)){np.textContent=claves.length;np.classList.remove("bump");void np.offsetWidth;np.classList.add("bump")}
 pintaHist();
-const ahora=claves.map(k=>k+M[k].fin+(M[k].ab?"1":"0")+(M[k].a||"")+"|"+(M[k].n||"")).join("|");
+const ahora=claves.map(k=>k+M[k].fin+(M[k].ab?"1":"0")+(M[k].a||"")+"|"+(M[k].n||"")+(M[k].d||"")).join("|");
 if(ahora===sig)return;
 sig=ahora;
 document.getElementById("prEmpty").hidden=claves.length>0;
 list.innerHTML=claves.map(slug=>{
 const it=M[slug],g=J().bySlug()[slug];
 if(!g)return"";
-return'<details class="pr-item"'+(it.ab?" open":"")+' data-slug="'+esc(slug)+'"><summary><img class="pr-img" src="'+esc(cover(g))+'" width="56" height="56" alt="" loading="lazy"><span class="pr-name">'+esc(g.title)+(it.a?'<small class="pr-who">Prestado a '+esc(it.a)+'</small>':'')+'</span><span class="pr-mini" data-fin="'+it.fin+'">'+esc(corto(it.fin-Date.now()))+'</span><span class="pr-chev" aria-hidden="true"></span></summary><div class="pr-body"><small class="prest-h">Vuelve en</small><div class="prest-c pr-big" data-fin="'+it.fin+'" role="timer">'+largo(it.fin-Date.now())+'</div>'+campos(it)+'<p class="prest-n">Termina el '+esc(fechaTxt(it.fin))+'. '+esc(nota())+'</p><div class="pr-acts"><button type="button" class="pr-b" data-pr-open>Ver la ficha</button><button type="button" class="prest-back" data-pr-back>Ya me lo han devuelto</button></div></div></details>'}).join("");
+return'<details class="pr-item"'+(it.ab?" open":"")+' data-slug="'+esc(slug)+'"><summary><img class="pr-img" src="'+esc(cover(g))+'" width="56" height="56" alt="" loading="lazy"><span class="pr-name">'+esc(g.title)+(it.a?'<small class="pr-who">'+(it.d==="recibido"?"Prestado por ":"Prestado a ")+esc(it.a)+'</small>':'')+'</span><span class="pr-mini" data-fin="'+it.fin+'">'+esc(corto(it.fin-Date.now()))+'</span><span class="pr-chev" aria-hidden="true"></span></summary><div class="pr-body"><small class="prest-h">Vuelve en</small><div class="prest-c pr-big" data-fin="'+it.fin+'" role="timer">'+largo(it.fin-Date.now())+'</div>'+campos(it)+'<p class="prest-n">Termina el '+esc(fechaTxt(it.fin))+'. '+esc(nota())+'</p><div class="pr-acts"><button type="button" class="pr-b" data-pr-open>Ver la ficha</button><button type="button" class="prest-back" data-pr-back>'+(it.d==="recibido"?"Ya lo he devuelto":"Ya me lo han devuelto")+'</button></div></div></details>'}).join("");
 }
 function tick(){
 const ahora=Date.now();
@@ -165,8 +170,25 @@ const b=e.target.closest("[data-prest]");
 if(!b)return;
 e.stopPropagation();
 const slug=dlg.dataset.slug;
-if(b.dataset.prest==="1")empezar(slug);else parar(slug);
+const v=b.dataset.prest;
+if(v==="dado"||v==="recibido"){pend[slug]=v;refrescaBloque(slug);const i=dlg.querySelector("[data-nn]");if(i)i.focus();return}
+if(v==="cancel"){delete pend[slug];refrescaBloque(slug);return}
+if(v==="ok"){
+const w=dlg.querySelector(".prest.form");
+const ni=w&&w.querySelector("[data-nn]");
+const quien=ni?ni.value.trim():"";
+if(!quien){if(ni)ni.focus();return}
+const nt=w.querySelector("[data-nt]");
+const tipo=pend[slug];delete pend[slug];
+empezar(slug,tipo,quien,nt?nt.value.trim():"");
+return;
+}
+parar(slug);
 });
+dlg.addEventListener("input",e=>{
+if(e.target.matches&&e.target.matches("[data-nn]")){const bt=dlg.querySelector('[data-prest="ok"]');if(bt)bt.disabled=!e.target.value.trim()}
+});
+dlg.addEventListener("close",()=>{Object.keys(pend).forEach(k=>delete pend[k])});
 document.addEventListener("change",e=>{
 const t=e.target;
 if(!t.matches||!(t.matches("[data-pa]")||t.matches("[data-pn]")))return;

@@ -5,22 +5,23 @@ export const DIAS14 = 14 * 24 * HORA;
 
 const cuando = (ms) => new Date(ms).toLocaleString('es-ES', { timeZone: 'Europe/Madrid', weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
 
-export async function mandarAviso(usuario, pass, to, titulo, fin, quien, nota) {
+export async function mandarAviso(usuario, pass, to, titulo, fin, quien, nota, tipo) {
+  const rec = tipo === 'recibido';
   const tr = nodemailer.createTransport({ service: 'gmail', auth: { user: usuario, pass } });
   const falta = Math.max(0, Math.round((fin - Date.now()) / 60000));
   await tr.sendMail({
     from: '"Jueguitos Switch" <' + usuario + '>',
     to,
-    subject: 'Queda 1 hora para que acabe el préstamo de ' + titulo,
+    subject: rec ? 'Queda 1 hora para devolver ' + titulo : 'Queda 1 hora para que acabe el préstamo de ' + titulo,
     text: [
       'Hola,',
       '',
-      'Al juego «' + titulo + '» que marcaste como prestado le queda ' + (falta >= 55 ? '1 hora' : falta + ' minutos') + '.',
+      (rec ? 'Al juego «' + titulo + '» que te han prestado le queda ' + (falta >= 55 ? '1 hora' : falta + ' minutos') + ' para tener que devolverlo.' : 'Al juego «' + titulo + '» que marcaste como prestado le queda ' + (falta >= 55 ? '1 hora' : falta + ' minutos') + '.'),
       'El préstamo de 14 días acaba el ' + cuando(fin) + '.',
-      ...(quien ? ['Se lo prestaste a ' + quien + '.'] : []),
+      ...(quien ? [rec ? 'Te lo prestó ' + quien + '.' : 'Se lo prestaste a ' + quien + '.'] : []),
       ...(nota ? ['Nota: ' + nota] : []),
       '',
-      'Es buen momento para pedir que te lo devuelvan.',
+      rec ? 'Es buen momento para devolverlo.' : 'Es buen momento para pedir que te lo devuelvan.',
       '',
       'https://kingkhaax.github.io/Juegos-switch/',
     ].join('\n'),
