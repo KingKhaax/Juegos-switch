@@ -5,7 +5,7 @@ export const POR_DEFECTO = {
   cuota: 8.75,
   renovacion: '2027-11-25T14:33',
   auto: false,
-  miembros: ['Rafa', 'Nicky', 'Jésus', 'Carles', 'Daniel', 'Leticia', 'Nerea', 'Alfonso'].map((n, i) => ({
+  miembros: ['Rafael', 'Nicky', 'Jésus', 'Carles', 'Daniel', 'Leticia', 'Nerea', 'Alfonso'].map((n, i) => ({
     nombre: n, rol: i === 0 ? 'Administrador' : 'Usuario', rolColor: i === 0 ? '#ffb800' : '#1f8fff', pagado: false, fecha: '', metodo: '', contacto: '', notas: '',
   })),
 };
@@ -27,6 +27,11 @@ function rolDe(m) {
   return { nombre: n, color: HEX.test(String(m.rolColor || '')) ? m.rolColor.toLowerCase() : def };
 }
 const claro = (hex) => (parseInt(hex.slice(1, 3), 16) * 299 + parseInt(hex.slice(3, 5), 16) * 587 + parseInt(hex.slice(5, 7), 16) * 114) / 1000 > 150;
+const tel = (v) => {
+  const t = String(v == null ? '' : v).slice(0, 120).trim();
+  const d = t.replace(/[\s.-]/g, '').replace(/^(\+34|0034)/, '');
+  return /^\d{9}$/.test(d) ? d.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3') : t;
+};
 const txt = (v, n) => String(v == null ? '' : v).slice(0, n);
 export function limpiar(b) {
   if (!b || typeof b !== 'object' || !Array.isArray(b.miembros) || b.miembros.length < 1 || b.miembros.length > 16) return null;
@@ -36,14 +41,14 @@ export function limpiar(b) {
     cuota,
     renovacion: avanzar(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2})?$/.test(String(b.renovacion || '')) ? b.renovacion : POR_DEFECTO.renovacion),
     auto: !!b.auto,
-    miembros: b.miembros.map((m) => ({
-      nombre: txt(m.nombre, 40).trim() || 'Sin nombre',
+    miembros: b.miembros.map((m, i) => ({
+      nombre: (i === 0 && txt(m.nombre, 40).trim() === 'Rafa') ? 'Rafael' : txt(m.nombre, 40).trim() || 'Sin nombre',
       rol: rolDe(m).nombre,
       rolColor: rolDe(m).color,
       pagado: !!m.pagado,
       fecha: /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2})?$/.test(String(m.fecha || '')) ? m.fecha : '',
       metodo: METODOS.includes(m.metodo) ? m.metodo : '',
-      contacto: txt(m.contacto, 120),
+      contacto: tel(m.contacto),
       notas: txt(m.notas, 500),
     })),
   };
@@ -96,7 +101,7 @@ export async function construir(p, roles) {
   p.miembros.forEach((m, i) => {
     const r = f0 + i;
     const celdas = [i + 1, m.nombre, m.rol, m.pagado ? PAG : PEN, fecha(m.fecha), m.metodo || null,
-      { formula: `IF(E${r}="${PAG}",$B$5,0)`, result: m.pagado ? p.cuota : 0 }, { formula: `$B$5-H${r}`, result: m.pagado ? 0 : p.cuota }, m.contacto || null, m.notas || null];
+      { formula: `IF(E${r}="${PAG}",$B$5,0)`, result: m.pagado ? p.cuota : 0 }, { formula: `$B$5-H${r}`, result: m.pagado ? 0 : p.cuota }, (/^\d{3} \d{3} \d{3}$/.test(m.contacto || '') ? { richText: [{ text: '+34 ', font: { bold: true, color: { argb: 'FFFFC400' } } }, { text: m.contacto, font: { color: { argb: 'FFFFFFFF' } } }] } : (m.contacto || null)), m.notas || null];
     celdas.forEach((v, j) => {
       const c = ws.getCell(r, 2 + j);
       c.value = v; c.border = marco; c.alignment = { horizontal: j === 1 || j >= 8 ? 'left' : 'center', vertical: 'middle', wrapText: j >= 8 };
