@@ -1,6 +1,7 @@
 import { put, get, list } from '@vercel/blob';
 import crypto from 'node:crypto';
 import nodemailer from 'nodemailer';
+import { mandarAviso, HORA, DIAS14 } from '../lib/prestamos.js';
 import { POR_DEFECTO, limpiar, construir } from '../lib/pagos.js';
 
 const ORIGINS = ['https://kingkhaax.github.io'];
@@ -25,9 +26,30 @@ function slots(d) {
 const ADMIN = 'kingkhaax';
 const MODS = { zya: 'Moderador' };
 const DUENOS = { rafa: ADMIN, novia: 'zya' };
-const PERSONAL = /^juegos-switch-(avatar|nintendo|amigo|nso)(-novia)?$/;
+const PERSONAL = /^juegos-switch-(avatar|nintendo|amigo|nso|prestados)(-novia)?$/;
 const ROLES_RUTA = 'config/roles.json';
 const PAGOS_RUTA = 'config/pagos.json';
+const PREST_RUTA = 'config/prestamos.json';
+const CRON_KEY = process.env.CRON_KEY || '';
+async function loadPrest() {
+  try {
+    const g = await get(PREST_RUTA, { access: 'private', useCache: false });
+    if (g && g.statusCode === 200) {
+      const j = JSON.parse(await new Response(g.stream).text());
+      if (j && typeof j === 'object') return j;
+    }
+  } catch {}
+  return {};
+}
+const savePrest = (p) => put(PREST_RUTA, JSON.stringify(p), { access: 'private', allowOverwrite: true, addRandomSuffix: false, contentType: 'application/json' });
+const okSlug = (s) => typeof s === 'string' && /^[a-z0-9-]{1,90}$/.test(s);
+async function avisarSiToca(user, k, it, rec) {
+  if (it.avisado || it.fin <= Date.now() || it.fin - Date.now() > HORA + 120000) return false;
+  if (!rec || !rec.email || !MAIL_USER || !MAIL_PASS) return false;
+  await mandarAviso(MAIL_USER, MAIL_PASS, rec.email, it.titulo, it.fin);
+  it.avisado = true;
+  return true;
+}
 async function loadPagos() {
   try {
     const g = await get(PAGOS_RUTA, { access: 'private', useCache: false });
@@ -500,6 +522,56 @@ export default async function handler(req, res) {
       const p = okPerfil(req.query.perfil) ? req.query.perfil : 'rafa';
       const m = await load(DUENOS[p]);
       return res.status(200).json({ data: sinPersonal(m && slots(m.data)[p]), updated: (m && m.updated) || 0 });
+    }
+    if (a === 'prestamos_cron') {
+      if (!CRON_KEY || String(req.headers['x-cron-key'] || '') !== CRON_KEY) return res.status(403).json({ error: 'permiso' });
+      const todo = await loadPrest();
+      let enviados = 0, cambios = false;
+      for (const [u, items] of Object.entries(todo)) {
+        let rec = null;
+        for (const [k, it] of Object.entries(items)) {
+          if (it.fin < Date.now() - DAY) { delete items[k]; cambios = true; continue; }
+          if (it.avisado || it.fin <= Date.now() || it.fin - Date.now() > HORA + 120000) continue;
+          rec = rec || (await load(u));
+          try { if (await avisarSiToca(u, k, it, rec)) { enviados++; cambios = true; } } catch {}
+        }
+        if (!Object.keys(items).length) { delete todo[u]; cambios = true; }
+      }
+      if (cambios) await savePrest(todo);
+      return res.status(200).json({ ok: true, enviados });
+    }
+    if (a === 'prestamo_lista' || a === 'prestamo_set' || a === 'prestamo_aviso') {
+      const tk = readToken(String(req.headers.authorization || '').replace(/^Bearer\s+/i, ''));
+      if (!tk) return res.status(401).json({ error: 'sesion' });
+      const rec = await load(tk.user);
+      if (!rec || (rec.epoch || 0) !== tk.ep) return res.status(401).json({ error: 'sesion' });
+      const todo = await loadPrest();
+      const mios = todo[tk.user] || {};
+      const correo = !!(rec.email && MAIL_USER && MAIL_PASS);
+      if (a === 'prestamo_lista' && req.method === 'GET') {
+        const ahora = Date.now();
+        return res.status(200).json({ correo, items: Object.entries(mios).filter(([, it]) => it.fin > ahora).map(([k, it]) => ({ k, titulo: it.titulo, fin: it.fin })) });
+      }
+      if (req.method !== 'POST') return res.status(405).json({ error: 'metodo' });
+      const b = await body(req);
+      if (!okPerfil(b.perfil) || !okSlug(b.slug)) return res.status(400).json({ error: 'datos' });
+      const k = b.perfil + ':' + b.slug;
+      if (a === 'prestamo_set') {
+        const fin = Math.round(Number(b.fin));
+        if (!fin) { delete mios[k]; }
+        else {
+          if (!(fin > Date.now() && fin <= Date.now() + DIAS14 + HORA)) return res.status(400).json({ error: 'fecha' });
+          const prev = mios[k];
+          mios[k] = { titulo: String(b.titulo || b.slug).slice(0, 90), fin, avisado: prev && prev.fin === fin ? !!prev.avisado : false };
+        }
+        if (Object.keys(mios).length) todo[tk.user] = mios; else delete todo[tk.user];
+        await savePrest(todo);
+        return res.status(200).json({ ok: true, correo });
+      }
+      const it = mios[k];
+      let enviado = false;
+      if (it) { try { enviado = await avisarSiToca(tk.user, k, it, rec); } catch {} if (enviado) { todo[tk.user] = mios; await savePrest(todo); } }
+      return res.status(200).json({ ok: true, enviado, correo });
     }
     if (a === 'datos') {
       const tk = readToken(String(req.headers.authorization || '').replace(/^Bearer\s+/i, ''));

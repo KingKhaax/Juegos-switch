@@ -148,35 +148,40 @@ const sdFor=g=>SD.find(s=>s*SFACT>=g)||SD[SD.length-1];
 function renderSummary(want,have){
 lastW=want;lastH=have;
 const a=totals(want),b=totals(have);
+const PR=window.PREST||{},isL=g=>!!PR[g.slug],lwL=want.filter(isL),lhL=have.filter(isL);
+const lw=totals(lwL),lh=totals(lhL),lp={mb:lw.mb+lh.mb,n:lwL.length+lhL.length};
 const all=(a.mb+b.mb)/1024;
 const ig=internalGB()*IFACT;
 const need=all<=ig?0:sdFor(all-ig);
-$("#resumen").innerHTML=`<div class="tile"><small>Los que quiero</small><b>${want.length} juegos</b><span>${gb(a.mb)}</span><span>${eur(a.price)} por comprar</span></div><div class="tile"><small>Los que ya tengo</small><b>${have.length} juegos</b><span>${gb(b.mb)}</span><span>${eur(b.price)} gastados</span>${have.length?`<span class="stc">${STATES.map(([k,l])=>`${l} ${have.filter(g=>stOf(g.slug)===k).length}`).join(" · ")}</span>`:""}</div>`;
-renderStorage(a,b,all,ig,need);
+$("#resumen").innerHTML=`<div class="tile"><small>Los que quiero</small><b>${want.length} juegos</b><span>${gb(a.mb)}</span><span>${eur(a.price)} por comprar</span></div><div class="tile"><small>Los que ya tengo</small><b>${have.length} juegos</b><span>${gb(b.mb)}</span><span>${eur(b.price)} gastados</span>${have.length?`<span class="stc">${STATES.map(([k,l])=>`${l} ${have.filter(g=>stOf(g.slug)===k).length}`).join(" · ")}</span>`:""}</div><div class="tile prt${lp.n?" on":""}"><small>Los prestados</small><b>${lp.n} ${lp.n===1?"juego":"juegos"}</b><span>${gb(lp.mb)}</span><span>${lp.n?"Cuenta atrás de 14 días en marcha":"Ninguno ahora mismo"}</span></div>`;
+renderStorage(a,b,all,ig,need,lw,lh);
 }
 
-function renderStorage(a,b,all,ig,need){
+function renderStorage(a,b,all,ig,need,lw,lh){
 const cap=ig+sdcard*SFACT;
 const haveG=b.mb/1024,wantG=a.mb/1024;
+const prG=((lw?lw.mb:0)+(lh?lh.mb:0))/1024,haveN=haveG-(lh?lh.mb/1024:0),wantN=wantG-(lw?lw.mb/1024:0);
 const N=20;
-const hf=cap>0?haveG/cap:0,wf=cap>0?wantG/cap:0;
+const hf=cap>0?haveN/cap:0,wf=cap>0?wantN/cap:0,pf=cap>0?prG/cap:0;
 let hb=hf>0?Math.max(1,Math.round(hf*N)):0;
 hb=Math.min(N,hb);
 let wb=wf>0?Math.max(1,Math.round((hf+wf)*N)-Math.round(hf*N)):0;
 wb=Math.min(N-hb,wb);
+let pb=pf>0?Math.max(1,Math.round((hf+wf+pf)*N)-Math.round((hf+wf)*N)):0;
+pb=Math.min(N-hb-wb,pb);
 const bar=$("#sbar");
 if(!bar.children.length){
 bar.innerHTML="<i></i>".repeat(N);
 [...bar.children].forEach((c,i)=>c.style.setProperty("--d",i*45));
 }
 [...bar.children].forEach((c,i)=>{
-const s=i<hb?1:i<hb+wb?2:0;
-if(c._s!==s){c._s=s;c.className=s===1?"c1":s===2?"c2":""}
+const s=i<hb?1:i<hb+wb?2:i<hb+wb+pb?3:0;
+if(c._s!==s){c._s=s;c.className=s===1?"c1":s===2?"c2":s===3?"c3":""}
 });
-bar.classList.toggle("over",hf+wf>1.0001);
+bar.classList.toggle("over",hf+wf+pf>1.0001);
 bar.setAttribute("aria-label",`Ocupado ${nf((hf+wf)*100,0)} % de la capacidad`);
 const free=cap-all;
-$("#leg").innerHTML=`<span><i class="k have"></i>Tengo ${nf(haveG,1)} GB</span><span><i class="k want"></i>Quiero ${nf(wantG,1)} GB</span><span><i class="k free"></i>Capacidad ${nf(cap,1)} GB</span>`;
+$("#leg").innerHTML=`<span><i class="k have"></i>Tengo ${nf(haveG,1)} GB</span><span><i class="k want"></i>Quiero ${nf(wantG,1)} GB</span>${prG>0?`<span><i class="k pres"></i>Prestado ${nf(prG,1)} GB</span>`:""}<span><i class="k free"></i>Capacidad ${nf(cap,1)} GB</span>`;
 $("#snote").className=free<0?"snote bad":"snote ok";
 $("#snote").textContent=free<0?`Con todo instalado me faltan ${nf(-free,1)} GB. Necesito una tarjeta SD de ${sdLabel(sdFor(all-ig))} o más.`:`Con todo instalado me sobran ${nf(free,1)} GB.`;
 }

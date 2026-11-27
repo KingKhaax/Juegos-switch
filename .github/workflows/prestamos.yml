@@ -1,0 +1,11 @@
+name: Avisos de juegos prestados
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+jobs:
+  avisar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Llamar al servidor
+        run: curl -fsS -X POST -H "x-cron-key: ${{ secrets.PRESTAMOS_KEY }}" "https://juegos-switch-cuentas.vercel.app/api/cuenta?a=prestamos_cron"
