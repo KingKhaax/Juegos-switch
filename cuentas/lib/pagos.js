@@ -3,13 +3,21 @@ import ExcelJS from 'exceljs';
 export const METODOS = ['Bizum', 'Transferencia', 'Efectivo', 'PayPal', 'Otro'];
 export const POR_DEFECTO = {
   cuota: 8.75,
-  renovacion: '',
+  renovacion: '2027-11-25T14:33',
   auto: false,
   miembros: ['Rafa', 'Nicky', 'Jésus', 'Carles', 'Daniel', 'Leticia', 'Nerea', 'Alfonso'].map((n, i) => ({
     nombre: n, rol: i === 0 ? 'Administrador' : 'Miembro', pagado: false, fecha: '', metodo: '', contacto: '', notas: '',
   })),
 };
 
+const ahoraMadrid = () => new Date().toLocaleString('sv-SE', { timeZone: 'Europe/Madrid' }).replace(' ', 'T').slice(0, 16);
+function avanzar(s) {
+  if (s.length === 10) s += 'T00:00';
+  let y = +s.slice(0, 4);
+  const ahora = ahoraMadrid();
+  while (y < 2200 && (y + s.slice(4)) <= ahora) y++;
+  return y + s.slice(4);
+}
 const txt = (v, n) => String(v == null ? '' : v).slice(0, n);
 export function limpiar(b) {
   if (!b || typeof b !== 'object' || !Array.isArray(b.miembros) || b.miembros.length < 1 || b.miembros.length > 16) return null;
@@ -17,7 +25,7 @@ export function limpiar(b) {
   if (!(cuota >= 0 && cuota < 1000)) return null;
   return {
     cuota,
-    renovacion: /^\d{4}-\d{2}-\d{2}$/.test(String(b.renovacion || '')) ? b.renovacion : '',
+    renovacion: avanzar(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2})?$/.test(String(b.renovacion || '')) ? b.renovacion : POR_DEFECTO.renovacion),
     auto: !!b.auto,
     miembros: b.miembros.map((m) => ({
       nombre: txt(m.nombre, 40).trim() || 'Sin nombre',
@@ -53,7 +61,7 @@ export async function construir(p) {
   ws.mergeCells('B2:K2');
   Object.assign(ws.getCell('B2'), { value: `Control de pagos del grupo familiar (plan anual, ${n} miembros)`, font: { name: 'Calibri', size: 12, color: { argb: 'FFC3A2FF' } }, alignment: { horizontal: 'center' } });
 
-  const tarjetas = [['B4:C4', 'B5:C5', 'CUOTA POR PERSONA', p.cuota, '#,##0.00 "€"', 'FF7A1F2B'], ['D4:E4', 'D5:E5', 'RENOVACION', fecha(p.renovacion), 'dd/mm/yyyy', 'FF7A1F2B'], ['F4:G4', 'F5:G5', 'PAGADOS', { formula: `COUNTIF($E$${f0}:$E$${f1},"${PAG}")&" / ${n}"`, result: `${pagados} / ${n}` }, '@', 'FF1F6B45'], ['H4:I4', 'H5:I5', 'RECAUDADO', { formula: `SUM($H$${f0}:$H$${f1})`, result: rec }, '#,##0.00 "€"', 'FF1F6B45'], ['J4:K4', 'J5:K5', 'FALTA POR COBRAR', { formula: `SUM($I$${f0}:$I$${f1})`, result: falta }, '#,##0.00 "€"', 'FF7A3B14']];
+  const tarjetas = [['B4:C4', 'B5:C5', 'CUOTA POR PERSONA', p.cuota, '#,##0.00 "€"', 'FF7A1F2B'], ['D4:E4', 'D5:E5', 'RENOVACION', fecha(p.renovacion), 'dd/mm/yyyy hh:mm', 'FF7A1F2B'], ['F4:G4', 'F5:G5', 'PAGADOS', { formula: `COUNTIF($E$${f0}:$E$${f1},"${PAG}")&" / ${n}"`, result: `${pagados} / ${n}` }, '@', 'FF1F6B45'], ['H4:I4', 'H5:I5', 'RECAUDADO', { formula: `SUM($H$${f0}:$H$${f1})`, result: rec }, '#,##0.00 "€"', 'FF1F6B45'], ['J4:K4', 'J5:K5', 'FALTA POR COBRAR', { formula: `SUM($I$${f0}:$I$${f1})`, result: falta }, '#,##0.00 "€"', 'FF7A3B14']];
   for (const [a, b, t, v, nf, col] of tarjetas) {
     ws.mergeCells(a); ws.mergeCells(b);
     const ca = ws.getCell(a.split(':')[0]), cb = ws.getCell(b.split(':')[0]);
