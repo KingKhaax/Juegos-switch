@@ -34,7 +34,7 @@ if(ro&&!b){b=document.createElement("p");b.id="slBanner";b.className="sl-banner"
 if(b)b.innerHTML=ro?'<b>Solo lectura.</b> '+(NV?"Estás viendo la lista de Nicky: solo Nicky y el administrador pueden cambiarla.":"Estás viendo la lista de Rafita: solo él puede cambiarla."):"";
 if(b)b.hidden=!ro;
 }
-const PERS=/^juegos-switch-(avatar|nintendo|amigo|nso|prestados)(-novia)?$/;
+const PERS=/^juegos-switch-(avatar|nintendo|amigo|nso|prestados|plegables)(-novia)?$/;
 const hk=d=>{const t=JSON.stringify(Object.entries(d||{}).sort());let h=0;for(let i=0;i<t.length;i++)h=(h*31+t.charCodeAt(i))|0;return String(h)};
 const shared=()=>Object.fromEntries(Object.entries(collect()).filter(([k])=>!PERS.test(k)));
 async function publico(){
