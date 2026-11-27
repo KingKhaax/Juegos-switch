@@ -12,6 +12,7 @@ bhoras:svg('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'),
 bnso:svg('<rect x="3" y="6" width="18" height="12" rx="3"/><path d="M8 10h.01M16 10h.01M9 14c1.5 1 4.5 1 6 0"/>'),
 badm:svg('<path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z"/><path d="M5 19h14"/>'),
 prestados:svg('<path d="M4 12h13M13 7l5 5-5 5"/><path d="M20 4v16"/>'),
+bplay:svg('<rect x="3" y="3" width="18" height="18" rx="4"/><path d="M8 8h.01M16 8h.01M8 16h.01M16 16h.01M12 12h.01"/>'),
 bset:svg('<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>')
 };
 const BURGER=svg('<path d="M4 7h16M4 12h16M4 17h16"/>');
