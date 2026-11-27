@@ -419,11 +419,12 @@ export default async function handler(req, res) {
         return res.status(200).json({ nombre: 'Pagos-Switch-Online.xlsx', base64: buf.toString('base64') });
       }
       if (a === 'pagos_set' && req.method === 'POST') {
-        const nuevo = limpiar((await body(req)).pagos);
+        const bp = await body(req);
+        const nuevo = limpiar(bp.pagos);
         if (!nuevo) return res.status(400).json({ error: 'datos' });
         await savePagos(nuevo);
         let enviado = false, fallo = '';
-        if (nuevo.auto) {
+        if (nuevo.auto && bp.correo !== false) {
           if (!yo.email || !MAIL_USER || !MAIL_PASS) fallo = 'sin_correo';
           else { try { await mandarPagos(yo.email, nuevo); enviado = true; } catch { fallo = 'envio'; } }
         }

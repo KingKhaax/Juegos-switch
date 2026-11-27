@@ -6,7 +6,7 @@ const METODOS=["Bizum","Transferencia","Efectivo","PayPal","Otro"];
 const eur=n=>(Math.round(n*100)/100).toLocaleString("es-ES",{minimumFractionDigits:2,maximumFractionDigits:2})+" €";
 const ahora=()=>{const d=new Date(),z=n=>String(n).padStart(2,"0");return d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate())+"T"+z(d.getHours())+":"+z(d.getMinutes())};
 const ses=()=>{for(const k of ["juegos-switch-cuenta","juegos-switch-cuenta-novia"]){try{const v=JSON.parse(localStorage.getItem(k));if(v&&v.admin&&v.token)return v}catch(e){}}return null};
-let dlg=null,P=null,info={correo:false,correoMask:""},msg="",mk="",busy=false,dirty=false;
+let tm=0,sav=false,dlg=null,P=null,info={correo:false,correoMask:""},msg="",mk="",busy=false,dirty=false;
 async function call(a,opt){
 const s=ses();if(!s)throw new Error("sin_sesion");
 const r=await fetch(API+"?a="+a,Object.assign({headers:{"Content-Type":"application/json",Authorization:"Bearer "+s.token}},opt||{}));
@@ -28,8 +28,22 @@ const out=dlg.querySelector(".pg-body");
 if(out){out.innerHTML=cuerpo;const e=dlg.querySelector("#pagmsg");e.textContent=msg;e.className="amsg "+mk;return}
 dlg.innerHTML=`<div class="awin adm-win pg-win"><div class="nso-aur adm-aur" aria-hidden="true"></div><div class="fhead"><h3 class="adm-title"><span class="adm-crown">${COIN}</span>Pagos Switch Online</h3><button class="x2" type="button" data-close aria-label="Cerrar">×</button></div><p class="adesc">Solo lo ves tú, porque eres <mark class="m-go">administrador</mark>. Aquí llevas quién ha pagado su parte del plan familiar y puedes pasarlo a Excel.</p><div class="pg-body">${cuerpo}</div><p class="amsg ${mk}" id="pagmsg" role="status">${esc(msg)}</p></div>`;
 }
+function prog(ms){clearTimeout(tm);tm=setTimeout(auto,ms==null?800:ms)}
+async function auto(){
+clearTimeout(tm);
+if(!P||!dirty)return;
+if(sav||busy){prog(600);return}
+sav=true;
+const mia=JSON.stringify(P);
+try{
+const r=await call("pagos_set",{method:"POST",keepalive:true,body:JSON.stringify({pagos:P,correo:false})});
+if(!r.ok)throw new Error(r.status);
+if(JSON.stringify(P)===mia){dirty=false;const sb=dlg&&dlg.querySelector("[data-save]");if(sb)sb.disabled=true;aviso("Guardado en tu cuenta.","ok")}else prog(200);
+}catch(e){aviso("No se ha podido guardar. Sigo intentándolo…","bad");prog(4000)}
+sav=false;
+}
 function aviso(t,k){msg=t;mk=k||"ok";const e=dlg&&dlg.querySelector("#pagmsg");if(e){e.textContent=t;e.className="amsg "+mk}}
-function marcar(){dirty=true;const b=dlg.querySelector("[data-save]");if(b)b.disabled=false;aviso("","")}
+function marcar(){dirty=true;prog();const b=dlg.querySelector("[data-save]");if(b)b.disabled=false;aviso("","")}
 function totales(){
 const n=P.miembros.length,pg=P.miembros.filter(m=>m.pagado).length,pct=n?Math.round(pg/n*100):0;
 const q=s=>dlg.querySelector(s);
@@ -87,10 +101,10 @@ dlg.addEventListener("click",e=>{
 if(e.target===dlg||e.target.closest("[data-close]")){dlg.close();return}
 if(!P)return;
 const li=e.target.closest(".pg-r"),i=li?+li.dataset.i:-1,m=P.miembros[i];
-if(e.target.closest("[data-est]")&&m){m.pagado=!m.pagado;m.fecha=m.pagado?ahora():"";dirty=true;render();return}
-if(e.target.closest("[data-rol]")&&m){m.rol=m.rol==="Administrador"?"Miembro":"Administrador";dirty=true;render();return}
-if(e.target.closest("[data-del]")&&m&&P.miembros.length>1){P.miembros.splice(i,1);dirty=true;render();return}
-if(e.target.closest("[data-add]")&&P.miembros.length<16){P.miembros.push({nombre:"Nuevo miembro",rol:"Miembro",pagado:false,fecha:"",metodo:"",contacto:"",notas:""});dirty=true;render();const l=dlg.querySelectorAll(".pg-nm");const x=l[l.length-1];if(x){x.focus();x.select()}return}
+if(e.target.closest("[data-est]")&&m){m.pagado=!m.pagado;m.fecha=m.pagado?ahora():"";dirty=true;prog();render();return}
+if(e.target.closest("[data-rol]")&&m){m.rol=m.rol==="Administrador"?"Miembro":"Administrador";dirty=true;prog();render();return}
+if(e.target.closest("[data-del]")&&m&&P.miembros.length>1){P.miembros.splice(i,1);dirty=true;prog();render();return}
+if(e.target.closest("[data-add]")&&P.miembros.length<16){P.miembros.push({nombre:"Nuevo miembro",rol:"Miembro",pagado:false,fecha:"",metodo:"",contacto:"",notas:""});dirty=true;prog();render();const l=dlg.querySelectorAll(".pg-nm");const x=l[l.length-1];if(x){x.focus();x.select()}return}
 if(e.target.closest("[data-save]")){guardar();return}
 if(e.target.closest("[data-dl]")){descargar();return}
 if(e.target.closest("[data-mail]")){mandar();return}
@@ -103,7 +117,7 @@ if(t.dataset.auto!==undefined){P.auto=t.checked;marcar();return}
 const li=t.closest(".pg-r");if(!li||!t.dataset.f)return;
 P.miembros[+li.dataset.i][t.dataset.f]=t.value;marcar();
 };
-dlg.addEventListener("input",edit);dlg.addEventListener("change",edit);
+dlg.addEventListener("close",()=>auto());addEventListener("pagehide",()=>{if(dirty)auto()});dlg.addEventListener("input",edit);dlg.addEventListener("change",edit);
 }
 function open(){
 ensure();msg="";mk="";
