@@ -1,6 +1,7 @@
 import { put, get, list } from '@vercel/blob';
 import crypto from 'node:crypto';
 import nodemailer from 'nodemailer';
+import { POR_DEFECTO, limpiar, construir } from '../lib/pagos.js';
 
 const ORIGINS = ['https://kingkhaax.github.io'];
 const SECRET = process.env.CUENTAS_SECRET || '';
@@ -26,6 +27,30 @@ const MODS = { zya: 'Moderadora' };
 const DUENOS = { rafa: ADMIN, novia: 'zya' };
 const PERSONAL = /^juegos-switch-(avatar|nintendo|amigo|nso)(-novia)?$/;
 const ROLES_RUTA = 'config/roles.json';
+const PAGOS_RUTA = 'config/pagos.json';
+async function loadPagos() {
+  try {
+    const g = await get(PAGOS_RUTA, { access: 'private', useCache: false });
+    if (g && g.statusCode === 200) {
+      const j = limpiar(JSON.parse(await new Response(g.stream).text()));
+      if (j) return j;
+    }
+  } catch {}
+  return POR_DEFECTO;
+}
+const savePagos = (p) => put(PAGOS_RUTA, JSON.stringify(p), { access: 'private', allowOverwrite: true, addRandomSuffix: false, contentType: 'application/json' });
+async function mandarPagos(to, p) {
+  const buf = await construir(p);
+  const tr = nodemailer.createTransport({ service: 'gmail', auth: { user: MAIL_USER, pass: MAIL_PASS } });
+  const pag = p.miembros.filter((m) => m.pagado).length;
+  await tr.sendMail({
+    from: '"Jueguitos Switch" <' + MAIL_USER + '>',
+    to,
+    subject: 'Pagos Switch Online: ' + pag + ' de ' + p.miembros.length + ' pagados',
+    text: ['Te adjunto el Excel de pagos del Switch Online actualizado.', '', 'Cuota por persona: ' + p.cuota.toFixed(2) + ' €', 'Pagados: ' + pag + ' / ' + p.miembros.length, 'Recaudado: ' + (pag * p.cuota).toFixed(2) + ' €', 'Falta por cobrar: ' + ((p.miembros.length - pag) * p.cuota).toFixed(2) + ' €'].join('\n'),
+    attachments: [{ filename: 'Pagos-Switch-Online.xlsx', content: buf }],
+  });
+}
 const ROLES_BASE = [
   { id: 'admin', nombre: 'Administrador', color: '#ffb800', fijo: true },
   { id: 'mod', nombre: 'Moderadora', color: '#ff5fa8', fijo: false },
@@ -383,11 +408,32 @@ export default async function handler(req, res) {
       res.setHeader('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=300');
       return res.status(200).json({ roles: await loadRoles() });
     }
-    if (a === 'admin_usuarios' || a === 'admin_rol' || a === 'admin_roles') {
+    if (a === 'admin_usuarios' || a === 'admin_rol' || a === 'admin_roles' || a === 'pagos_get' || a === 'pagos_set' || a === 'pagos_xlsx' || a === 'pagos_mail') {
       const tk = readToken(String(req.headers.authorization || '').replace(/^Bearer\s+/i, ''));
       if (!tk || tk.user !== ADMIN) return res.status(403).json({ error: 'permiso' });
       const yo = await load(tk.user);
       if (!yo || (yo.epoch || 0) !== tk.ep) return res.status(401).json({ error: 'sesion' });
+      if (a === 'pagos_get' && req.method === 'GET') return res.status(200).json({ pagos: await loadPagos(), correo: !!(yo.email && MAIL_USER && MAIL_PASS), correoMask: maskMail(yo.email) });
+      if (a === 'pagos_xlsx' && req.method === 'GET') {
+        const buf = await construir(await loadPagos());
+        return res.status(200).json({ nombre: 'Pagos-Switch-Online.xlsx', base64: buf.toString('base64') });
+      }
+      if (a === 'pagos_set' && req.method === 'POST') {
+        const nuevo = limpiar((await body(req)).pagos);
+        if (!nuevo) return res.status(400).json({ error: 'datos' });
+        await savePagos(nuevo);
+        let enviado = false, fallo = '';
+        if (nuevo.auto) {
+          if (!yo.email || !MAIL_USER || !MAIL_PASS) fallo = 'sin_correo';
+          else { try { await mandarPagos(yo.email, nuevo); enviado = true; } catch { fallo = 'envio'; } }
+        }
+        return res.status(200).json({ ok: true, enviado, fallo });
+      }
+      if (a === 'pagos_mail' && req.method === 'POST') {
+        if (!yo.email || !MAIL_USER || !MAIL_PASS) return res.status(409).json({ error: 'sin_correo' });
+        try { await mandarPagos(yo.email, await loadPagos()); } catch { return res.status(502).json({ error: 'envio' }); }
+        return res.status(200).json({ ok: true, a: maskMail(yo.email) });
+      }
       if (req.method === 'GET' && a === 'admin_usuarios') {
         const roles = await loadRoles(true);
         const us = await todosLosUsuarios();
