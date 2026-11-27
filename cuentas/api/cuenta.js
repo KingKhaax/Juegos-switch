@@ -40,7 +40,7 @@ async function loadPagos() {
 }
 const savePagos = (p) => put(PAGOS_RUTA, JSON.stringify(p), { access: 'private', allowOverwrite: true, addRandomSuffix: false, contentType: 'application/json' });
 async function mandarPagos(to, p) {
-  const buf = await construir(p);
+  const buf = await construir(p, await loadRoles());
   const tr = nodemailer.createTransport({ service: 'gmail', auth: { user: MAIL_USER, pass: MAIL_PASS } });
   const pag = p.miembros.filter((m) => m.pagado).length;
   await tr.sendMail({
@@ -413,9 +413,9 @@ export default async function handler(req, res) {
       if (!tk || tk.user !== ADMIN) return res.status(403).json({ error: 'permiso' });
       const yo = await load(tk.user);
       if (!yo || (yo.epoch || 0) !== tk.ep) return res.status(401).json({ error: 'sesion' });
-      if (a === 'pagos_get' && req.method === 'GET') return res.status(200).json({ pagos: await loadPagos(), correo: !!(yo.email && MAIL_USER && MAIL_PASS), correoMask: maskMail(yo.email) });
+      if (a === 'pagos_get' && req.method === 'GET') return res.status(200).json({ pagos: await loadPagos(), roles: (await loadRoles()).map((r) => ({ id: r.id, nombre: r.nombre, color: r.color })), correo: !!(yo.email && MAIL_USER && MAIL_PASS), correoMask: maskMail(yo.email) });
       if (a === 'pagos_xlsx' && req.method === 'GET') {
-        const buf = await construir(await loadPagos());
+        const buf = await construir(await loadPagos(), await loadRoles());
         return res.status(200).json({ nombre: 'Pagos-Switch-Online.xlsx', base64: buf.toString('base64') });
       }
       if (a === 'pagos_set' && req.method === 'POST') {

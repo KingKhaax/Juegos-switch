@@ -13,13 +13,18 @@ const r=await fetch(API+"?a="+a,Object.assign({headers:{"Content-Type":"applicat
 let j={};try{j=await r.json()}catch(e){}
 return {ok:r.ok,status:r.status,j};
 }
-const rol=m=>m.rol==="Administrador"?'<span class="rol rol-admin"><i aria-hidden="true"></i><span>Administrador</span></span>':'<span class="rol rol-usuario"><i aria-hidden="true"></i><span>Miembro</span></span>';
+const KN={admin:"#ffb800",mod:"#ff5fa8",usuario:"#1f8fff",invitado:"#8a90a0"};
+const RD=[{id:"admin",nombre:"Administrador",color:"#ffb800"},{id:"mod",nombre:"Moderadora",color:"#ff5fa8"},{id:"usuario",nombre:"Usuario",color:"#1f8fff"},{id:"invitado",nombre:"Invitado",color:"#8a90a0"}];
+let RL=[],ab=-1;
+const rolB=(n,c,id)=>{const k=KN[id];const cls=k&&(!c||c.toLowerCase()===k)?"rol-"+id:"rol-x";return '<span class="rol '+cls+'" style="--rc:'+esc(c||"#1f8fff")+'"><i aria-hidden="true"></i><span>'+esc(n)+'</span></span>'};
+const rol=m=>{const r=RL.find(x=>x.nombre===m.rol);return rolB(m.rol,m.rolColor||(r&&r.color),r&&r.id)};
+const menu=(m,i)=>'<div class="pg-menu" role="listbox" aria-label="Rol de '+esc(m.nombre)+'">'+(RL.length?RL:RD).map(r=>'<button type="button" class="pg-op" role="option" data-setrol="'+esc(r.id)+'" aria-selected="'+(r.nombre===m.rol)+'">'+rolB(r.nombre,r.color,r.id)+(r.nombre===m.rol?'<b aria-hidden="true">✓</b>':'')+'</button>').join("")+'</div>';
 function resumen(){
 const n=P.miembros.length,pg=P.miembros.filter(m=>m.pagado).length,pct=n?Math.round(pg/n*100):0;
 return `<div class="pg-stats"><div class="pg-st"><small>Cuota por persona</small><label class="pg-in"><input type="number" min="0" max="999" step="0.01" inputmode="decimal" value="${esc(P.cuota)}" data-cuota aria-label="Cuota por persona en euros"><span>€</span></label></div><div class="pg-st"><small>Renovación</small><input class="pg-date" type="datetime-local" value="${esc(P.renovacion)}" data-reno aria-label="Fecha de renovación"></div><div class="pg-st ok"><small>Pagados</small><b data-pg>${pg} / ${n}</b></div><div class="pg-st ok"><small>Recaudado</small><b data-rec>${eur(pg*P.cuota)}</b></div><div class="pg-st bad"><small>Falta por cobrar</small><b data-falta>${eur((n-pg)*P.cuota)}</b></div></div><div class="pg-bar" role="img" aria-label="${pct}% cobrado"><i data-bar style="width:${pct}%"></i><span data-pct>${pct}% cobrado</span></div>`;
 }
 function fila(m,i){
-return `<li class="pg-r${m.pagado?" paid":""}${m.rol==="Administrador"?" adm":""}" data-i="${i}"><span class="pg-n">${i+1}</span><input class="pg-nm" type="text" value="${esc(m.nombre)}" maxlength="40" data-f="nombre" aria-label="Nombre del miembro ${i+1}"><button type="button" class="pg-rol" data-rol aria-label="Cambiar rol de ${esc(m.nombre)}">${rol(m)}</button><button type="button" class="pg-est ${m.pagado?"si":"no"}" data-est aria-pressed="${m.pagado}">${m.pagado?"✔ Pagado":"✘ Pendiente"}</button><div class="pg-fs"><label class="pg-f"><span>Fecha y hora de pago</span><input type="datetime-local" value="${esc(m.fecha.length>10?m.fecha:m.fecha?m.fecha+"T00:00":"")}" data-f="fecha"></label><label class="pg-f"><span>Método</span><select data-f="metodo"><option value="">—</option>${METODOS.map(x=>`<option${m.metodo===x?" selected":""}>${x}</option>`).join("")}</select></label><label class="pg-f"><span>Contacto</span><input type="text" value="${esc(m.contacto)}" maxlength="60" data-f="contacto"></label><label class="pg-f pg-w"><span>Notas</span><textarea rows="1" maxlength="500" data-f="notas" class="pg-ta">${esc(m.notas)}</textarea></label></div><button type="button" class="pg-x" data-del aria-label="Quitar a ${esc(m.nombre)}"${P.miembros.length<=1?" disabled":""}>×</button></li>`;
+return `<li class="pg-r${m.pagado?" paid":""}${m.rol==="Administrador"?" adm":""}" data-i="${i}"><span class="pg-n">${i+1}</span><input class="pg-nm" type="text" value="${esc(m.nombre)}" maxlength="40" data-f="nombre" aria-label="Nombre del miembro ${i+1}"><span class="pg-rw"><button type="button" class="pg-rol" data-rol aria-haspopup="listbox" aria-expanded="${ab===i}" aria-label="Cambiar rol de ${esc(m.nombre)}">${rol(m)}</button>${ab===i?menu(m,i):""}</span><button type="button" class="pg-est ${m.pagado?"si":"no"}" data-est aria-pressed="${m.pagado}">${m.pagado?"✔ Pagado":"✘ Pendiente"}</button><div class="pg-fs"><label class="pg-f"><span>Fecha y hora de pago</span><input type="datetime-local" value="${esc(m.fecha.length>10?m.fecha:m.fecha?m.fecha+"T00:00":"")}" data-f="fecha"></label><label class="pg-f"><span>Método</span><select data-f="metodo"><option value="">—</option>${METODOS.map(x=>`<option${m.metodo===x?" selected":""}>${x}</option>`).join("")}</select></label><label class="pg-f"><span>Contacto</span><input type="text" value="${esc(m.contacto)}" maxlength="60" data-f="contacto"></label><label class="pg-f pg-w"><span>Notas</span><textarea rows="1" maxlength="500" data-f="notas" class="pg-ta">${esc(m.notas)}</textarea></label></div><button type="button" class="pg-x" data-del aria-label="Quitar a ${esc(m.nombre)}"${P.miembros.length<=1?" disabled":""}>×</button></li>`;
 }
 function render(){
 if(!dlg)return;
@@ -57,7 +62,7 @@ busy=true;P=null;render();
 try{
 const r=await call("pagos_get");
 if(!r.ok)throw new Error(r.status);
-P=r.j.pagos;info={correo:!!r.j.correo,correoMask:r.j.correoMask||""};dirty=false;msg="";mk="";
+P=r.j.pagos;RL=Array.isArray(r.j.roles)?r.j.roles:[];ab=-1;info={correo:!!r.j.correo,correoMask:r.j.correoMask||""};dirty=false;msg="";mk="";
 }catch(e){P=null;msg="No se han podido cargar los pagos. Comprueba que tienes la sesión iniciada y vuelve a intentarlo.";mk="bad"}
 busy=false;render();
 }
@@ -104,9 +109,12 @@ if(e.target===dlg||e.target.closest("[data-close]")){dlg.close();return}
 if(!P)return;
 const li=e.target.closest(".pg-r"),i=li?+li.dataset.i:-1,m=P.miembros[i];
 if(e.target.closest("[data-est]")&&m){m.pagado=!m.pagado;m.fecha=m.pagado?ahora():"";dirty=true;prog();render();return}
-if(e.target.closest("[data-rol]")&&m){m.rol=m.rol==="Administrador"?"Miembro":"Administrador";dirty=true;prog();render();return}
+const so=e.target.closest("[data-setrol]");
+if(so&&m){const r=(RL.length?RL:RD).find(x=>x.id===so.dataset.setrol);if(r){m.rol=r.nombre;m.rolColor=r.color;dirty=true;prog()}ab=-1;render();return}
+if(e.target.closest("[data-rol]")&&m){ab=ab===i?-1:i;render();return}
+if(ab!==-1&&!e.target.closest(".pg-menu")){ab=-1;render()}
 if(e.target.closest("[data-del]")&&m&&P.miembros.length>1){P.miembros.splice(i,1);dirty=true;prog();render();return}
-if(e.target.closest("[data-add]")&&P.miembros.length<16){P.miembros.push({nombre:"Nuevo miembro",rol:"Miembro",pagado:false,fecha:"",metodo:"",contacto:"",notas:""});dirty=true;prog();render();const l=dlg.querySelectorAll(".pg-nm");const x=l[l.length-1];if(x){x.focus();x.select()}return}
+if(e.target.closest("[data-add]")&&P.miembros.length<16){P.miembros.push({nombre:"Nuevo miembro",rol:"Usuario",rolColor:"#1f8fff",pagado:false,fecha:"",metodo:"",contacto:"",notas:""});dirty=true;prog();render();const l=dlg.querySelectorAll(".pg-nm");const x=l[l.length-1];if(x){x.focus();x.select()}return}
 if(e.target.closest("[data-save]")){guardar();return}
 if(e.target.closest("[data-dl]")){descargar();return}
 if(e.target.closest("[data-mail]")){mandar();return}

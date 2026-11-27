@@ -6,7 +6,7 @@ export const POR_DEFECTO = {
   renovacion: '2027-11-25T14:33',
   auto: false,
   miembros: ['Rafa', 'Nicky', 'Jésus', 'Carles', 'Daniel', 'Leticia', 'Nerea', 'Alfonso'].map((n, i) => ({
-    nombre: n, rol: i === 0 ? 'Administrador' : 'Miembro', pagado: false, fecha: '', metodo: '', contacto: '', notas: '',
+    nombre: n, rol: i === 0 ? 'Administrador' : 'Usuario', rolColor: i === 0 ? '#ffb800' : '#1f8fff', pagado: false, fecha: '', metodo: '', contacto: '', notas: '',
   })),
 };
 
@@ -18,6 +18,14 @@ function avanzar(s) {
   while (y < 2200 && (y + s.slice(4)) <= ahora) y++;
   return y + s.slice(4);
 }
+const HEX = /^#[0-9a-fA-F]{6}$/;
+function rolDe(m) {
+  let n = String(m.rol == null ? '' : m.rol).slice(0, 40).trim();
+  if (!n || n === 'Miembro') n = 'Usuario';
+  const def = n === 'Administrador' ? '#ffb800' : '#1f8fff';
+  return { nombre: n, color: HEX.test(String(m.rolColor || '')) ? m.rolColor.toLowerCase() : def };
+}
+const claro = (hex) => (parseInt(hex.slice(1, 3), 16) * 299 + parseInt(hex.slice(3, 5), 16) * 587 + parseInt(hex.slice(5, 7), 16) * 114) / 1000 > 150;
 const txt = (v, n) => String(v == null ? '' : v).slice(0, n);
 export function limpiar(b) {
   if (!b || typeof b !== 'object' || !Array.isArray(b.miembros) || b.miembros.length < 1 || b.miembros.length > 16) return null;
@@ -29,7 +37,8 @@ export function limpiar(b) {
     auto: !!b.auto,
     miembros: b.miembros.map((m) => ({
       nombre: txt(m.nombre, 40).trim() || 'Sin nombre',
-      rol: m.rol === 'Administrador' ? 'Administrador' : 'Miembro',
+      rol: rolDe(m).nombre,
+      rolColor: rolDe(m).color,
       pagado: !!m.pagado,
       fecha: /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2})?$/.test(String(m.fecha || '')) ? m.fecha : '',
       metodo: METODOS.includes(m.metodo) ? m.metodo : '',
@@ -45,7 +54,7 @@ const borde = { style: 'thin', color: { argb: 'FF3A3350' } };
 const marco = { top: borde, left: borde, bottom: borde, right: borde };
 const fecha = (s) => (s ? new Date(s.length > 10 ? s + ':00Z' : s + 'T00:00:00Z') : null);
 
-export async function construir(p) {
+export async function construir(p, roles) {
   const wb = new ExcelJS.Workbook();
   const ws = wb.addWorksheet('Pagos Switch Online', { views: [{ showGridLines: false }] });
   const n = p.miembros.length, f0 = 12, f1 = 11 + n, ft = f1 + 2;
@@ -88,23 +97,23 @@ export async function construir(p) {
     celdas.forEach((v, j) => {
       const c = ws.getCell(r, 2 + j);
       c.value = v; c.border = marco; c.alignment = { horizontal: j === 1 || j >= 8 ? 'left' : 'center', vertical: 'middle', wrapText: j >= 8 };
+      if (j === 2) { const col = m.rolColor || '#1f8fff'; c.fill = fill('FF' + col.slice(1).toUpperCase()); c.font = { bold: true, color: { argb: claro(col) ? 'FF1B1500' : 'FFFFFFFF' } }; }
       if (j === 4) c.numFmt = 'dd/mm/yyyy hh:mm';
       if (j === 6 || j === 7) c.numFmt = '#,##0.00 "€"';
     });
     ws.getCell(r, 5).dataValidation = { type: 'list', allowBlank: false, formulae: [`"${PAG},${PEN}"`] };
     ws.getCell(r, 7).dataValidation = { type: 'list', allowBlank: true, formulae: [`"${METODOS.join(',')}"`] };
-    ws.getCell(r, 4).dataValidation = { type: 'list', allowBlank: false, formulae: ['"Administrador,Miembro"'] };
+    ws.getCell(r, 4).dataValidation = { type: 'list', allowBlank: false, formulae: ['"' + lista.join(',') + '"'] };
     ws.getRow(r).height = Math.max(22, 16 * Math.max(Math.ceil((m.notas || '').length / 48), Math.ceil((m.contacto || '').length / 26), 1) + 6);
   });
-  const rango = `B${f0}:K${f1}`;
-  ws.addConditionalFormatting({ ref: `D${f0}:D${f1}`, rules: [
-    { type: 'expression', priority: 1, formulae: [`$D${f0}="Administrador"`], style: { font: { bold: true, color: { argb: 'FF1B1500' } }, fill: { type: 'pattern', pattern: 'solid', bgColor: { argb: 'FFFFB800' } } } },
-    { type: 'expression', priority: 2, formulae: [`$D${f0}="Miembro"`], style: { font: { bold: true, color: { argb: 'FFFFFFFF' } }, fill: { type: 'pattern', pattern: 'solid', bgColor: { argb: 'FF1F8FFF' } } } },
-  ] });
-  ws.addConditionalFormatting({ ref: rango, rules: [
+  const lista = (roles || []).map((r) => r.nombre).filter((x) => x && !x.includes(',')).slice(0, 12);
+  if (!lista.length) lista.push('Administrador', 'Moderadora', 'Usuario', 'Invitado');
+  const reglas = [
     { type: 'expression', priority: 3, formulae: [`$E${f0}="${PAG}"`], style: { fill: { type: 'pattern', pattern: 'solid', bgColor: { argb: 'FF1F5A3C' } } } },
     { type: 'expression', priority: 4, formulae: [`$E${f0}="${PEN}"`], style: { fill: { type: 'pattern', pattern: 'solid', bgColor: { argb: 'FF5A1F2B' } } } },
-  ] });
+  ];
+  ws.addConditionalFormatting({ ref: `B${f0}:C${f1}`, rules: reglas });
+  ws.addConditionalFormatting({ ref: `E${f0}:K${f1}`, rules: reglas });
 
   ws.mergeCells(`B${ft}:G${ft}`);
   Object.assign(ws.getCell(`B${ft}`), { value: 'TOTAL DEL GRUPO', font: { bold: true, size: 12, color: { argb: 'FFFFD96A' } }, alignment: { horizontal: 'right' } });
