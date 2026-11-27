@@ -90,6 +90,8 @@ export async function construir(p, roles) {
   });
   ws.getRow(11).height = 24;
 
+  const lista = (roles || []).map((r) => r.nombre).filter((x) => x && !x.includes(',')).slice(0, 12);
+  if (!lista.length) lista.push('Administrador', 'Moderadora', 'Usuario', 'Invitado');
   p.miembros.forEach((m, i) => {
     const r = f0 + i;
     const celdas = [i + 1, m.nombre, m.rol, m.pagado ? PAG : PEN, fecha(m.fecha), m.metodo || null,
@@ -106,8 +108,6 @@ export async function construir(p, roles) {
     ws.getCell(r, 4).dataValidation = { type: 'list', allowBlank: false, formulae: ['"' + lista.join(',') + '"'] };
     ws.getRow(r).height = Math.max(22, 16 * Math.max(Math.ceil((m.notas || '').length / 48), Math.ceil((m.contacto || '').length / 26), 1) + 6);
   });
-  const lista = (roles || []).map((r) => r.nombre).filter((x) => x && !x.includes(',')).slice(0, 12);
-  if (!lista.length) lista.push('Administrador', 'Moderadora', 'Usuario', 'Invitado');
   const reglas = [
     { type: 'expression', priority: 3, formulae: [`$E${f0}="${PAG}"`], style: { fill: { type: 'pattern', pattern: 'solid', bgColor: { argb: 'FF1F5A3C' } } } },
     { type: 'expression', priority: 4, formulae: [`$E${f0}="${PEN}"`], style: { fill: { type: 'pattern', pattern: 'solid', bgColor: { argb: 'FF5A1F2B' } } } },
