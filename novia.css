@@ -1237,7 +1237,7 @@ dialog .chips,dialog .chips *,dialog .actions,dialog .actions *,dialog .pk-tags,
 @media(max-width:620px){.pg-rw{grid-column:2;grid-row:2;justify-self:start}.pg-rol{grid-column:auto;grid-row:auto}.pg-menu{min-width:min(260px,calc(100vw - 80px))}}
 .pg-stats{grid-template-columns:1fr 1.6fr 1fr 1fr 1.1fr}.pg-stats .pg-st:nth-child(2){grid-column:auto}@media(max-width:620px){.pg-stats{grid-template-columns:1fr 1fr}.pg-stats .pg-st:nth-child(2){grid-column:auto}}
 .pg-body>.pg-stats,.pg-body>.pg-bar,.pg-body>.pg-list{animation:none}
-.pg-body.pg-in>.pg-stats,.pg-body.pg-in>.pg-bar,.pg-body.pg-in>.pg-list{animation:pgIn .45s cubic-bezier(.2,.9,.3,1.1) both}
+.pg-body.pg-anim>.pg-stats,.pg-body.pg-anim>.pg-bar,.pg-body.pg-anim>.pg-list{animation:pgIn .45s cubic-bezier(.2,.9,.3,1.1) both}
 .pg-r,.pg-est,.pg-bar i{transition:none}
 .pg-r:hover{transform:none}
 .sbar i.c3{background:#ffb800;box-shadow:inset 0 4px #ffe08a,inset 0 -4px #a06a00;animation:blk .35s cubic-bezier(.3,1.8,.5,1) calc(var(--d,0)*1ms) backwards}
